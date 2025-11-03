@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, Suspense } from "react";
 import { toast } from "react-toastify";
 import { useTranslation } from "react-i18next";
 import Link from "next/link";
@@ -19,7 +19,7 @@ import {
 import Image from "next/image";
 import { useCart } from "../../../components/CartContext";
 
-export default function AllProductsPage() {
+function AllProductsPageContent() {
   const { t } = useTranslation();
   const { updateCartCount } = useCart();
   const [products, setProducts] = useState([]);
@@ -591,7 +591,7 @@ export default function AllProductsPage() {
                           width={300}
                           height={300}
                           className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-110"
-                          onError={(e) => {
+                          onError={() => {
                             e.target.src = "/images/placeholder.png";
                           }}
                         />
@@ -860,5 +860,22 @@ export default function AllProductsPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function AllProductsPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex justify-center items-center min-h-screen backdrop-blur-sm">
+        <div className="text-center space-y-4">
+          <span className="loading loading-infinity loading-lg text-primary"></span>
+          <p className="text-lg font-medium text-gray-800">
+            Loading Products...
+          </p>
+        </div>
+      </div>
+    }>
+      <AllProductsPageContent />
+    </Suspense>
   );
 }

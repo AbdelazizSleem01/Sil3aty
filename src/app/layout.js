@@ -7,6 +7,8 @@ import Footer from "../../components/Footer";
 import { authOptions } from "../../lib/authOptions";
 import { ToastContainer } from "react-toastify";
 
+export const dynamic = 'force-dynamic';
+
 const cairo = Cairo({ subsets: ["arabic"] });
 
 export const metadata = {

@@ -1,11 +1,11 @@
 "use client";
-import { useEffect } from "react";
+import { useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { toast } from "react-toastify";
 import { useTranslation } from "react-i18next";
 
-export default function OrderSuccess() {
+function OrderSuccessContent() {
   const { t } = useTranslation();
   const searchParams = useSearchParams();
   const orderId = searchParams.get("id");
@@ -67,5 +67,20 @@ export default function OrderSuccess() {
         </Link>
       </div>
     </div>
+  );
+}
+
+export default function OrderSuccess() {
+  return (
+    <Suspense fallback={
+      <div className="max-w-xl mx-auto px-4 py-10 text-center bg-base-200 my-12 rounded-lg shadow-lg">
+        <div className="mb-8">
+          <div className="animate-spin rounded-full h-20 w-20 border-b-2 border-primary mx-auto"></div>
+        </div>
+        <h1 className="text-3xl font-bold mb-4">Loading...</h1>
+      </div>
+    }>
+      <OrderSuccessContent />
+    </Suspense>
   );
 }
