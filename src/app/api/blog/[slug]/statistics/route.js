@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import dbConnect from "../../../../../../lib/dbConnect";
 import Blog from "../../../../../../models/blog";
-import BlogStatistics from "../../../../../../models/BlogStatistics";
 
 
 export async function GET(req, { params }) {
@@ -15,11 +14,11 @@ export async function GET(req, { params }) {
       return NextResponse.json({ message: "Blog not found" }, { status: 404 });
     }
 
-    const currentStats = await BlogStatistics.getCurrentMonthStats(blog._id);
+    const currentStats = await Blog.getCurrentMonthStats(blog._id);
 
     const now = new Date();
     const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-    const lastMonthStats = await BlogStatistics.findOne({
+    const lastMonthStats = await Blog.findOne({
       blog: blog._id,
       year: lastMonth.getFullYear(),
       month: lastMonth.getMonth() + 1
