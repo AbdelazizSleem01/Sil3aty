@@ -3,7 +3,7 @@ import dbConnect from "../../../../lib/dbConnect";
 import Product from "../../../../models/Product";
 
 export async function GET() {
-  const baseUrl = "https://ecommerce-Sil3aty.vercel.app";
+  const baseUrl = "https://sil3aty.vercel.app";
 
   const staticPages = [
     "",

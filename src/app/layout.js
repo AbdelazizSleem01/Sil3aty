@@ -7,7 +7,7 @@ import Footer from "../../components/Footer";
 import { authOptions } from "../../lib/authOptions";
 import { ToastContainer } from "react-toastify";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 const cairo = Cairo({ subsets: ["arabic"] });
 
@@ -28,17 +28,15 @@ export const metadata = {
     "دفع آمن",
     "توصيل سريع",
   ].join(", "),
-  authors: [
-    { name: "فريق Sil3aty", url: "https://ecommerce-Sil3aty.vercel.app" },
-  ],
+  authors: [{ name: "فريق Sil3aty", url: "https://sil3aty.vercel.app" }],
   creator: "Sil3aty للتسوق الإلكتروني",
   publisher: "Sil3aty Store",
-  metadataBase: new URL("https://ecommerce-Sil3aty.vercel.app"),
+  metadataBase: new URL("https://sil3aty.vercel.app"),
   openGraph: {
     title: "Sil3aty - منصة تسوق إلكترونية حديثة",
     description:
       "تسوّق أحدث الإلكترونيات، الأزياء، الأدوات المنزلية والمزيد عبر منصة Sil3aty بتجربة سريعة وآمنة.",
-    url: "https://ecommerce-Sil3aty.vercel.app",
+    url: "https://sil3aty.vercel.app",
     siteName: "Sil3aty للتسوق الإلكتروني",
     images: [
       {
@@ -86,9 +84,7 @@ export default async function RootLayout({ children }) {
         <Providers session={session}>
           <div className="min-h-screen flex flex-col">
             <Navbar />
-            <main className="flex-grow mt-6">
-              {children}
-            </main>
+            <main className="flex-grow mt-6">{children}</main>
             <Footer />
           </div>
           <ToastContainer />

@@ -238,7 +238,7 @@ export async function POST(request) {
                         process.env.NEXT_PUBLIC_API_URL
                       }" target="_blank">
                           <img loading="lazy" 
-                               src="https://ecommerce-Sil3aty.vercel.app/images/logo%20copy.png" 
+                               src="https://sil3aty.vercel.app/images/logo%20copy.png" 
                                alt="Sil3aty E-Commerce" 
                                class="logo">
                       </a>
@@ -285,7 +285,7 @@ export async function POST(request) {
                         process.env.NEXT_PUBLIC_API_URL
                       }" target="_blank">
                           <img loading="lazy" 
-                               src="https://ecommerce-Sil3aty.vercel.app/images/logo%20copy.png" 
+                               src="https://sil3aty.vercel.app/images/logo%20copy.png" 
                                alt="Sil3aty E-Commerce" 
                                class="footer-logo">
                       </a>
@@ -518,7 +518,7 @@ export async function POST(request) {
                           process.env.NEXT_PUBLIC_API_URL
                         }" target="_blank">
                             <img loading="lazy" 
-                                 src="https://ecommerce-Sil3aty.vercel.app/images/logo%20copy.png" 
+                                 src="https://sil3aty.vercel.app/images/logo%20copy.png" 
                                  alt="Sil3aty E-Commerce" 
                                  class="logo">
                         </a>

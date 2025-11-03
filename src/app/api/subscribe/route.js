@@ -47,7 +47,7 @@ export async function POST(request) {
       html: `
         <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
           <div style="text-align: center; margin-bottom: 20px;">
-            <img loading="lazy" src="https://ecommerce-Sil3aty.vercel.app/images/logo copy.png" alt="Your Website Logo" style="max-width: 150px; height: auto;" />
+            <img loading="lazy" src="https://sil3aty.vercel.app/images/logo copy.png" alt="Your Website Logo" style="max-width: 150px; height: auto;" />
           </div>
           <h2 style="color: #4A90E2; text-align: center;">Verify Your Email Address</h2>
           <p style="font-size: 16px; line-height: 1.6;">

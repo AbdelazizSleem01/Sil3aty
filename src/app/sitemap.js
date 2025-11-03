@@ -2,7 +2,7 @@ import dbConnect from "../../lib/dbConnect";
 import Product from "../../models/Product";
 
 export default async function sitemap() {
-  const baseUrl = "https://ecommerce-Sil3aty.vercel.app";
+  const baseUrl = "https://sil3aty.vercel.app";
 
   const staticPages = [
     "",

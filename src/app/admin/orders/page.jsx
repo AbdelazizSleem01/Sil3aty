@@ -181,7 +181,7 @@ export default function AdminOrdersPage() {
     doc.text("INVOICE", 180, 18, { align: "right" });
 
     doc.setFontSize(8);
-    doc.text("https://ecommerce-Sil3aty.vercel.app/", 15, 25);
+    doc.text("https://sil3aty.vercel.app/", 15, 25);
     doc.text(`Generated: ${new Date().toLocaleDateString()}`, 180, 25, {
       align: "right",
     });
@@ -495,7 +495,7 @@ export default function AdminOrdersPage() {
     doc.text("Thank you for your purchase!", 40, yPos + 15, {
       align: "center",
     });
-    doc.text("https://ecommerce-Sil3aty.vercel.app/", 40, yPos + 18, {
+    doc.text("https://sil3aty.vercel.app/", 40, yPos + 18, {
       align: "center",
     });
 
@@ -627,7 +627,7 @@ export default function AdminOrdersPage() {
 
           <div style="text-align: center; margin-top: 20px; color: #666; font-size: 12px;">
             <p>Thank you for shopping with Sil3aty Store!</p>
-            <p>https://ecommerce-Sil3aty.vercel.app/ | support@Sil3aty-store.com</p>
+            <p>https://sil3aty.vercel.app/ | support@Sil3aty-store.com</p>
           </div>
         </div>
 

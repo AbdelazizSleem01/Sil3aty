@@ -238,7 +238,7 @@ export async function PUT(request, { params }) {
             <div class="header">
                 <a href="${process.env.NEXT_PUBLIC_API_URL}" target="_blank">
                     <img loading="lazy" 
-                         src="https://ecommerce-Sil3aty.vercel.app/images/logo%20copy.png" 
+                         src="https://sil3aty.vercel.app/images/logo%20copy.png" 
                          alt="Sil3aty E-Commerce" 
                          class="logo">
                 </a>
@@ -281,7 +281,7 @@ export async function PUT(request, { params }) {
             <div class="footer">
                 <a href="${process.env.NEXT_PUBLIC_API_URL}" target="_blank">
                     <img loading="lazy" 
-                         src="https://ecommerce-Sil3aty.vercel.app/images/logo%20copy.png" 
+                         src="https://sil3aty.vercel.app/images/logo%20copy.png" 
                          alt="Sil3aty E-Commerce" 
                          class="footer-logo">
                 </a>
