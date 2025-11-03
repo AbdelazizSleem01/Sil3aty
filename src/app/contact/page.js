@@ -1,25 +1,27 @@
 "use client";
 import { useState } from "react";
 import Swal from "sweetalert2";
-import { 
-  FaUser, 
-  FaEnvelope, 
-  FaFolder, 
+import { useTranslation } from "react-i18next";
+import {
+  FaUser,
+  FaEnvelope,
+  FaFolder,
   FaComment,
   FaPaperPlane,
   FaPhone,
   FaMapMarkerAlt,
   FaClock
 } from "react-icons/fa";
-import { 
-  FiUser, 
-  FiMail, 
-  FiFolder, 
+import {
+  FiUser,
+  FiMail,
+  FiFolder,
   FiMessageCircle,
-  FiSend 
+  FiSend
 } from "react-icons/fi";
 
 export default function ContactPage() {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -75,36 +77,34 @@ export default function ContactPage() {
   return (
     <div className="min-h-screen py-12 bg-gradient-to-br from-base-100 via-base-200 to-base-300">
       <div className="container mx-auto px-4">
-        {/* Header Section */}
         <div className="text-center mb-12">
           <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-r from-primary to-secondary mb-4">
             <FaPaperPlane className="text-3xl text-white animate-pulse" />
           </div>
-          <h1 className="text-5xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent mb-4">
-            Get in Touch
+          <h1 className="text-5xl font-bold pb-2 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent mb-4">
+            {t("getInTouch")}
           </h1>
           <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-            We'd love to hear from you. Send us a message and we'll respond as soon as possible.
+            {t("wedLoveToHearFromYou")}
           </p>
         </div>
 
         <div className="grid lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
-          {/* Contact Information */}
           <div className="lg:col-span-1 space-y-6">
             <div className="card bg-base-100 shadow-xl border border-base-300 h-fit">
               <div className="card-body">
                 <h2 className="card-title text-2xl mb-6 flex items-center gap-2">
                   <FaComment className="text-primary" />
-                  Contact Info
+                  {t("contactInfo")}
                 </h2>
-                
+
                 <div className="space-y-6">
                   <div className="flex items-start gap-4 p-3 rounded-lg hover:bg-base-200 transition-colors">
                     <div className="p-3 rounded-full bg-primary/10 text-primary">
                       <FaPhone className="text-lg" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-lg">Phone</h3>
+                      <h3 className="font-semibold text-lg">{t("phone")}</h3>
                       <p className="text-gray-600 dark:text-gray-300">+20 1012105407</p>
                     </div>
                   </div>
@@ -114,7 +114,7 @@ export default function ContactPage() {
                       <FaEnvelope className="text-lg" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-lg">Email</h3>
+                      <h3 className="font-semibold text-lg">{t("emailAddress")}</h3>
                       <p className="text-gray-600 dark:text-gray-300">abdelazizsleem957@gmail.com</p>
                     </div>
                   </div>
@@ -124,8 +124,8 @@ export default function ContactPage() {
                       <FaMapMarkerAlt className="text-lg" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-lg">Address</h3>
-                      <p className="text-gray-600 dark:text-gray-300">Benha<br />Qlubia, EGYPT</p>
+                      <h3 className="font-semibold text-lg">{t("address")}</h3>
+                      <p className="text-gray-600 dark:text-gray-300">{t("ourLocation")}</p>
                     </div>
                   </div>
 
@@ -134,7 +134,7 @@ export default function ContactPage() {
                       <FaClock className="text-lg" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-lg">Business Hours</h3>
+                      <h3 className="font-semibold text-lg">{t("businessHours")}</h3>
                       <p className="text-gray-600 dark:text-gray-300">Mon - Fri: 9AM - 6PM<br />Sat: 10AM - 4PM</p>
                     </div>
                   </div>
@@ -172,7 +172,7 @@ export default function ContactPage() {
                       <label className="label">
                         <span className="label-text text-lg font-semibold flex items-center gap-2">
                           <FiUser className="text-primary text-xl" />
-                          Full Name
+                          {t("fullName")}
                         </span>
                       </label>
                       <input
@@ -183,7 +183,7 @@ export default function ContactPage() {
                         onChange={(e) =>
                           setFormData({ ...formData, name: e.target.value })
                         }
-                        placeholder="John Doe"
+                        placeholder={t("johnDoe")}
                       />
                     </div>
 
@@ -191,7 +191,7 @@ export default function ContactPage() {
                       <label className="label">
                         <span className="label-text text-lg font-semibold flex items-center gap-2">
                           <FiMail className="text-primary text-xl" />
-                          Email Address
+                          {t("emailAddress")}
                         </span>
                       </label>
                       <input
@@ -202,7 +202,7 @@ export default function ContactPage() {
                         onChange={(e) =>
                           setFormData({ ...formData, email: e.target.value })
                         }
-                        placeholder="john@example.com"
+                        placeholder={t("johnExample")}
                       />
                     </div>
                   </div>
@@ -211,7 +211,7 @@ export default function ContactPage() {
                     <label className="label">
                       <span className="label-text text-lg font-semibold flex items-center gap-2">
                         <FiFolder className="text-primary text-xl" />
-                        Subject
+                        {t("subject")}
                       </span>
                     </label>
                     <input
@@ -222,7 +222,7 @@ export default function ContactPage() {
                       onChange={(e) =>
                         setFormData({ ...formData, subject: e.target.value })
                       }
-                      placeholder="How can we help you?"
+                      placeholder={t("howCanWeHelpYou")}
                     />
                   </div>
 
@@ -230,7 +230,7 @@ export default function ContactPage() {
                     <label className="label">
                       <span className="label-text text-lg font-semibold flex items-center gap-2">
                         <FiMessageCircle className="text-primary text-xl" />
-                        Your Message
+                        {t("yourMessage")}
                       </span>
                     </label>
                     <textarea
@@ -240,7 +240,7 @@ export default function ContactPage() {
                       onChange={(e) =>
                         setFormData({ ...formData, message: e.target.value })
                       }
-                      placeholder="Please describe your inquiry in detail..."
+                      placeholder={t("pleaseDescribeYourInquiry")}
                       rows="6"
                     />
                   </div>
@@ -256,12 +256,12 @@ export default function ContactPage() {
                       {isSubmitting ? (
                         <div className="flex items-center justify-center gap-3">
                           <span className="loading loading-spinner loading-md"></span>
-                          <span className="font-semibold">Sending Message...</span>
+                          <span className="font-semibold">{t("sendingMessage")}</span>
                         </div>
                       ) : (
                         <div className="flex items-center justify-center gap-3">
                           <FiSend className="text-xl group-hover:animate-pulse" />
-                          <span className="font-semibold">Send Message</span>
+                          <span className="font-semibold">{t("sendMessage")}</span>
                         </div>
                       )}
                     </button>

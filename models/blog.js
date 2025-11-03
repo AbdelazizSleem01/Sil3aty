@@ -195,7 +195,6 @@ const blogSchema = new mongoose.Schema({
 });
 
 blogSchema.index({ title: 'text', content: 'text', excerpt: 'text' });
-blogSchema.index({ slug: 1 });
 blogSchema.index({ author: 1 });
 blogSchema.index({ categories: 1 });
 blogSchema.index({ topics: 1 });

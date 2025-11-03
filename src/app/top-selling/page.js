@@ -12,6 +12,7 @@ import {
   Clock,
 } from "lucide-react";
 import { useCart } from "../../../components/CartContext";
+import { useTranslation } from "react-i18next";
 
 async function getTopSellingProducts() {
   try {
@@ -29,6 +30,8 @@ async function getTopSellingProducts() {
 }
 
 export default function TopSellingProductsPage() {
+  const { t, i18n } = useTranslation();
+  const isRTL = i18n.language === "ar";
   const { updateCartCount } = useCart();
   const [topSellingProducts, setTopSellingProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -58,12 +61,12 @@ export default function TopSellingProductsPage() {
 
       if (!response.ok) throw new Error("Failed to add product to cart");
 
-      toast.success("Product added to cart!");
+      toast.success(t("productAddedToCart"));
       await updateCartCount();
       setAnimatingProductId(productId);
       setTimeout(() => setAnimatingProductId(null), 600);
     } catch (error) {
-      toast.error("Failed to add product to cart");
+      toast.error(t("failedToAddToCart"));
     }
   };
 
@@ -100,27 +103,34 @@ export default function TopSellingProductsPage() {
     return (
       <div className="flex items-center gap-1 mb-2">
         {stars}
-        <span className="text-sm text-gray-500 ml-1">({numReviews || 0})</span>
+        <span className="text-sm text-gray-500 ml-1">
+          ({numReviews || 0} {t("reviews")})
+        </span>
       </div>
     );
   };
 
   return (
-    <section className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-50 py-8 md:py-12 lg:py-16">
+    <section
+      className={`min-h-screen bg-gradient-to-br from-green-50 to-emerald-50 py-8 md:py-12 lg:py-16 ${
+        isRTL ? "font-arabic" : ""
+      }`}
+      dir={isRTL ? "rtl" : "ltr"}
+    >
       <div className="container mx-auto px-4">
         {/* Header Section */}
         <div className="text-center mb-16">
           <div className="relative inline-block mb-6">
             <div className="absolute -inset-4 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full blur-xl opacity-20 animate-pulse"></div>
-            <h1 className="relative text-5xl md:text-6xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
-              Top Sellers
+            <h1 className="relative text-5xl pb-2 md:text-6xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+              {t("topSellers")}
             </h1>
           </div>
 
           <div className="flex items-center justify-center gap-4 mb-4">
             <TrendingUp className="w-8 h-8 text-green-500 animate-pulse" />
             <p className="text-xl text-gray-700 font-semibold">
-              Customer Favorites
+              {t("customerFavorites")}
             </p>
             <Award
               className="w-8 h-8 text-emerald-500 animate-bounce"
@@ -129,8 +139,7 @@ export default function TopSellingProductsPage() {
           </div>
 
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Discover our best-selling products loved by thousands of customers.
-            Exceptional quality meets unbeatable popularity.
+            {t("discoverTopSelling")}
           </p>
         </div>
 
@@ -157,16 +166,14 @@ export default function TopSellingProductsPage() {
                 <TrendingUp className="w-10 h-10 text-green-400" />
               </div>
               <h3 className="text-xl font-semibold text-gray-700 mb-2">
-                No Top Selling Products
+                {t("noTopSellingProducts")}
               </h3>
-              <p className="text-gray-500 mb-6">
-                Check back later to see our popular products!
-              </p>
+              <p className="text-gray-500 mb-6">{t("checkBackLater")}</p>
               <Link
                 href="/products"
                 className="btn bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white btn-lg w-full border-none"
               >
-                Browse All Products
+                {t("browseAllProducts")}
               </Link>
             </div>
           </div>
@@ -221,6 +228,7 @@ export default function TopSellingProductsPage() {
                             fill
                             quality={90}
                             className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
+                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                             onError={(e) => {
                               e.target.src = "/images/placeholder.png";
                             }}
@@ -245,10 +253,12 @@ export default function TopSellingProductsPage() {
                       </div>
                     </Link>
 
-                    {/* Badges */}
+                    {/* Rank Badge */}
                     {index < 3 && (
                       <div
-                        className={`absolute top-4 left-4 z-10 px-4 py-2 text-white font-bold text-sm shadow-lg ${
+                        className={`absolute top-4 ${
+                          isRTL ? "right-4" : "left-4"
+                        } z-10 px-4 py-2 text-white font-bold text-sm shadow-lg ${
                           index === 0
                             ? "bg-gradient-to-r from-yellow-500 to-yellow-600"
                             : index === 1
@@ -256,20 +266,31 @@ export default function TopSellingProductsPage() {
                             : "bg-gradient-to-r from-amber-700 to-amber-800"
                         }`}
                         style={{
-                          clipPath: "polygon(0 0, 100% 0, 85% 100%, 0% 100%)",
+                          clipPath: isRTL
+                            ? "polygon(15% 0, 100% 0, 100% 100%, 0% 100%)"
+                            : "polygon(0 0, 100% 0, 85% 100%, 0% 100%)",
                         }}
                       >
                         {index === 0
-                          ? "🥇 1st"
+                          ? isRTL
+                            ? "الأول"
+                            : "1st"
                           : index === 1
-                          ? "🥈 2nd"
-                          : "🥉 3rd"}
+                          ? isRTL
+                            ? "الثاني"
+                            : "2nd"
+                          : isRTL
+                          ? "الثالث"
+                          : "3rd"}
                       </div>
                     )}
 
+                    {/* Discount Badge */}
                     {hasDiscount && (
                       <div
-                        className={`absolute top-4 right-4 ${
+                        className={`absolute top-4 ${
+                          isRTL ? "left-4" : "right-4"
+                        } ${
                           discountIntensity === "high"
                             ? "discount-badge-high"
                             : discountIntensity === "medium"
@@ -281,23 +302,34 @@ export default function TopSellingProductsPage() {
                           <div className="absolute inset-0 bg-current rounded-full animate-ping opacity-75"></div>
                           <div className="relative flex items-center gap-1 px-3 py-2 rounded-full text-white font-bold text-sm z-10">
                             <Zap className="w-4 h-4" fill="currentColor" />
-                            {discountPercent}% OFF
+                            {discountPercent}
+                            {t("off")}
                           </div>
                         </div>
                       </div>
                     )}
 
+                    {/* Low Stock */}
                     {isLowStock && (
-                      <div className="absolute bottom-4 left-4">
+                      <div
+                        className={`absolute bottom-4 ${
+                          isRTL ? "right-4" : "left-4"
+                        }`}
+                      >
                         <div className="flex items-center gap-1 bg-orange-500 text-white px-3 py-1 rounded-full text-xs font-bold animate-pulse">
                           <Clock className="w-3 h-3" />
-                          Only {product.countInStock} left
+                          {t("onlyLeft", { count: product.countInStock })}
                         </div>
                       </div>
                     )}
 
+                    {/* Category */}
                     {product.category?.name && (
-                      <div className="absolute bottom-4 right-4">
+                      <div
+                        className={`absolute bottom-4 ${
+                          isRTL ? "left-4" : "right-4"
+                        }`}
+                      >
                         <span className="bg-black/70 text-white px-3 py-1 rounded-full text-xs font-medium backdrop-blur-sm">
                           {product.category.name}
                         </span>
@@ -315,7 +347,7 @@ export default function TopSellingProductsPage() {
 
                     {product.brand?.name && (
                       <p className="text-sm text-gray-500 mb-3">
-                        by {product.brand.name}
+                        {t("by")} {product.brand.name}
                       </p>
                     )}
 
@@ -358,11 +390,11 @@ export default function TopSellingProductsPage() {
                       {hasDiscount && (
                         <div className="text-right">
                           <p className="text-sm font-semibold text-red-600">
-                            Save $
+                            {t("save")} $
                             {(product.price - product.discountPrice).toFixed(2)}
                           </p>
                           <p className="text-xs text-gray-500">
-                            You save {discountPercent}%
+                            {t("youSave")} {discountPercent}%
                           </p>
                         </div>
                       )}
@@ -371,8 +403,10 @@ export default function TopSellingProductsPage() {
                     {isLowStock && (
                       <div className="mb-4">
                         <div className="flex justify-between text-xs text-gray-500 mb-1">
-                          <span>Limited Stock</span>
-                          <span>{product.countInStock} left</span>
+                          <span>{t("limitedStock")}</span>
+                          <span>
+                            {product.countInStock} {t("left")}
+                          </span>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-2">
                           <div
@@ -404,12 +438,12 @@ export default function TopSellingProductsPage() {
                         {animatingProductId === product._id ? (
                           <>
                             <div className="loading loading-spinner loading-sm"></div>
-                            Added!
+                            {t("added")}
                           </>
                         ) : (
                           <>
                             <ShoppingCart className="w-5 h-5" />
-                            Add to Cart
+                            {t("addToCart")}
                           </>
                         )}
                       </button>
@@ -419,7 +453,7 @@ export default function TopSellingProductsPage() {
                           href={`/product/${product._id}`}
                           className="text-sm text-green-600 hover:text-green-700 transition-colors font-medium"
                         >
-                          Quick View →
+                          {t("quickView")} {isRTL ? "←" : "→"}
                         </Link>
                       </div>
                     </div>
@@ -434,21 +468,20 @@ export default function TopSellingProductsPage() {
         {topSellingProducts.length > 0 && (
           <div className="mt-16 text-center">
             <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-2xl p-8 text-white shadow-2xl">
-              <h3 className="text-2xl font-bold mb-2">🔥 Customer Favorites</h3>
-              <p className="text-lg mb-4 opacity-90">
-                Join thousands of satisfied customers who love these top-selling
-                products
-              </p>
+              <h3 className="text-2xl font-bold mb-2">
+                {t("customerFavorites")}
+              </h3>
+              <p className="text-lg mb-4 opacity-90">{t("joinThousands")}</p>
               <div className="flex items-center justify-center gap-2 text-sm opacity-80">
                 <TrendingUp className="w-4 h-4" />
-                <span>Best Sellers Collection</span>
+                <span>{t("bestSellersCollection")}</span>
               </div>
             </div>
           </div>
         )}
       </div>
 
-      {/* Custom CSS for Animations */}
+      {/* Custom CSS */}
       <style jsx>{`
         .discount-high-animation {
           background: linear-gradient(
@@ -460,7 +493,6 @@ export default function TopSellingProductsPage() {
           background-size: 200% 200%;
           animation: discountHigh 2s ease-in-out infinite;
         }
-
         .discount-medium-animation {
           background: linear-gradient(
             45deg,
@@ -471,7 +503,6 @@ export default function TopSellingProductsPage() {
           background-size: 200% 200%;
           animation: discountMedium 3s ease-in-out infinite;
         }
-
         .discount-low-animation {
           background: linear-gradient(
             45deg,
@@ -482,25 +513,18 @@ export default function TopSellingProductsPage() {
           background-size: 200% 200%;
           animation: discountLow 4s ease-in-out infinite;
         }
-
         .discount-badge-high {
           background: linear-gradient(135deg, #ef4444, #dc2626);
           box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
-          border-radius: 9999px;
         }
-
         .discount-badge-medium {
           background: linear-gradient(135deg, #f97316, #ea580c);
           box-shadow: 0 4px 15px rgba(249, 115, 22, 0.4);
-          border-radius: 9999px;
         }
-
         .discount-badge-low {
           background: linear-gradient(135deg, #f59e0b, #d97706);
           box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
-          border-radius: 9999px;
         }
-
         @keyframes discountHigh {
           0%,
           100% {
@@ -510,7 +534,6 @@ export default function TopSellingProductsPage() {
             background-position: 100% 50%;
           }
         }
-
         @keyframes discountMedium {
           0%,
           100% {
@@ -520,7 +543,6 @@ export default function TopSellingProductsPage() {
             background-position: 100% 50%;
           }
         }
-
         @keyframes discountLow {
           0%,
           100% {
@@ -530,7 +552,6 @@ export default function TopSellingProductsPage() {
             background-position: 100% 50%;
           }
         }
-
         @keyframes fadeInUp {
           from {
             opacity: 0;
@@ -541,12 +562,14 @@ export default function TopSellingProductsPage() {
             transform: translateY(0);
           }
         }
-
         .line-clamp-2 {
           display: -webkit-box;
           -webkit-line-clamp: 2;
           -webkit-box-orient: vertical;
           overflow: hidden;
+        }
+        .font-arabic {
+          font-family: "Cairo", "Geeza Pro", sans-serif;
         }
       `}</style>
     </section>

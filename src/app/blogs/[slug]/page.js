@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
@@ -9,11 +9,7 @@ import {
   FaTwitter,
   FaLinkedin,
   FaLink,
-  FaCalendarAlt,
-  FaClock,
-  FaUser,
   FaEdit,
-  FaEye,
   FaShareAlt,
   FaBookmark,
   FaHeart,
@@ -37,10 +33,7 @@ import {
   HiArrowLeft,
   HiTag,
   HiFire,
-  HiTrendingUp,
-  HiOutlineEye,
 } from "react-icons/hi";
-import { IoShareSocial, IoTime, IoCalendar } from "react-icons/io5";
 import {
   RiUser3Line,
   RiBookmarkFill,
@@ -52,6 +45,7 @@ import { TbClock, TbCalendar, TbEye } from "react-icons/tb";
 import { MdOutlineFeaturedPlayList, MdOutlineTrendingUp } from "react-icons/md";
 import Image from "next/image";
 import { toast } from "react-toastify";
+import { useTranslation } from "react-i18next";
 
 const MDEditor = dynamic(() => import("@uiw/react-markdown-preview"), {
   ssr: false,
@@ -59,14 +53,16 @@ const MDEditor = dynamic(() => import("@uiw/react-markdown-preview"), {
     <div className="h-64 bg-gradient-to-br from-green-50 to-emerald-50 animate-pulse rounded-2xl border-2 border-dashed border-green-200 flex items-center justify-center">
       <div className="text-center">
         <HiOutlineSparkles className="w-10 h-10 text-green-400 mx-auto mb-3 animate-pulse" />
-        <p className="text-green-600 font-medium">جاري تحميل المحتوى...</p>
+        <p className="text-green-600 font-medium">{t("loadingContent")}</p>
       </div>
     </div>
   ),
 });
 
 export default function BlogDetail() {
+  const { t } = useTranslation();
   const { slug } = useParams();
+  const router = useRouter();
   const { data: session } = useSession();
   const [blog, setBlog] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -81,18 +77,17 @@ export default function BlogDetail() {
   const [newComment, setNewComment] = useState("");
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
   const [activeTab, setActiveTab] = useState("content");
+  const [authorArticlesCount, setAuthorArticlesCount] = useState(0);
 
   useEffect(() => {
     const fetchBlog = async () => {
       try {
         await fetch(`/api/blog/${slug}/view`, { method: "POST" });
-
         const response = await fetch(`/api/blog/${slug}/view`);
-        if (!response.ok) throw new Error("فشل في تحميل المقال");
+        if (!response.ok) throw new Error(t("failedToLoadArticle"));
         const data = await response.json();
 
         const blogData = data.blog;
-
         setBlog(blogData);
         setLikeCount(blogData.likesCount || 0);
         setViews(blogData.views || 0);
@@ -100,15 +95,21 @@ export default function BlogDetail() {
 
         if (session?.user?.id) {
           setIsLiked(blogData.likes?.includes(session.user.id) || false);
-          setIsBookmarked(
-            blogData.bookmarks?.includes(session.user.id) || false
-          );
+          setIsBookmarked(blogData.bookmarks?.includes(session.user.id) || false);
         }
 
         const commentsResponse = await fetch(`/api/blog/${slug}/comment`);
         if (commentsResponse.ok) {
           const commentsData = await commentsResponse.json();
           setComments(commentsData.comments || []);
+        }
+
+        if (blogData.author?._id) {
+          const authorResponse = await fetch(`/api/blog/author/${blogData.author._id}`);
+          if (authorResponse.ok) {
+            const authorData = await authorResponse.json();
+            setAuthorArticlesCount(authorData.articlesCount || 0);
+          }
         }
       } catch (err) {
         setError(err.message);
@@ -117,77 +118,73 @@ export default function BlogDetail() {
       }
     };
 
-    fetchBlog();
-  }, [slug, session]);
+    if (slug) fetchBlog();
+  }, [slug, session, t]);
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(window.location.href);
     setShowShareTooltip(true);
-    toast.success("تم نسخ الرابط بنجاح!");
+    toast.success(t("linkCopied"));
     setTimeout(() => setShowShareTooltip(false), 2000);
   };
 
   const handleLike = async () => {
     if (!session) {
-      toast.error("يجب تسجيل الدخول أولاً");
+      toast.error(t("loginRequired"));
       return;
     }
 
     try {
       const response = await fetch(`/api/blog/${slug}/like`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
       });
 
       if (response.ok) {
         const data = await response.json();
         setIsLiked(data.liked);
         setLikeCount(data.likesCount);
-        toast.success(data.liked ? "تم الإعجاب بالمقال" : "تم إلغاء الإعجاب");
+        toast.success(data.liked ? t("liked") : t("unliked"));
       } else {
-        toast.error("فشل في تحديث الإعجاب");
+        toast.error(t("likeFailed"));
       }
-    } catch (error) {
-      toast.error("حدث خطأ في الشبكة");
+    } catch {
+      toast.error(t("networkError"));
     }
   };
 
   const handleBookmark = async () => {
     if (!session) {
-      toast.error("يجب تسجيل الدخول أولاً");
+      toast.error(t("loginRequired"));
       return;
     }
 
     try {
       const response = await fetch(`/api/blog/${slug}/bookmark`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
       });
 
       if (response.ok) {
         const data = await response.json();
         setIsBookmarked(data.bookmarked);
-        toast.success(data.bookmarked ? "تم الحفظ" : "تم إلغاء الحفظ");
+        toast.success(data.bookmarked ? t("bookmarked") : t("unbookmarked"));
       } else {
-        toast.error("فشل في تحديث الحفظ");
+        toast.error(t("bookmarkFailed"));
       }
-    } catch (error) {
-      toast.error("حدث خطأ في الشبكة");
+    } catch {
+      toast.error(t("networkError"));
     }
   };
 
   const handleAddComment = async () => {
     if (!session) {
-      toast.error("يجب تسجيل الدخول أولاً");
+      toast.error(t("loginRequired"));
       return;
     }
 
     if (!newComment.trim()) {
-      toast.error("يرجى كتابة تعليق");
+      toast.error(t("commentRequired"));
       return;
     }
 
@@ -196,24 +193,20 @@ export default function BlogDetail() {
     try {
       const response = await fetch(`/api/blog/${slug}/comment`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          content: newComment.trim(),
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: newComment.trim() }),
       });
 
       if (response.ok) {
         const data = await response.json();
         setComments([data.comment, ...comments]);
         setNewComment("");
-        toast.success("تم نشر التعليق بنجاح");
+        toast.success(t("commentPosted"));
       } else {
-        toast.error("فشل في نشر التعليق");
+        toast.error(t("commentFailed"));
       }
-    } catch (error) {
-      toast.error("حدث خطأ في الشبكة");
+    } catch {
+      toast.error(t("networkError"));
     } finally {
       setIsSubmittingComment(false);
     }
@@ -228,9 +221,9 @@ export default function BlogDetail() {
             <HiOutlineSparkles className="w-8 h-8 text-emerald-500 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 animate-pulse" />
           </div>
           <h2 className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-green-600 bg-clip-text text-transparent mb-2">
-            جاري تحميل المقال
+            {t("loadingBlogPost")}
           </h2>
-          <p className="text-gray-600">نحضر لك أفضل المحتوى...</p>
+          <p className="text-gray-600">{t("preparingBestContent")}</p>
         </div>
       </div>
     );
@@ -247,10 +240,10 @@ export default function BlogDetail() {
               </div>
             </div>
             <h2 className="card-title justify-center text-2xl font-bold text-rose-600 mb-2">
-              {error ? "حدث خطأ" : "المقال غير موجود"}
+              {error ? t("errorOccurred") : t("articleNotFound")}
             </h2>
             <p className="text-gray-600 mb-6">
-              {error || "المقال الذي تبحث عنه غير موجود."}
+              {error || t("articleNotExist")}
             </p>
             <div className="card-actions justify-center">
               <Link
@@ -258,18 +251,18 @@ export default function BlogDetail() {
                 className="btn btn-primary gap-2 shadow-lg hover:shadow-xl transition-all duration-300"
               >
                 <HiArrowLeft className="w-4 h-4" />
-                العودة للمدونات
+                {t("backToBlogs")}
               </Link>
+                </div>
+              </div>
             </div>
+
           </div>
-        </div>
-      </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-emerald-50">
-      {/* Navigation */}
       <nav className="bg-white/90 backdrop-blur-xl sticky top-0 z-50 border-b border-gray-200/80 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
@@ -278,9 +271,8 @@ export default function BlogDetail() {
               className="group btn btn-ghost gap-2 text-gray-600 hover:text-emerald-600 transition-all duration-300 hover:bg-emerald-50 rounded-xl font-medium"
             >
               <HiArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-              العودة للمدونات
+              {t("backToBlogs")}
             </Link>
-
             <div className="flex items-center gap-2">
               <div className="flex gap-1 bg-gray-100/80 rounded-xl p-1 backdrop-blur-sm">
                 <button
@@ -319,10 +311,8 @@ export default function BlogDetail() {
       </nav>
 
       <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Blog Header */}
         <article className="bg-white rounded-3xl p-4 shadow-2xl border border-gray-100/80 overflow-hidden mb-8 hover:shadow-2xl transition-all duration-500 backdrop-blur-sm">
-          {/* Cover Image */}
-          <div className="relative ">
+          <div className="relative">
             <div className="relative mx-auto h-[60vh] w-[80vw] sm:h-[90vh] md:w-[70vw] lg:w-[40vw] rounded-3xl overflow-hidden">
               <Image
                 loading="lazy"
@@ -334,40 +324,35 @@ export default function BlogDetail() {
               />
             </div>
 
-            {/* Floating Badges */}
             <div className="absolute top-6 left-6 flex gap-2">
               {blog.featured && (
                 <span className="badge badge-lg bg-gradient-to-r from-amber-500 to-orange-500 border-0 text-white shadow-lg gap-1 backdrop-blur-sm">
                   <MdOutlineFeaturedPlayList className="w-4 h-4" />
-                  مميز
+                  {t("featured")}
                 </span>
               )}
               <span className="badge badge-lg bg-gray-400/80 backdrop-blur-md text-white border-0 shadow-lg gap-1">
                 <MdOutlineTrendingUp className="w-4 h-4" />
-                رائج
+                {t("trending")}
               </span>
               <span className="badge badge-lg bg-emerald-500 backdrop-blur-md text-white border-0 shadow-lg gap-1">
                 <FaStar className="w-3 h-3" />
                 {blog.difficulty === "beginner"
-                  ? "مبتدئ"
+                  ? t("beginner")
                   : blog.difficulty === "intermediate"
-                  ? "متوسط"
-                  : "متقدم"}
+                  ? t("intermediate")
+                  : t("advanced")}
               </span>
             </div>
           </div>
 
           <div className="p-8">
-            {/* Author & Meta Info */}
             <div className="flex items-center gap-4 mb-6 p-4 bg-gradient-to-r from-emerald-50/80 to-emerald-50/80 rounded-2xl border border-emerald-100/50 backdrop-blur-sm">
               <div className="avatar">
                 <div className="w-16 rounded-full ring-2 ring-white shadow-lg">
                   <img
-                    src={
-                      blog.author?.profilePicture ||
-                      "/images/default-avatar.png"
-                    }
-                    alt={blog.author?.name || "الكاتب"}
+                    src={blog.author?.profilePicture || "/images/default-avatar.png"}
+                    alt={blog.author?.name || t("authorUnknown")}
                     className="object-cover"
                   />
                 </div>
@@ -375,7 +360,7 @@ export default function BlogDetail() {
               <div className="flex-1">
                 <p className="font-bold text-lg text-gray-800 flex items-center gap-2">
                   <RiUser3Line className="w-5 h-5 text-emerald-500" />
-                  {blog.author?.name || "كاتب غير معروف"}
+                  {blog.author?.name || t("authorUnknown")}
                 </p>
                 <div className="flex flex-wrap gap-3 text-sm text-gray-600 mt-2">
                   <span className="flex items-center gap-2 bg-white/80 backdrop-blur-sm px-3 py-1 rounded-full shadow-sm border border-gray-200/50">
@@ -388,29 +373,26 @@ export default function BlogDetail() {
                   </span>
                   <span className="flex items-center gap-2 bg-white/80 backdrop-blur-sm px-3 py-1 rounded-full shadow-sm border border-gray-200/50">
                     <TbClock className="w-4 h-4 text-green-500" />
-                    {readingTime} دقيقة قراءة
+                    {readingTime} {t("minRead")}
                   </span>
                   <span className="flex items-center gap-2 bg-white/80 backdrop-blur-sm px-3 py-1 rounded-full shadow-sm border border-gray-200/50">
                     <TbEye className="w-4 h-4 text-green-500" />
-                    {views} مشاهدة
+                    {views} {t("views")}
                   </span>
                 </div>
               </div>
             </div>
 
-            {/* Title */}
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight bg-gradient-to-r from-gray-900 via-emerald-600 to-green-600 bg-clip-text text-transparent">
               {blog.title}
             </h1>
 
-            {/* Excerpt */}
             <p className="text-xl text-gray-600 mb-8 leading-relaxed border-r-4 border-emerald-500 pr-6 py-3 bg-gradient-to-l from-emerald-50/50 to-transparent rounded-l-2xl">
               {blog.excerpt}
             </p>
 
-            {/* Tags */}
             <div className="flex flex-wrap gap-2 mb-2">
-              {blog.tags.map((tag, index) => (
+              {blog.tags?.map((tag) => (
                 <Link
                   key={tag}
                   href={`/blogs?tag=${tag}`}
@@ -424,18 +406,15 @@ export default function BlogDetail() {
           </div>
         </article>
 
-        {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Sidebar */}
           <div className="lg:col-span-1 space-y-6">
-            {/* Share Widget */}
             <div className="card bg-white/80 backdrop-blur-lg shadow-xl border border-gray-200/50 sticky top-24">
               <div className="card-body p-6">
                 <h3 className="card-title text-lg flex items-center gap-3 mb-4 text-gray-800">
                   <div className="p-2 bg-gradient-to-r from-emerald-500 to-emerald-500 rounded-xl shadow-md">
                     <RiShareForwardLine className="w-5 h-5 text-white" />
                   </div>
-                  مشاركة المقال
+                  {t("shareArticle")}
                 </h3>
                 <div className="flex flex-col gap-3">
                   <button
@@ -445,77 +424,67 @@ export default function BlogDetail() {
                     <div className="p-2 bg-gray-100 rounded-lg">
                       <FaLink className="w-4 h-4" />
                     </div>
-                    نسخ الرابط
+                    {t("copyLink")}
                   </button>
                   <Link
-                    href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
-                      window.location.href
-                    )}`}
+                    href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`}
                     target="_blank"
                     className="btn btn-ghost justify-start gap-3 w-full text-emerald-600 hover:bg-emerald-50 transition-all duration-300 rounded-xl font-medium"
                   >
                     <div className="p-2 bg-emerald-100 rounded-lg">
                       <FaFacebook className="w-4 h-4" />
                     </div>
-                    فيسبوك
+                    {t("shareOnFacebook")}
                   </Link>
                   <Link
-                    href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(
-                      window.location.href
-                    )}&text=${encodeURIComponent(blog.title)}`}
+                    href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(blog.title)}`}
                     target="_blank"
                     className="btn btn-ghost justify-start gap-3 w-full text-emerald-400 hover:bg-emerald-50 transition-all duration-300 rounded-xl font-medium"
                   >
                     <div className="p-2 bg-emerald-100 rounded-lg">
                       <FaTwitter className="w-4 h-4" />
                     </div>
-                    تويتر
+                    {t("shareOnTwitter")}
                   </Link>
                   <Link
-                    href={`https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(
-                      window.location.href
-                    )}&title=${encodeURIComponent(blog.title)}`}
+                    href={`https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(window.location.href)}&title=${encodeURIComponent(blog.title)}`}
                     target="_blank"
                     className="btn btn-ghost justify-start gap-3 w-full text-emerald-700 hover:bg-emerald-50 transition-all duration-300 rounded-xl font-medium"
                   >
                     <div className="p-2 bg-emerald-100 rounded-lg">
                       <FaLinkedin className="w-4 h-4" />
                     </div>
-                    لينكدإن
+                    {t("shareOnLinkedIn")}
                   </Link>
                 </div>
               </div>
             </div>
 
-            {/* Author Card */}
             <div className="card bg-gradient-to-br from-emerald-50/80 to-emerald-50/80 shadow-xl border border-emerald-100/50 backdrop-blur-sm">
               <div className="card-body p-6 text-center">
                 <div className="avatar mb-4">
                   <div className="w-20 h-20 rounded-full ring-4 ring-white/80 shadow-lg mx-auto">
                     <Image
-                      src={
-                        blog.author?.profilePicture ||
-                        "/images/default-avatar.png"
-                      }
-                      alt={blog.author?.name || "الكاتب"}
+                      src={blog.author?.profilePicture || "/images/default-avatar.png"}
+                      alt={blog.author?.name || t("authorUnknown")}
                       width={80}
                       height={80}
                     />
                   </div>
                 </div>
                 <h3 className="font-bold text-xl text-gray-800 mb-1">
-                  {blog.author?.name || "كاتب غير معروف"}
+                  {blog.author?.name || t("authorUnknown")}
                 </h3>
-                <p className="text-gray-600 text-sm mb-4">كاتب المقال</p>
+                <p className="text-gray-600 text-sm mb-4">{t("articleAuthor")}</p>
 
                 <div className="stats stats-vertical shadow bg-white/60 backdrop-blur-sm rounded-2xl border border-white/50">
                   <div className="stat p-4">
                     <div className="stat-figure text-emerald-500">
                       <FaReadme className="w-5 h-5" />
                     </div>
-                    <div className="stat-title text-gray-600">المقالات</div>
+                    <div className="stat-title text-gray-600">{t("articles")}</div>
                     <div className="stat-value text-lg text-gray-800">
-                      {Math.floor(Math.random() * 50) + 10}
+                      {authorArticlesCount}
                     </div>
                   </div>
                 </div>
@@ -523,9 +492,7 @@ export default function BlogDetail() {
             </div>
           </div>
 
-          {/* Main Content */}
           <div className="lg:col-span-3">
-            {/* Content Tabs */}
             <div className="flex gap-2 mb-6 bg-white/80 backdrop-blur-lg rounded-2xl p-2 shadow-lg border border-gray-200/50">
               <button
                 onClick={() => setActiveTab("content")}
@@ -537,7 +504,7 @@ export default function BlogDetail() {
               >
                 <span className="flex items-center justify-center gap-2">
                   <FaReadme className="w-4 h-4" />
-                  محتوى المقال
+                  {t("articleContent")}
                 </span>
               </button>
               <button
@@ -550,12 +517,11 @@ export default function BlogDetail() {
               >
                 <span className="flex items-center justify-center gap-2">
                   <BiComment className="w-4 h-4" />
-                  التعليقات ({comments.length})
+                  {t("comments")} ({comments.length})
                 </span>
               </button>
             </div>
 
-            {/* Content Area */}
             {activeTab === "content" && (
               <div className="card bg-white/80 backdrop-blur-lg shadow-2xl border border-gray-200/50">
                 <div className="card-body p-8">
@@ -567,60 +533,52 @@ export default function BlogDetail() {
               </div>
             )}
 
-            {/* Comments Area */}
             {activeTab === "comments" && (
               <div className="card bg-white/80 backdrop-blur-lg shadow-xl border border-gray-200/50">
                 <div className="card-body p-8">
-                  {/* Add Comment Form */}
-                  {blog ? (
+                  {session ? (
                     <div className="mb-8 p-6 bg-gradient-to-r from-emerald-50/80 to-emerald-50/80 rounded-2xl border border-emerald-100/50">
                       <h4 className="text-lg font-semibold text-gray-800 mb-4">
-                        أضف تعليقك
+                        {t("addYourComment")}
                       </h4>
                       <div className="flex gap-4">
-                        <div className="avatar flex-shrink-0 items-start justify-center gap-2">
+                        <div className="avatar flex-shrink-0">
                           <div className="w-12 h-12 rounded-full ring-2 ring-emerald-500 shadow-md">
                             <Image
-                              src={
-                                blog.author?.profilePicture ||
-                                "/images/default-avatar.png"
-                              }
-                              alt={blog.author?.name}
-                              className="object-contain"
-                              width={40}
-                              height={40}
+                              src={session.user.image || "/images/default-avatar.png"}
+                              alt={session.user.name}
+                              width={48}
+                              height={48}
+                              className="rounded-full"
                             />
                           </div>
-                          <p className="font-bold ">{blog.author?.name}</p>
                         </div>
                         <div className="flex-1">
                           <textarea
                             value={newComment}
                             onChange={(e) => setNewComment(e.target.value)}
-                            placeholder="شاركنا رأيك في هذا المقال..."
+                            placeholder={t("shareYourThoughts")}
                             className="textarea textarea-bordered w-full h-24 resize-none focus:ring-2 focus:ring-emerald-500/20 bg-white/80 backdrop-blur-sm"
                             maxLength={500}
                           />
                           <div className="flex justify-between items-center mt-3">
                             <span className="text-sm text-gray-500">
-                              {newComment.length}/500 حرف
+                              {newComment.length}/500 {t("characters")}
                             </span>
                             <button
                               onClick={handleAddComment}
-                              disabled={
-                                isSubmittingComment || !newComment.trim()
-                              }
+                              disabled={isSubmittingComment || !newComment.trim()}
                               className="btn btn-primary gap-2 disabled:opacity-50 shadow-md hover:shadow-lg transition-all duration-300"
                             >
                               {isSubmittingComment ? (
                                 <>
                                   <span className="loading loading-spinner loading-sm"></span>
-                                  جاري النشر...
+                                  {t("posting")}...
                                 </>
                               ) : (
                                 <>
                                   <BiComment className="w-4 h-4" />
-                                  نشر التعليق
+                                  {t("postComment")}
                                 </>
                               )}
                             </button>
@@ -632,27 +590,26 @@ export default function BlogDetail() {
                     <div className="text-center p-8 bg-gray-50/80 rounded-2xl border-2 border-dashed border-gray-300/50 mb-8 backdrop-blur-sm">
                       <BiComment className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                       <p className="text-gray-600 mb-4 text-lg">
-                        سجل دخولك لتتمكن من التعليق
+                        {t("loginToComment")}
                       </p>
                       <Link
                         href="/auth/signin"
                         className="btn btn-primary gap-2 shadow-md hover:shadow-lg transition-all duration-300"
                       >
-                        تسجيل الدخول
+                        {t("signIn")}
                       </Link>
                     </div>
                   )}
 
-                  {/* Comments List */}
                   <div className="space-y-6">
                     {comments.length === 0 ? (
                       <div className="text-center py-12">
                         <BiComment className="w-20 h-20 text-gray-300 mx-auto mb-4" />
                         <h4 className="text-xl font-semibold text-gray-600 mb-2">
-                          لا توجد تعليقات بعد
+                          {t("noCommentsYet")}
                         </h4>
                         <p className="text-gray-500 text-lg">
-                          كن أول من يعلق على هذا المقال!
+                          {t("beTheFirstToComment")}
                         </p>
                       </div>
                     ) : (
@@ -664,33 +621,27 @@ export default function BlogDetail() {
                           <div className="avatar flex-shrink-0">
                             <div className="w-12 h-12 rounded-full ring-2 ring-emerald-500/30 shadow-md">
                               <Image
-                                src={
-                                  comment.user?.profilePicture ||
-                                  "/images/default-avatar.png"
-                                }
-                                alt={comment.user?.name || "مستخدم"}
-                                className="object-contain"
+                                src={comment.user?.profilePicture || "/images/default-avatar.png"}
+                                alt={comment.user?.name || t("anonymousUser")}
                                 width={48}
                                 height={48}
+                                className="rounded-full"
                               />
                             </div>
                           </div>
                           <div className="flex-1">
                             <div className="flex items-center gap-3 mb-3">
                               <h5 className="font-semibold text-gray-800 text-lg">
-                                {comment.user?.name || "مستخدم مجهول"}
+                                {comment.user?.name || t("anonymousUser")}
                               </h5>
                               <span className="text-sm text-gray-500 bg-gray-100/80 px-2 py-1 rounded-full">
-                                {new Date(comment.createdAt).toLocaleDateString(
-                                  "en-US",
-                                  {
-                                    year: "numeric",
-                                    month: "short",
-                                    day: "numeric",
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                  }
-                                )}
+                                {new Date(comment.createdAt).toLocaleDateString("ar-SA", {
+                                  year: "numeric",
+                                  month: "short",
+                                  day: "numeric",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                })}
                               </span>
                             </div>
                             <p className="text-gray-700 leading-relaxed text-lg">
@@ -707,7 +658,6 @@ export default function BlogDetail() {
           </div>
         </div>
 
-        {/* Action Footer */}
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-8 p-6 bg-white/80 backdrop-blur-lg rounded-2xl shadow-2xl border border-gray-200/50">
           <div className="flex items-center gap-4">
             <button
@@ -724,7 +674,7 @@ export default function BlogDetail() {
                 <BiLike className="w-5 h-5" />
               )}
               <span className="font-medium">
-                {likeCount} {isLiked ? "معجب" : "إعجاب"}
+                {likeCount} {isLiked ? t("liked") : t("like")}
               </span>
             </button>
             <button
@@ -740,7 +690,7 @@ export default function BlogDetail() {
               ) : (
                 <BiBookmark className="w-5 h-5" />
               )}
-              {isBookmarked ? "محفوظ" : "حفظ"}
+              {isBookmarked ? t("saved") : t("save")}
             </button>
           </div>
 
@@ -750,13 +700,12 @@ export default function BlogDetail() {
               className="btn btn-primary gap-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 font-medium"
             >
               <FaEdit className="w-4 h-4" />
-              تعديل المقال
+              {t("editArticle")}
             </Link>
           )}
         </div>
       </div>
 
-      {/* Floating Action Button */}
       <div className="fixed bottom-6 right-6 z-40">
         <div className="flex flex-col gap-3">
           <button

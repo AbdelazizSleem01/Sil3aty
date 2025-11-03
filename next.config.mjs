@@ -34,8 +34,9 @@ const nextConfig = {
       {
         protocol: "https",
         hostname: "lh3.googleusercontent.com",
-      }
+      },
     ],
+    qualities: [75, 90], 
   },
   env: {
     MONGODB_URI: process.env.MONGODB_URI,

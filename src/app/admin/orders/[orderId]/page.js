@@ -117,7 +117,7 @@ const OrderDetails = () => {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="stat bg-base-100 rounded-2xl shadow-sm border">
+        <div className="stat bg-base-100 rounded-2xl shadow-sm border border-primary/40">
           <div className="stat-figure text-primary">
             <Hash className="w-6 h-6" />
           </div>
@@ -126,18 +126,22 @@ const OrderDetails = () => {
             {order._id}
           </div>
         </div>
-
-        <div className="stat bg-base-100 rounded-2xl shadow-sm border">
+        <div className="stat bg-base-100 rounded-2xl shadow-sm border border-primary/40">
           <div className="stat-figure text-primary">
             <DollarSign className="w-6 h-6" />
           </div>
-          <div className="stat-title">Total Amount</div>
+          <div className="stat-title">Amount Details</div>
           <div className="stat-value text-2xl text-primary">
-            ${order.totalPrice.toFixed(2)}
+            ${(order.finalTotal || order.totalPrice).toFixed(2)}
           </div>
-        </div>
-
-        <div className="stat bg-base-100 rounded-2xl shadow-sm border">
+          {order.discountCode && (
+            <div className="stat-desc text-success">
+              Coupon: {order.discountCode} (-$
+              {order.discountAmount?.toFixed(2) || "0.00"})
+            </div>
+          )}
+        </div>{" "}
+        <div className="stat bg-base-100 rounded-2xl shadow-sm border border-primary/40">
           <div className="stat-figure text-secondary">
             {getStatusIcon(order.status)}
           </div>
@@ -151,8 +155,7 @@ const OrderDetails = () => {
             </div>
           </div>
         </div>
-
-        <div className="stat bg-base-100 rounded-2xl shadow-sm border">
+        <div className="stat bg-base-100 rounded-2xl shadow-sm border border-primary/40">
           <div className="stat-figure text-secondary">
             <CreditCard className="w-6 h-6" />
           </div>
@@ -174,11 +177,49 @@ const OrderDetails = () => {
         </div>
       </div>
 
+      {/* Price Breakdown */}
+      {(order.discountAmount > 0 || order.shippingCost > 0) && (
+        <div className="card bg-base-100 shadow-sm border border-primary/40">
+          <div className="card-body">
+            <h3 className="card-title text-lg mb-4">Price Breakdown</h3>
+            <div className="space-y-2">
+              <div className="flex justify-between">
+                <span className="text-gray-600">Subtotal:</span>
+                <span>
+                  ${order.subTotal?.toFixed(2) || order.totalPrice.toFixed(2)}
+                </span>
+              </div>
+
+              {order.discountAmount > 0 && (
+                <div className="flex justify-between text-success">
+                  <span>Discount ({order.discountCode}):</span>
+                  <span>-${order.discountAmount.toFixed(2)}</span>
+                </div>
+              )}
+
+              {order.shippingCost > 0 && (
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Shipping:</span>
+                  <span>${order.shippingCost.toFixed(2)}</span>
+                </div>
+              )}
+
+              <div className="flex justify-between font-bold pt-2 border-t border-primary/60 mt-2">
+                <span>Final Total:</span>
+                <span className="text-primary">
+                  ${(order.finalTotal || order.totalPrice).toFixed(2)}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Customer Information */}
         <div className="lg:col-span-1 space-y-6">
           {/* Customer Card */}
-          <div className="card bg-base-100 shadow-sm border">
+          <div className="card bg-base-100 shadow-sm border border-primary/40">
             <div className="card-body">
               <div className="flex items-center gap-3 mb-4">
                 <User className="w-5 h-5 text-primary" />
@@ -206,7 +247,7 @@ const OrderDetails = () => {
           </div>
 
           {/* Shipping Address */}
-          <div className="card bg-base-100 shadow-sm border">
+          <div className="card bg-base-100 shadow-sm border border-primary/40">
             <div className="card-body">
               <div className="flex items-center gap-3 mb-4">
                 <MapPin className="w-5 h-5 text-primary" />
@@ -263,7 +304,7 @@ const OrderDetails = () => {
 
         {/* Order Items */}
         <div className="lg:col-span-2">
-          <div className="card bg-base-100 shadow-sm border">
+          <div className="card bg-base-100 shadow-sm border border-primary/40">
             <div className="card-body">
               <div className="flex items-center gap-3 mb-6">
                 <ShoppingCart className="w-5 h-5 text-primary" />
@@ -293,7 +334,7 @@ const OrderDetails = () => {
                         <td>
                           <div className="flex items-center gap-3">
                             <div className="avatar">
-                              <div className="w-12 h-12 rounded-lg border">
+                              <div className="w-12 h-12 rounded-lg border border-primary/40">
                                 <img
                                   src={item.image}
                                   alt={item.name}
@@ -309,7 +350,7 @@ const OrderDetails = () => {
                             {item.color && (
                               <div className="flex items-center gap-1">
                                 <div
-                                  className="w-3 h-3 rounded-full border"
+                                  className="w-3 h-3 rounded-full border border-primary/40"
                                   style={{ backgroundColor: item.color }}
                                 ></div>
                                 <span className="text-xs">{item.color}</span>
@@ -338,7 +379,7 @@ const OrderDetails = () => {
               </div>
 
               {/* Order Summary */}
-              <div className="border-t pt-4 mt-4">
+              <div className="border-t border-primary/40 pt-4 mt-4">
                 <div className="flex justify-between items-center text-lg font-bold">
                   <span>Total Amount:</span>
                   <span className="text-2xl text-primary">

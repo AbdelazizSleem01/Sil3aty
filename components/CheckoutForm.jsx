@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
 import axios from "axios";
 import {
@@ -15,8 +16,9 @@ import {
   CodeSquareIcon,
 } from "lucide-react";
 
-export default function CheckoutForm({ cartItems }) {
+export default function CheckoutForm({ cartItems, appliedCoupon, calculateFinalTotal }) {
   const router = useRouter();
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
 
   const [shippingAddress, setShippingAddress] = useState({
@@ -45,25 +47,26 @@ export default function CheckoutForm({ cartItems }) {
       const res = await axios.post("/api/orders", {
         shippingAddress,
         cartItems,
+        appliedCoupon,
+        finalTotal: parseFloat(cartTotal),
       });
 
-      toast.success("Order placed successfully!");
+      toast.success(t("orderPlacedSuccessfully"));
       router.push("/order-success");
     } catch (err) {
       toast.error(
         err.response?.data?.error ||
           err.response?.data?.message ||
           JSON.stringify(err.response?.data) ||
-          "Failed to place order"
+          t("failedToPlaceOrder")
       );
     } finally {
       setLoading(false);
     }
   };
 
-  const cartTotal = (cartItems || [])
-    .reduce((total, item) => total + item.product.price * item.quantity, 0)
-    .toFixed(2);
+  const cartTotal = (calculateFinalTotal() || (cartItems || [])
+    .reduce((total, item) => total + item.product.price * item.quantity, 0)).toFixed(2);
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
@@ -73,14 +76,14 @@ export default function CheckoutForm({ cartItems }) {
           <div className="p-2 bg-primary/10 text-primary rounded-lg">
             <MapPin className="w-6 h-6" />
           </div>
-          <h2 className="text-xl font-bold">Shipping Information</h2>
+          <h2 className="text-xl font-bold">{t("shippingInformation")}</h2>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="form-control">
             <label className="label">
               <span className="label-text flex items-center gap-1">
-                <User className="w-4 h-4" /> First Name
+                <User className="w-4 h-4" /> {t("firstName")}
               </span>
             </label>
             <input
@@ -96,7 +99,7 @@ export default function CheckoutForm({ cartItems }) {
           <div className="form-control">
             <label className="label">
               <span className="label-text flex items-center gap-1">
-                <User className="w-4 h-4" /> Last Name
+                <User className="w-4 h-4" /> {t("lastName")}
               </span>
             </label>
             <input
@@ -112,7 +115,7 @@ export default function CheckoutForm({ cartItems }) {
           <div className="form-control md:col-span-2">
             <label className="label">
               <span className="label-text flex items-center gap-1">
-                <MapPinHouseIcon className="w-4 h-4" /> Street Address
+                <MapPinHouseIcon className="w-4 h-4" /> {t("streetAddress")}
               </span>
             </label>
             <input
@@ -128,7 +131,7 @@ export default function CheckoutForm({ cartItems }) {
           <div className="form-control md:col-span-2">
             <label className="label">
               <span className="label-text flex items-center gap-1">
-                Address Line 2 (Optional)
+                {t("addressLine2Optional")}
               </span>
             </label>
             <input
@@ -143,7 +146,7 @@ export default function CheckoutForm({ cartItems }) {
           <div className="form-control">
             <label className="label">
               <span className="label-text flex items-center gap-1">
-                <MapPinIcon className="w-4 h-4" /> City
+                <MapPinIcon className="w-4 h-4" /> {t("city")}
               </span>
             </label>
             <input
@@ -159,7 +162,7 @@ export default function CheckoutForm({ cartItems }) {
           <div className="form-control">
             <label className="label">
               <span className="label-text flex items-center gap-1">
-                <CodeSquareIcon className="w-4 h-4" /> Postal Code
+                <CodeSquareIcon className="w-4 h-4" /> {t("postalCode")}
               </span>
             </label>
             <input
@@ -174,7 +177,7 @@ export default function CheckoutForm({ cartItems }) {
 
           <div className="form-control md:col-span-2">
             <label className="label">
-              <span className="label-text flex items-center gap-1">State</span>
+              <span className="label-text flex items-center gap-1">{t("state")}</span>
             </label>
             <input
               type="text"
@@ -189,7 +192,7 @@ export default function CheckoutForm({ cartItems }) {
           <div className="form-control md:col-span-2">
             <label className="label">
               <span className="label-text flex items-center gap-1">
-                <Phone className="w-4 h-4" /> Phone
+                <Phone className="w-4 h-4" /> {t("phone")}
               </span>
             </label>
             <input
@@ -205,7 +208,7 @@ export default function CheckoutForm({ cartItems }) {
           <div className="form-control md:col-span-2">
             <label className="label">
               <span className="label-text flex items-center gap-1">
-                <Mail className="w-4 h-4" /> Email
+                <Mail className="w-4 h-4" /> {t("email")}
               </span>
             </label>
             <input
@@ -230,7 +233,7 @@ export default function CheckoutForm({ cartItems }) {
         ) : (
           <>
             <ShoppingCart className="w-5 h-5" />
-            Place Order - ${cartTotal}
+            {t("placeOrder")} - ${cartTotal}
           </>
         )}
       </button>

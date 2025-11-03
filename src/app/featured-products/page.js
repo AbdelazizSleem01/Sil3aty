@@ -5,14 +5,13 @@ import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import { ShoppingCart, Star, Zap, Clock, Tag } from "lucide-react";
 import { useCart } from "../../../components/CartContext";
+import { useTranslation } from "react-i18next";
 
 async function getFeaturedProducts() {
   try {
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/api/products/featured`,
-      {
-        next: { revalidate: 3600 },
-      }
+      { next: { revalidate: 3600 } }
     );
     if (!res.ok) throw new Error("Failed to fetch products");
     return await res.json();
@@ -34,6 +33,8 @@ async function getCategories() {
 }
 
 export default function FeaturedProductsPage() {
+  const { t, i18n } = useTranslation();
+  const isRTL = i18n.language === "ar";
   const { updateCartCount } = useCart();
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -66,12 +67,12 @@ export default function FeaturedProductsPage() {
 
       if (!response.ok) throw new Error("Failed to add product to cart");
 
-      toast.success("Product added to cart!");
+      toast.success(t("productAddedToCart"));
       await updateCartCount();
       setAnimatingProductId(productId);
       setTimeout(() => setAnimatingProductId(null), 500);
     } catch (error) {
-      toast.error("Failed to add product to cart");
+      toast.error(t("failedToAddToCart"));
     }
   };
 
@@ -113,44 +114,32 @@ export default function FeaturedProductsPage() {
   };
 
   return (
-    <section className="min-h-screen bg-gradient-to-br from-emerald-50 to-green-50 py-8 md:py-12 lg:py-16">
+    <section className={`min-h-screen bg-gradient-to-br from-emerald-50 to-green-50 py-12 md:py-12 lg:py-16 pt- ${isRTL ? "font-arabic" : ""}`}>
       <div className="container mx-auto px-4">
         {/* Header Section */}
         <div className="text-center mb-16">
           <div className="relative inline-block mb-6">
             <div className="absolute -inset-4 bg-gradient-to-r from-emerald-400 to-green-500 rounded-full blur-xl opacity-20 animate-pulse"></div>
-            <h1 className="relative text-5xl md:text-6xl font-bold bg-gradient-to-r from-emerald-600 to-green-600 bg-clip-text text-transparent">
-              Featured Collection
+            <h1 className="relative text-5xl md:text-6xl pb-4 font-bold bg-gradient-to-r from-emerald-600 to-green-600 bg-clip-text text-transparent">
+              {t("featuredCollection")}
             </h1>
           </div>
 
           <div className="flex items-center justify-center gap-4 mb-4">
-            <Star
-              className="w-8 h-8 text-emerald-500 animate-pulse"
-              fill="currentColor"
-            />
-            <p className="text-xl text-gray-700 font-semibold">
-              Premium Selection
-            </p>
-            <Zap
-              className="w-8 h-8 text-green-500 animate-bounce"
-              fill="currentColor"
-            />
+            <Star className="w-8 h-8 text-emerald-500 animate-pulse" fill="currentColor" />
+            <p className="text-xl text-gray-700 font-semibold">{t("premiumSelection")}</p>
+            <Zap className="w-8 h-8 text-green-500 animate-bounce" fill="currentColor" />
           </div>
 
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Discover our handpicked selection of premium products with exclusive
-            features and special offers
+            {t("discoverHandpicked")}
           </p>
         </div>
 
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
             {[...Array(8)].map((_, index) => (
-              <div
-                key={index}
-                className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 animate-pulse"
-              >
+              <div key={index} className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 animate-pulse">
                 <div className="skeleton h-64 w-full rounded-t-2xl"></div>
                 <div className="p-6">
                   <div className="skeleton h-6 w-3/4 mb-2"></div>
@@ -167,16 +156,14 @@ export default function FeaturedProductsPage() {
                 <Tag className="w-10 h-10 text-emerald-400" />
               </div>
               <h3 className="text-xl font-semibold text-gray-700 mb-2">
-                No Featured Products Available
+                {t("noFeaturedProducts")}
               </h3>
-              <p className="text-gray-500 mb-6">
-                Check back later for our premium selections!
-              </p>
+              <p className="text-gray-500 mb-6">{t("checkBackLater")}</p>
               <Link
                 href="/products"
                 className="btn bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white btn-lg w-full border-none"
               >
-                Browse All Products
+                {t("browseAllProducts")}
               </Link>
             </div>
           </div>
@@ -189,10 +176,7 @@ export default function FeaturedProductsPage() {
                 product.discountPrice < product.price;
 
               const discountPercent = hasDiscount
-                ? calculateDiscountPercentage(
-                    product.price,
-                    product.discountPrice
-                  )
+                ? calculateDiscountPercentage(product.price, product.discountPrice)
                 : 0;
 
               const discountIntensity = getDiscountIntensity(discountPercent);
@@ -227,18 +211,8 @@ export default function FeaturedProductsPage() {
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-gray-400">
-                          <svg
-                            className="w-16 h-16"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth="2"
-                              d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                            />
+                          <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                           </svg>
                         </div>
                       )}
@@ -270,7 +244,7 @@ export default function FeaturedProductsPage() {
                           <div className="absolute inset-0 bg-current rounded-full animate-ping opacity-75"></div>
                           <div className="relative flex items-center gap-1 px-3 py-2 rounded-full text-white font-bold text-sm z-10">
                             <Zap className="w-4 h-4" fill="currentColor" />
-                            {discountPercent}% OFF
+                            {discountPercent}{t("off")}
                           </div>
                         </div>
                       </div>
@@ -279,7 +253,7 @@ export default function FeaturedProductsPage() {
                     {/* Featured Badge */}
                     <div className="absolute top-4 right-4">
                       <div className="bg-gradient-to-r from-emerald-500 to-green-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
-                        FEATURED
+                        {t("featured")}
                       </div>
                     </div>
 
@@ -295,7 +269,7 @@ export default function FeaturedProductsPage() {
                     {hasDiscount && discountPercent >= 50 && (
                       <div className="absolute bottom-4 right-4">
                         <div className="flex items-center gap-1 bg-red-600 text-white px-3 py-1 rounded-full text-xs font-bold animate-pulse">
-                          🔥 HOT DEAL
+                          {t("hotDeal")}
                         </div>
                       </div>
                     )}
@@ -304,14 +278,12 @@ export default function FeaturedProductsPage() {
                   {/* Product Info */}
                   <div className="p-6 flex flex-col flex-grow">
                     <h3 className="font-semibold text-lg text-gray-800 mb-2 line-clamp-2 group-hover:text-emerald-600 transition-colors">
-                      <Link href={`/product/${product._id}`}>
-                        {product.name}
-                      </Link>
+                      <Link href={`/product/${product._id}`}>{product.name}</Link>
                     </h3>
 
                     {product.brand?.name && (
                       <p className="text-sm text-gray-500 mb-3">
-                        by {product.brand.name}
+                        {t("by")} {product.brand.name}
                       </p>
                     )}
 
@@ -327,10 +299,7 @@ export default function FeaturedProductsPage() {
                     )}
 
                     <div className="mb-3">
-                      {renderStars(
-                        product.averageRating || 0,
-                        product.numReviews || 0
-                      )}
+                      {renderStars(product.averageRating || 0, product.numReviews || 0)}
                     </div>
 
                     <div className="flex items-center justify-between mb-4">
@@ -356,11 +325,10 @@ export default function FeaturedProductsPage() {
                       {hasDiscount && (
                         <div className="text-right">
                           <p className="text-sm font-semibold text-red-600">
-                            Save $
-                            {(product.price - product.discountPrice).toFixed(2)}
+                            {t("save")} ${(product.price - product.discountPrice).toFixed(2)}
                           </p>
                           <p className="text-xs text-gray-500">
-                            You save {discountPercent}%
+                            {t("youSave")} {discountPercent}%
                           </p>
                         </div>
                       )}
@@ -370,8 +338,8 @@ export default function FeaturedProductsPage() {
                     {product.countInStock > 0 && product.countInStock < 10 && (
                       <div className="mb-4">
                         <div className="flex justify-between text-xs text-gray-500 mb-1">
-                          <span>Limited Stock</span>
-                          <span>{product.countInStock} left</span>
+                          <span>{t("limitedStock")}</span>
+                          <span>{product.countInStock} {t("left")}</span>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-2">
                           <div
@@ -403,12 +371,12 @@ export default function FeaturedProductsPage() {
                         {animatingProductId === product._id ? (
                           <>
                             <div className="loading loading-spinner loading-sm"></div>
-                            Added!
+                            {t("added")}
                           </>
                         ) : (
                           <>
                             <ShoppingCart className="w-5 h-5" />
-                            Add to Cart
+                            {t("addToCart")}
                           </>
                         )}
                       </button>
@@ -418,7 +386,7 @@ export default function FeaturedProductsPage() {
                           href={`/product/${product._id}`}
                           className="text-sm text-emerald-600 hover:text-emerald-700 transition-colors font-medium"
                         >
-                          Quick View →
+                          {t("quickView")} →
                         </Link>
                       </div>
                     </div>
@@ -429,113 +397,46 @@ export default function FeaturedProductsPage() {
           </div>
         )}
 
-        {/* Special Banner for Featured Collection */}
         {featuredProducts.length > 0 && (
           <div className="mt-16 text-center">
             <div className="bg-gradient-to-r from-emerald-500 to-green-600 rounded-2xl p-8 text-white shadow-2xl">
-              <h3 className="text-2xl font-bold mb-2">⭐ Premium Quality</h3>
+              <h3 className="text-2xl font-bold mb-2">{t("premiumQuality")}</h3>
               <p className="text-lg mb-4 opacity-90">
-                Handpicked products with exceptional quality and exclusive
-                features
+                {t("handpickedProducts")}
               </p>
               <div className="flex items-center justify-center gap-2 text-sm opacity-80">
                 <Star className="w-4 h-4" fill="currentColor" />
-                <span>Curated Selection</span>
+                <span>{t("curatedSelection")}</span>
               </div>
             </div>
           </div>
         )}
       </div>
 
-      {/* Custom CSS for Discount Animations */}
       <style jsx>{`
         .discount-high-animation {
-          background: linear-gradient(
-            45deg,
-            transparent 30%,
-            rgba(239, 68, 68, 0.1) 50%,
-            transparent 70%
-          );
+          background: linear-gradient(45deg, transparent 30%, rgba(239, 68, 68, 0.1) 50%, transparent 70%);
           background-size: 200% 200%;
           animation: discountHigh 2s ease-in-out infinite;
         }
-
         .discount-medium-animation {
-          background: linear-gradient(
-            45deg,
-            transparent 30%,
-            rgba(249, 115, 22, 0.1) 50%,
-            transparent 70%
-          );
+          background: linear-gradient(45deg, transparent 30%, rgba(249, 115, 22, 0.1) 50%, transparent 70%);
           background-size: 200% 200%;
           animation: discountMedium 3s ease-in-out infinite;
         }
-
         .discount-low-animation {
-          background: linear-gradient(
-            45deg,
-            transparent 30%,
-            rgba(245, 158, 11, 0.1) 50%,
-            transparent 70%
-          );
+          background: linear-gradient(45deg, transparent 30%, rgba(245, 158, 11, 0.1) 50%, transparent 70%);
           background-size: 200% 200%;
           animation: discountLow 4s ease-in-out infinite;
         }
-
-        .discount-badge-high {
-          background: linear-gradient(135deg, #ef4444, #dc2626);
-          box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
-          border-radius: 9999px;
-        }
-
-        .discount-badge-medium {
-          background: linear-gradient(135deg, #f97316, #ea580c);
-          box-shadow: 0 4px 15px rgba(249, 115, 22, 0.4);
-          border-radius: 9999px;
-        }
-
-        .discount-badge-low {
-          background: linear-gradient(135deg, #f59e0b, #d97706);
-          box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
-          border-radius: 9999px;
-        }
-
-        @keyframes discountHigh {
-          0%,
-          100% {
-            background-position: 0% 50%;
-          }
-          50% {
-            background-position: 100% 50%;
-          }
-        }
-
-        @keyframes discountMedium {
-          0%,
-          100% {
-            background-position: 0% 50%;
-          }
-          50% {
-            background-position: 100% 50%;
-          }
-        }
-
-        @keyframes discountLow {
-          0%,
-          100% {
-            background-position: 0% 50%;
-          }
-          50% {
-            background-position: 100% 50%;
-          }
-        }
-
-        .line-clamp-2 {
-          display: -webkit-box;
-          -webkit-line-clamp: 2;
-          -webkit-box-orient: vertical;
-          overflow: hidden;
-        }
+        .discount-badge-high { background: linear-gradient(135deg, #ef4444, #dc2626); box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4); }
+        .discount-badge-medium { background: linear-gradient(135deg, #f97316, #ea580c); box-shadow: 0 4px 15px rgba(249, 115, 22, 0.4); }
+        .discount-badge-low { background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4); }
+        @keyframes discountHigh { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+        @keyframes discountMedium { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+        @keyframes discountLow { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+        .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .font-arabic { font-family: 'Cairo', 'Geeza Pro', sans-serif; }
       `}</style>
     </section>
   );

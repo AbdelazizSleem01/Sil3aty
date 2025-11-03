@@ -272,10 +272,12 @@ body {
 }
 
 .animate-scroll-left {
-  animation: scroll-left 30s linear infinite;
+  display: flex;
+  width: max-content;
+  animation: scroll-left 25s linear infinite;
 }
 
-.animate-scroll-left:hover {
+.hover\:pause-scroll:hover {
   animation-play-state: paused;
 }
 

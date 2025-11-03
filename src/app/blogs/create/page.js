@@ -1,7 +1,8 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { useTranslation } from "react-i18next";
 import {
   FaSave,
   FaTimes,
@@ -14,6 +15,7 @@ import {
   FaLightbulb,
   FaEdit,
   FaEye,
+  FaLink,
 } from "react-icons/fa";
 import {
   HiOutlineSparkles,
@@ -23,16 +25,19 @@ import {
   HiCursorClick,
 } from "react-icons/hi";
 import SimpleEditor from "../../../../components/SimpleEditor";
+import TagInput from "../../../../components/TagInput";
 
 export default function CreateBlog() {
+  const { t } = useTranslation();
   const { data: session } = useSession();
   const router = useRouter();
   const [content, setContent] = useState("");
   const [title, setTitle] = useState("");
+  const [slug, setSlug] = useState("");
   const [excerpt, setExcerpt] = useState("");
   const [coverImage, setCoverImage] = useState(null);
-  const [tags, setTags] = useState("");
-  const [topics, setTopics] = useState("");
+  const [tags, setTags] = useState([]);
+  const [topics, setTopics] = useState([]);
   const [difficulty, setDifficulty] = useState("beginner");
   const [featured, setFeatured] = useState(false);
   const [published, setPublished] = useState(false);
@@ -41,11 +46,26 @@ export default function CreateBlog() {
   const [error, setError] = useState("");
   const [imagePreview, setImagePreview] = useState("");
 
+  // Auto-generate slug from title
+  useEffect(() => {
+    if (title) {
+      const generatedSlug = title
+        .toLowerCase()
+        .trim()
+        .replace(/[^\w\s-]/g, '') // Remove special characters
+        .replace(/[\s_-]+/g, '-') // Replace spaces, underscores with hyphens
+        .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
+      setSlug(generatedSlug);
+    } else {
+      setSlug("");
+    }
+  }, [title]);
+
   const handleImageChange = (e) => {
-    const file = e.target.files[0];
+    const file = e.target.files?.[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
-        setError("Image size should be less than 5MB");
+        setError(t("imageSizeTooLarge"));
         return;
       }
       setCoverImage(file);
@@ -57,12 +77,12 @@ export default function CreateBlog() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!session) {
-      setError("You must be logged in to create a blog post");
+      setError(t("loginRequired"));
       return;
     }
 
     if (!title || !content || !excerpt || !coverImage) {
-      setError("Please fill in all required fields");
+      setError(t("fillRequiredFields"));
       return;
     }
 
@@ -75,8 +95,8 @@ export default function CreateBlog() {
       formData.append("content", content);
       formData.append("excerpt", excerpt);
       formData.append("coverImage", coverImage);
-      formData.append("tags", tags);
-      formData.append("topics", topics);
+      formData.append("tags", JSON.stringify(tags));
+      formData.append("topics", JSON.stringify(topics));
       formData.append("difficulty", difficulty);
       formData.append("featured", featured.toString());
       formData.append("published", published.toString());
@@ -90,15 +110,15 @@ export default function CreateBlog() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || "Failed to create blog post");
+        throw new Error(data.message || t("failedToCreateBlog"));
       }
 
       if (imagePreview) {
         URL.revokeObjectURL(imagePreview);
       }
       router.push(`/blogs/${data.blog.slug}`);
-    } catch (err) {
-      setError(err.message);
+    } catch (error) {
+      setError(error.message);
     } finally {
       setIsSubmitting(false);
     }
@@ -115,10 +135,10 @@ export default function CreateBlog() {
               </div>
             </div>
             <h2 className="card-title justify-center text-2xl font-bold text-error mb-2">
-              Access Required
+              {t("accessRequired")}
             </h2>
             <p className="text-gray-600 mb-4">
-              Please sign in to create blog posts
+              {t("signInToCreateBlogs")}
             </p>
             <div className="card-actions justify-center">
               <button
@@ -126,7 +146,7 @@ export default function CreateBlog() {
                 className="btn btn-primary gap-2"
               >
                 <FaRocket className="w-4 h-4" />
-                Sign In
+                {t("signIn")}
               </button>
             </div>
           </div>
@@ -146,11 +166,11 @@ export default function CreateBlog() {
           </div>
           <h1 className="text-4xl font-bold text-gray-800 mb-2 flex items-center justify-center gap-3">
             <HiOutlineSparkles className="text-yellow-500" />
-            Create New Blog Post
-            <span className="badge badge-primary badge-md">Draft</span>
+            {t("createNewBlogPost")}
+            <span className="badge badge-primary badge-md">{t("draft")}</span>
           </h1>
           <p className="text-gray-600 text-md">
-            Share your insights and stories with the community
+            {t("shareInsightsWithCommunity")}
           </p>
         </div>
 
@@ -170,7 +190,7 @@ export default function CreateBlog() {
               />
             </svg>
             <div>
-              <h3 className="font-bold">Oops! Something went wrong</h3>
+              <h3 className="font-bold">{t("errorOccurred")}</h3>
               <div className="text-xs">{error}</div>
             </div>
           </div>
@@ -183,7 +203,7 @@ export default function CreateBlog() {
                 <label className="label">
                   <span className="label-text text-md font-semibold flex items-center gap-2">
                     <FaHeading className="w-4 h-4 text-primary" />
-                    Blog Title
+                    {t("blogTitle")}
                     <span className="text-error">*</span>
                   </span>
                 </label>
@@ -191,13 +211,34 @@ export default function CreateBlog() {
                   type="text"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Catchy title that grabs attention..."
+                  placeholder={t("blogTitlePlaceholder")}
                   className="input input-bordered w-full text-md py-3 focus:ring-2 focus:ring-primary/20 transition-all duration-300"
                   required
                 />
                 <label className="label">
                   <span className="label-text-alt text-gray-500">
-                    Make it engaging and descriptive
+                    {t("makeTitleEngaging")}
+                  </span>
+                </label>
+              </div>
+
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text text-md font-semibold flex items-center gap-2">
+                    <FaLink className="w-4 h-4 text-primary" />
+                    {t("slug")}
+                  </span>
+                </label>
+                <input
+                  type="text"
+                  value={slug}
+                  onChange={(e) => setSlug(e.target.value)}
+                  placeholder={t("slugPlaceholder") || "blog-slug"}
+                  className="input input-bordered w-full focus:ring-2 focus:ring-primary/20 transition-all duration-300"
+                />
+                <label className="label">
+                  <span className="label-text-alt text-gray-500">
+                    {t("slugDescription") || "سيتم إنشاؤه تلقائياً من العنوان، يمكنك تعديله"}
                   </span>
                 </label>
               </div>
@@ -206,21 +247,21 @@ export default function CreateBlog() {
                 <label className="label">
                   <span className="label-text text-md font-semibold flex items-center gap-2">
                     <FaParagraph className="w-4 h-4 text-primary" />
-                    Short Description
+                    {t("shortDescription")}
                     <span className="text-error">*</span>
                   </span>
                 </label>
                 <textarea
                   value={excerpt}
                   onChange={(e) => setExcerpt(e.target.value)}
-                  placeholder="Brief summary of what readers can expect..."
+                  placeholder={t("excerptPlaceholder")}
                   className="textarea textarea-bordered w-full h-24 resize-none focus:ring-2 focus:ring-primary/20 transition-all duration-300"
                   maxLength={200}
                   required
                 />
                 <label className="label">
                   <span className="label-text-alt text-gray-500">
-                    {excerpt.length}/200 characters
+                    {excerpt.length}/200 {t("characters")}
                   </span>
                 </label>
               </div>
@@ -229,7 +270,7 @@ export default function CreateBlog() {
                 <label className="label">
                   <span className="label-text text-md font-semibold flex items-center gap-2">
                     <HiPhotograph className="w-4 h-4 text-primary" />
-                    Cover Image
+                    {t("coverImage")}
                     <span className="text-error">*</span>
                   </span>
                 </label>
@@ -238,7 +279,7 @@ export default function CreateBlog() {
                   <div className="relative group">
                     <img
                       src={imagePreview}
-                      alt="Cover preview"
+                      alt={t("coverPreview")}
                       className="w-full h-48 object-cover rounded-md border-2 border-primary/20 transition-all duration-300 group-hover:border-primary/40"
                     />
                     <div className="absolute top-2 right-2">
@@ -268,10 +309,10 @@ export default function CreateBlog() {
                     <label htmlFor="coverImage" className="cursor-pointer">
                       <FaUpload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                       <p className="text-gray-600 font-medium mb-2">
-                        Click to upload cover image
+                        {t("clickToUploadCover")}
                       </p>
                       <p className="text-gray-500 text-sm">
-                        PNG, JPG, WEBP up to 5MB
+                        PNG, JPG, WEBP {t("upTo5MB")}
                       </p>
                     </label>
                   </div>
@@ -282,7 +323,7 @@ export default function CreateBlog() {
                 <label className="label">
                   <span className="label-text text-md font-semibold flex items-center gap-2">
                     <FaEdit className="w-4 h-4 text-primary" />
-                    Blog Content
+                    {t("blogContent")}
                     <span className="text-error">*</span>
                   </span>
                 </label>
@@ -291,7 +332,7 @@ export default function CreateBlog() {
                 </div>
                 <label className="label">
                   <span className="label-text-alt text-gray-500">
-                    Use the formatting toolbar for rich text editing
+                    {t("useFormattingToolbar")}
                   </span>
                 </label>
               </div>
@@ -301,19 +342,18 @@ export default function CreateBlog() {
                   <label className="label">
                     <span className="label-text text-md font-semibold flex items-center gap-2">
                       <HiHashtag className="w-4 h-4 text-primary" />
-                      Tags
+                      {t("tags")}
                     </span>
                   </label>
-                  <input
-                    type="text"
-                    value={tags}
-                    onChange={(e) => setTags(e.target.value)}
-                    placeholder="technology, web-development, design..."
-                    className="input input-bordered w-full focus:ring-2 focus:ring-primary/20 transition-all duration-300"
+                  <TagInput
+                    tags={tags}
+                    setTags={setTags}
+                    placeholder={t("tagsPlaceholder") || "اكتب علامة واضغط Enter"}
+                    maxTags={10}
                   />
                   <label className="label">
                     <span className="label-text-alt text-gray-500">
-                      Separate tags with commas
+                      {t("pressEnterToAddTags") || "اكتب العلامة واضغط Enter للإضافة"}
                     </span>
                   </label>
                 </div>
@@ -322,19 +362,18 @@ export default function CreateBlog() {
                   <label className="label">
                     <span className="label-text text-md font-semibold flex items-center gap-2">
                       <FaTag className="w-4 h-4 text-primary" />
-                      Topics
+                      {t("topics")}
                     </span>
                   </label>
-                  <input
-                    type="text"
-                    value={topics}
-                    onChange={(e) => setTopics(e.target.value)}
-                    placeholder="React, Node.js, Design, Marketing..."
-                    className="input input-bordered w-full focus:ring-2 focus:ring-primary/20 transition-all duration-300"
+                  <TagInput
+                    tags={topics}
+                    setTags={setTopics}
+                    placeholder={t("topicsPlaceholder") || "اكتب موضوع واضغط Enter"}
+                    maxTags={5}
                   />
                   <label className="label">
                     <span className="label-text-alt text-gray-500">
-                      Main topics covered in your post
+                      {t("pressEnterToAddTopics") || "اكتب الموضوع واضغط Enter للإضافة"}
                     </span>
                   </label>
                 </div>
@@ -344,7 +383,7 @@ export default function CreateBlog() {
                 <div className="form-control">
                   <label className="label">
                     <span className="label-text text-md font-semibold">
-                      Difficulty Level
+                      {t("difficultyLevel")}
                     </span>
                   </label>
                   <select
@@ -352,28 +391,28 @@ export default function CreateBlog() {
                     onChange={(e) => setDifficulty(e.target.value)}
                     className="select select-bordered w-full focus:ring-2 focus:ring-primary/20"
                   >
-                    <option value="beginner">مبتدئ</option>
-                    <option value="intermediate">متوسط</option>
-                    <option value="advanced">متقدم</option>
+                    <option value="beginner">{t("beginner")}</option>
+                    <option value="intermediate">{t("intermediate")}</option>
+                    <option value="advanced">{t("advanced")}</option>
                   </select>
                 </div>
 
                 <div className="form-control">
                   <label className="label">
                     <span className="label-text text-md font-semibold">
-                      Author Bio
+                      {t("authorBio")}
                     </span>
                   </label>
                   <textarea
                     value={authorBio}
                     onChange={(e) => setAuthorBio(e.target.value)}
-                    placeholder="Brief bio about yourself..."
+                    placeholder={t("bioPlaceholder")}
                     className="textarea textarea-bordered w-full h-20 resize-none focus:ring-2 focus:ring-primary/20"
                     maxLength={200}
                   />
                   <label className="label">
                     <span className="label-text-alt text-gray-500">
-                      {authorBio.length}/200 characters
+                      {authorBio.length}/200 {t("characters")}
                     </span>
                   </label>
                 </div>
@@ -382,39 +421,39 @@ export default function CreateBlog() {
               <div className="card bg-base-200/50 p-6 rounded-xl">
                 <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                   <FaRocket className="w-4 h-4 text-primary" />
-                  Publishing Options
+                  {t("publishingOptions")}
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="form-control">
-                    <label className="label cursor-pointer">
-                      <span className="label-text">Featured Post</span>
+                    <label className="label cursor-pointer block mb-2">
+                      <span className="label-text">{t("featuredPost")}</span>
                       <input
                         type="checkbox"
                         checked={featured}
                         onChange={(e) => setFeatured(e.target.checked)}
-                        className="checkbox checkbox-primary"
+                        className="checkbox checkbox-primary mx-2"
                       />
                     </label>
                     <label className="label">
                       <span className="label-text-alt text-gray-500 text-sm">
-                        Show this post prominently on the homepage
+                        {t("featuredDescription")}
                       </span>
                     </label>
                   </div>
 
                   <div className="form-control">
-                    <label className="label cursor-pointer">
-                      <span className="label-text">Publish Immediately</span>
+                    <label className="label cursor-pointer block mb-2">
+                      <span className="label-text">{t("publishImmediately")}</span>
                       <input
                         type="checkbox"
                         checked={published}
                         onChange={(e) => setPublished(e.target.checked)}
-                        className="checkbox checkbox-primary"
+                        className="checkbox checkbox-primary mx-2"
                       />
                     </label>
                     <label className="label">
                       <span className="label-text-alt text-gray-500 text-sm">
-                        Make this post visible to all users
+                        {t("publishDescription")}
                       </span>
                     </label>
                   </div>
@@ -424,7 +463,7 @@ export default function CreateBlog() {
               <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-6 border-t">
                 <div className="flex items-center gap-2 text-sm text-gray-500">
                   <FaLightbulb className="w-4 h-4 text-yellow-500" />
-                  Tip: Preview your post before publishing
+                  {t("previewTip")}
                 </div>
 
                 <div className="flex gap-3">
@@ -434,7 +473,7 @@ export default function CreateBlog() {
                     className="btn gap-2 hover:bg-gray-100 transition-all duration-300"
                   >
                     <FaTimes className="w-4 h-4" />
-                    Cancel
+                    {t("cancel")}
                   </button>
                   <button
                     type="submit"
@@ -444,12 +483,12 @@ export default function CreateBlog() {
                     {isSubmitting ? (
                       <>
                         <span className="loading loading-spinner"></span>
-                        Publishing...
+                        {t("publishing")}
                       </>
                     ) : (
                       <>
                         <FaRocket className="w-4 h-4" />
-                        Publish Blog
+                        {t("publishBlog")}
                       </>
                     )}
                   </button>
@@ -464,7 +503,7 @@ export default function CreateBlog() {
             <div className="stat-figure text-primary">
               <FaHeading className="w-4 h-4" />
             </div>
-            <div className="stat-title text-md font-bold">Title Length</div>
+            <div className="stat-title text-md font-bold">{t("titleLength")}</div>
             <div className="stat-value text-sm">{title.length}</div>
           </div>
 
@@ -472,7 +511,7 @@ export default function CreateBlog() {
             <div className="stat-figure text-secondary">
               <FaParagraph className="w-4 h-4" />
             </div>
-            <div className="stat-title text-md font-bold">Content Words</div>
+            <div className="stat-title text-md font-bold">{t("contentWords")}</div>
             <div className="stat-value text-sm">
               {
                 content
@@ -487,9 +526,9 @@ export default function CreateBlog() {
             <div className="stat-figure text-accent">
               <FaTag className="w-4 h-4" />
             </div>
-            <div className="stat-title text-md font-bold">Tags Added</div>
+            <div className="stat-title text-md font-bold">{t("tagsAdded")}</div>
             <div className="stat-value text-sm">
-              {tags ? tags.split(",").length : 0}
+              {tags.length}
             </div>
           </div>
         </div>

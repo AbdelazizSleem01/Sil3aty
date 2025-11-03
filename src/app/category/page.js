@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { toast } from "react-toastify";
+import { useTranslation } from "react-i18next";
 import {
   FaBox,
   FaSpinner,
@@ -14,6 +15,7 @@ import {
 } from "react-icons/fa";
 
 export default function CategoriesPage() {
+  const { t } = useTranslation();
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -40,14 +42,12 @@ export default function CategoriesPage() {
         <div className="text-center mb-20">
           <div className="flex justify-center items-center gap-3 mb-4">
             <FaLayerGroup className="text-4xl text-primary" />
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">
-              Explore Collections
+            <h1 className="text-4xl md:text-5xl pb-2 lg:text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">
+              {t("exploreCollections")}
             </h1>
           </div>
           <p className="text-lg text-base-content/60 max-w-2xl mx-auto flex items-center justify-center gap-2">
-            <FaSearch className="text-primary" />
-            Discover our curated selection of premium products organized by
-            category
+            {t("discoverCuratedCategories")}
           </p>
           <div className="divider w-24 mx-auto mt-6 h-1 bg-gradient-to-r from-primary to-secondary rounded-full"></div>
         </div>
@@ -89,6 +89,8 @@ export default function CategoriesPage() {
                             alt={category.name}
                             width={100}
                             height={100}
+                              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+
                             className="w-full h-full object-cover rounded-md group-hover:scale-110 transition-transform duration-500"
                           />
                         ) : (
@@ -105,7 +107,7 @@ export default function CategoriesPage() {
                       </p>
 
                       <div className="flex items-center gap-2 text-sm text-emerald-600 font-semibold opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-y-2 group-hover:translate-y-0">
-                        View Collection
+                        {t("viewCollection")}
                         <FaArrowRight className="text-xs group-hover:translate-x-1 transition-transform duration-300" />
                       </div>
                     </div>
@@ -143,7 +145,7 @@ export default function CategoriesPage() {
                       </p>
 
                       <div className="flex items-center gap-2 text-sm text-emerald-600 font-semibold opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-y-2 group-hover:translate-y-0">
-                        View Collection
+                        {t("viewCollection")}
                         <FaArrowRight className="text-xs group-hover:translate-x-1 transition-transform duration-300" />
                       </div>
                     </div>

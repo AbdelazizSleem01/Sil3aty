@@ -13,6 +13,8 @@ import {
   FaUserPlus,
   FaExclamationCircle,
   FaSync,
+  FaTrash,
+  FaKey,
   FaIdCard,
   FaImage,
 } from "react-icons/fa";
@@ -29,12 +31,12 @@ export default function Users() {
   const [currentPage, setCurrentPage] = useState(1);
   const usersPerPage = 10;
 
-    useEffect(() => {
+  useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm]);
 
   useEffect(() => {
-    if (status === "loading") return; 
+    if (status === "loading") return;
 
     if (status === "unauthenticated" || !session) {
       router.push("/login");
@@ -142,6 +144,71 @@ export default function Users() {
       toast.error("Failed to refresh users");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSoftDelete = async (userId, userName) => {
+    const confirmation = await Swal.fire({
+      title: `Disable ${userName}?`,
+      text: `Disabling will prevent this user from logging in. This action can be reversed by reactivating the account.`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#ef4444",
+      confirmButtonText: "Yes, disable",
+      cancelButtonText: "Cancel",
+    });
+
+    if (!confirmation.isConfirmed) return;
+
+    try {
+      const res = await fetch("/api/admin/soft-delete-user", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId }),
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        toast.success(data.message || "User disabled");
+        setUsers((prev) =>
+          prev.map((u) => (u._id === userId ? { ...u, status: "inactive" } : u))
+        );
+      } else {
+        toast.error(data.error || "Failed to disable user");
+      }
+    } catch (error) {
+      toast.error("Failed to disable user");
+    }
+  };
+
+  const handleResetPassword = async (userId, userName) => {
+    const confirmation = await Swal.fire({
+      title: `Reset password for ${userName}?`,
+      html: `This will reset the user's password to <strong>123456789</strong>. They should change it after logging in.`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#2563eb",
+      confirmButtonText: "Yes, reset",
+      cancelButtonText: "Cancel",
+    });
+
+    if (!confirmation.isConfirmed) return;
+
+    try {
+      const res = await fetch("/api/admin/reset-password", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId }),
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        toast.success(data.message || "Password reset");
+      } else {
+        toast.error(data.error || "Failed to reset password");
+      }
+    } catch (error) {
+      toast.error("Failed to reset password");
     }
   };
 
@@ -396,26 +463,58 @@ export default function Users() {
                       </td>
 
                       <td className="py-4 px-6">
-                        <button
-                          onClick={() =>
-                            handleUpdateRole(user._id, user.isAdmin, user.name)
-                          }
-                          className={`btn btn-sm flex items-center gap-2 px-4 rounded-lg transition-all duration-200 hover:scale-105 ${
-                            user.isAdmin ? "btn-neutral" : "btn-warning"
-                          }`}
-                        >
-                          {user.isAdmin ? (
-                            <>
-                              <FaUser />
-                              Make User
-                            </>
-                          ) : (
-                            <>
-                              <FaCrown />
-                              Make Admin
-                            </>
-                          )}
-                        </button>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() =>
+                              handleUpdateRole(
+                                user._id,
+                                user.isAdmin,
+                                user.name
+                              )
+                            }
+                            className={`btn btn-sm flex items-center gap-2 px-3 rounded-lg transition-all duration-200 hover:scale-105 ${
+                              user.isAdmin ? "btn-neutral" : "btn-warning"
+                            }`}
+                          >
+                            {user.isAdmin ? (
+                              <>
+                                <FaUser />
+                                <span className="hidden sm:inline">
+                                  Make User
+                                </span>
+                              </>
+                            ) : (
+                              <>
+                                <FaCrown />
+                                <span className="hidden sm:inline">
+                                  Make Admin
+                                </span>
+                              </>
+                            )}
+                          </button>
+
+                          <button
+                            onClick={() =>
+                              handleResetPassword(user._id, user.name)
+                            }
+                            className="btn btn-sm btn-secondary flex items-center gap-2 px-3 rounded-lg transition-all duration-200 hover:scale-105"
+                            title="Reset password to 123456789"
+                          >
+                            <FaKey />
+                            <span className="hidden sm:inline">Reset</span>
+                          </button>
+
+                          <button
+                            onClick={() =>
+                              handleSoftDelete(user._id, user.name)
+                            }
+                            className="btn btn-sm btn-error flex items-center gap-2 px-3 rounded-lg transition-all duration-200 hover:scale-105"
+                            title="Disable user (soft delete)"
+                          >
+                            <FaTrash />
+                            <span className="hidden sm:inline">Disable</span>
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}

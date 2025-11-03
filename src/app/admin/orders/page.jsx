@@ -323,14 +323,38 @@ export default function AdminOrdersPage() {
 
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8);
-    doc.text(`Subtotal: $${order.totalPrice.toFixed(2)}`, 125, finalY + 14);
-    doc.text(`Shipping: $0.00`, 125, finalY + 19);
-    doc.text(`Tax: $0.00`, 125, finalY + 24);
+    doc.text(
+      `Subtotal: $${order.subTotal?.toFixed(2) || order.totalPrice.toFixed(2)}`,
+      125,
+      finalY + 14
+    );
+
+    if (order.discountAmount > 0) {
+      doc.setTextColor(...successColor);
+      doc.text(
+        `Discount (${order.discountCode}): -$${order.discountAmount.toFixed(
+          2
+        )}`,
+        125,
+        finalY + 19
+      );
+      doc.setTextColor(0, 0, 0);
+    }
+
+    if (order.shippingCost > 0) {
+      doc.text(`Shipping: $${order.shippingCost.toFixed(2)}`, 125, finalY + 24);
+    } else {
+      doc.text(`Shipping: $0.00`, 125, finalY + 24);
+    }
 
     doc.setFont("helvetica", "bold");
     doc.setFontSize(9);
     doc.setTextColor(...primaryColor);
-    doc.text(`TOTAL: $${order.totalPrice.toFixed(2)}`, 125, finalY + 29);
+    doc.text(
+      `TOTAL: $${(order.finalTotal || order.totalPrice).toFixed(2)}`,
+      125,
+      finalY + 29
+    );
 
     // Footer
     const footerY = 270;
@@ -398,6 +422,41 @@ export default function AdminOrdersPage() {
 
     doc.setDrawColor(...secondaryColor);
     doc.line(5, 42, 75, 42);
+
+    doc.setFont("helvetica", "bold");
+    doc.text("PRICE DETAILS:", 5, 46);
+    doc.setFont("helvetica", "normal");
+    doc.text(
+      `Subtotal: $${order.subTotal?.toFixed(2) || order.totalPrice.toFixed(2)}`,
+      5,
+      50
+    );
+
+    let yOffset = 54;
+    if (order.discountCode) {
+      doc.setTextColor(...successColor);
+      doc.text(
+        `Discount (${order.discountCode}): -$${
+          order.discountAmount?.toFixed(2) || "0.00"
+        }`,
+        5,
+        yOffset
+      );
+      doc.setTextColor(0, 0, 0);
+      yOffset += 4;
+    }
+
+    if (order.shippingCost > 0) {
+      doc.text(`Shipping: $${order.shippingCost.toFixed(2)}`, 5, yOffset);
+      yOffset += 4;
+    }
+
+    doc.setFont("helvetica", "bold");
+    doc.text(
+      `Final Total: $${(order.finalTotal || order.totalPrice).toFixed(2)}`,
+      5,
+      yOffset + 4
+    );
 
     doc.setFont("helvetica", "bold");
     doc.text("ITEMS", 5, 46);
@@ -880,6 +939,14 @@ export default function AdminOrdersPage() {
 
                     <div className="flex flex-col sm:flex-row gap-3">
                       <div className="flex gap-2">
+                        {order.discountCode && (
+                          <div className="badge badge-lg badge-success gap-1">
+                            <span>كوبون: {order.discountCode}</span>
+                            {order.discountAmount > 0 && (
+                              <span>(-${order.discountAmount.toFixed(2)})</span>
+                            )}
+                          </div>
+                        )}
                         <div
                           className={`badge badge-lg ${getStatusColor(
                             order.status
@@ -1028,13 +1095,125 @@ export default function AdminOrdersPage() {
                     </div>
                   </div>
 
-                  {/* Footer with Controls and Total */}
+                  {/* Price Details */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    {/* Coupon Information */}
+                    {order.discountCode && (
+                      <div className="p-4 bg-success/10 rounded-lg border border-success/20">
+                        <h4 className="font-semibold text-success mb-2 flex items-center gap-2">
+                          <span>معلومات الكوبون</span>
+                        </h4>
+                        <div className="space-y-2">
+                          <div className="flex justify-between items-center">
+                            <span>كود الكوبون:</span>
+                            <span className="font-bold">
+                              {order.discountCode}
+                            </span>
+                          </div>
+                          {order.discountAmount > 0 && (
+                            <div className="flex justify-between items-center text-success">
+                              <span>قيمة الخصم:</span>
+                              <span className="font-bold">
+                                ${order.discountAmount.toFixed(2)}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Price Breakdown */}
+                    <div className="p-4 bg-base-200 rounded-lg">
+                      <h4 className="font-semibold mb-2 flex items-center gap-2">
+                        <DollarSign className="w-4 h-4" />
+                        <span>تفاصيل السعر</span>
+                      </h4>
+                      <div className="space-y-2">
+                        <div className="flex justify-between items-center">
+                          <span>السعر الأصلي:</span>
+                          <span className="font-bold">
+                            $
+                            {order.subTotal?.toFixed(2) ||
+                              order.totalPrice.toFixed(2)}
+                          </span>
+                        </div>
+                        {order.discountAmount > 0 && (
+                          <div className="flex justify-between items-center text-success">
+                            <span>الخصم:</span>
+                            <span className="font-bold">
+                              -${order.discountAmount.toFixed(2)}
+                            </span>
+                          </div>
+                        )}
+                        {order.shippingCost > 0 && (
+                          <div className="flex justify-between items-center">
+                            <span>تكلفة الشحن:</span>
+                            <span className="font-bold">
+                              ${order.shippingCost.toFixed(2)}
+                            </span>
+                          </div>
+                        )}
+                        <div className="border-t border-gray-300 pt-2 mt-2">
+                          <div className="flex justify-between items-center font-bold text-primary">
+                            <span>السعر النهائي:</span>
+                            <span>
+                              $
+                              {(order.finalTotal || order.totalPrice).toFixed(
+                                2
+                              )}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Order Summary */}
+                  <div className="mb-6 p-4 bg-base-200/50 rounded-lg">
+                    <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
+                      <DollarSign className="w-5 h-5 text-primary" />
+                      تفاصيل الطلب
+                    </h3>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">إجمالي المنتجات:</span>
+                        <span className="font-medium">
+                          $
+                          {order.subTotal?.toFixed(2) ||
+                            order.totalPrice.toFixed(2)}
+                        </span>
+                      </div>
+
+                      {order.discountAmount > 0 && (
+                        <div className="flex justify-between text-success font-medium">
+                          <span>Discount ({order.discountCode}):</span>
+                          <span>-${order.discountAmount.toFixed(2)}</span>
+                        </div>
+                      )}
+
+                      {order.shippingCost > 0 && (
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Shipping:</span>
+                          <span>${order.shippingCost.toFixed(2)}</span>
+                        </div>
+                      )}
+
+                      <div className="flex justify-between font-bold pt-2 border-t border-gray-300 text-lg">
+                        <span>Final Total:</span>
+                        <span className="text-primary">
+                          ${(order.finalTotal || order.totalPrice).toFixed(2)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Footer with Controls */}
                   <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 pt-4 border-t border-gray-300">
                     <div className="flex items-center gap-2">
                       <DollarSign className="w-6 h-6 text-primary" />
                       <span className="text-xl font-bold">Total Amount:</span>
                       <span className="text-2xl font-bold text-primary ml-2">
-                        ${order.totalPrice.toFixed(2)}
+                        ${(order.finalTotal || order.totalPrice).toFixed(2)}
                       </span>
                     </div>
                     <div className="flex flex-col sm:flex-row gap-2">

@@ -3,8 +3,10 @@ import { useEffect } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { toast } from "react-toastify";
+import { useTranslation } from "react-i18next";
 
 export default function OrderSuccess() {
+  const { t } = useTranslation();
   const searchParams = useSearchParams();
   const orderId = searchParams.get("id");
 
@@ -42,26 +44,26 @@ export default function OrderSuccess() {
         </svg>
       </div>
 
-      <h1 className="text-3xl font-bold mb-4">Order Confirmed!</h1>
-      <p className="text-lg mb-4">Thank you for your purchase</p>
+      <h1 className="text-3xl font-bold mb-4">{t("orderConfirmed")}</h1>
+      <p className="text-lg mb-4">{t("thankYouForYourPurchase")}</p>
       {orderId && (
         <p className="mb-4">
-          Order ID:{" "}
+          {t("orderId")}{" "}
           <span className="font-mono bg-gray-100 px-2 py-1 rounded">
             {orderId}
           </span>
         </p>
       )}
       <p className="mb-8">
-        You'll receive a confirmation email with your order details
+        {t("youWillReceiveConfirmationEmail")}
       </p>
 
       <div className="flex justify-center gap-4">
         <Link href="/orders" className="btn btn-primary">
-          View Orders
+          {t("viewOrders")}
         </Link>
         <Link href="/" className="btn btn-outline">
-          Continue Shopping
+          {t("continueShopping")}
         </Link>
       </div>
     </div>

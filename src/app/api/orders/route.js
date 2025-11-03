@@ -5,6 +5,7 @@ import dbConnect from "../../../../lib/dbConnect";
 import Order from "../../../../models/Order";
 import Cart from "../../../../models/Cart";
 import Product from "../../../../models/Product";
+import Coupon from "../../../../models/Coupon";
 import Notification from "../../../../models/Notification";
 import mongoose from "mongoose";
 import User from "../../../../models/User";
@@ -49,10 +50,50 @@ export async function POST(request) {
     }
 
     await mongooseSession.withTransaction(async () => {
-      const totalPrice = cartItems.reduce(
+      const subTotal = cartItems.reduce(
         (total, item) => total + item.product.price * item.quantity,
         0
       );
+
+      const cart = await Cart.findOne({ user: session.user.id })
+        .session(mongooseSession);
+
+      let discountAmount = 0;
+      let discountCode = null;
+      let couponId = null;
+
+      console.log("Cart found:", cart);
+
+      if (cart?.coupon) {
+        // Fetch the full coupon details
+        const coupon = await Coupon.findById(cart.coupon).session(mongooseSession);
+        console.log("Found coupon details:", coupon);
+
+        if (coupon) {
+          discountCode = coupon.code;
+          couponId = coupon._id;
+
+          if (coupon.discountType === "percent") {
+            discountAmount = Math.round((subTotal * coupon.amount) / 100);
+            if (coupon.maxDiscount) {
+              discountAmount = Math.min(discountAmount, coupon.maxDiscount);
+            }
+          } else if (coupon.discountType === "fixed") {
+            discountAmount = coupon.amount;
+          }
+        }
+
+        console.log("Applying coupon:", {
+          code: discountCode,
+          discountType: coupon.discountType,
+          amount: coupon.amount,
+          calculatedDiscount: discountAmount,
+        });
+      } else {
+        console.log("No coupon found in cart");
+      }
+
+      const finalTotal = subTotal - discountAmount;
 
       for (const item of cartItems) {
         const product = await Product.findById(item.product._id).session(
@@ -83,7 +124,12 @@ export async function POST(request) {
           size: item.size,
           color: item.color,
         })),
-        totalPrice: totalPrice,
+        subTotal: subTotal,
+        totalPrice: finalTotal,
+        discountAmount: discountAmount,
+        discountCode: discountCode,
+        coupon: couponId,
+        finalTotal: finalTotal,
         paymentMethod: "cash_on_delivery",
         shippingAddress: shippingAddress,
         isPaid: false,

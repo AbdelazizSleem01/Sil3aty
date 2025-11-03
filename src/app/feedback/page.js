@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { toast } from "react-toastify";
+import { useTranslation } from "react-i18next";
+import "../../../i18n";
 import {
   FaUser,
   FaBriefcase,
@@ -13,11 +15,13 @@ import {
   FaSmile,
   FaRegSmile,
   FaRegStar,
-  FaStarHalfAlt,
 } from "react-icons/fa";
 import { IoMdSend } from "react-icons/io";
 
 export default function FeedbackForm() {
+  const { t, i18n } = useTranslation();
+  const isRTL = i18n.language === "ar";
+
   const [name, setName] = useState("");
   const [role, setRole] = useState("");
   const [email, setEmail] = useState("");
@@ -32,7 +36,7 @@ export default function FeedbackForm() {
     e.preventDefault();
 
     if (!name || !role || !email || !comment || !rating) {
-      toast.error("All fields are required");
+      toast.error(t("allFieldsRequired"));
       return;
     }
 
@@ -46,17 +50,6 @@ export default function FeedbackForm() {
       formData.append("comment", comment);
       formData.append("rating", rating);
 
-      console.log("Form data before submission:", {
-        name,
-        role,
-        email,
-        comment,
-        rating,
-        hasImage: !!userImage,
-        imageSize: userImage?.size,
-        imageType: userImage?.type,
-      });
-
       if (userImage) {
         formData.append("userImage", userImage);
       }
@@ -68,13 +61,13 @@ export default function FeedbackForm() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to submit feedback");
+        throw new Error(errorData.error || t("failedToSubmit"));
       }
 
       const data = await response.json();
+      toast.success(data.message || t("feedbackSubmitted"));
 
-      toast.success(data.message);
-
+      // Reset form
       setName("");
       setRole("");
       setEmail("");
@@ -83,7 +76,7 @@ export default function FeedbackForm() {
       setUserImage(null);
       setImagePreview("");
     } catch (error) {
-      toast.error(error.message);
+      toast.error(error.message || t("failedToSubmit"));
     } finally {
       setIsSubmitting(false);
     }
@@ -116,7 +109,12 @@ export default function FeedbackForm() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-emerald-50 flex items-center justify-center py-12 px-4">
+    <div
+      className={`min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-emerald-50 flex items-center justify-center py-12 px-4 ${
+        isRTL ? "font-arabic" : ""
+      }`}
+      dir={isRTL ? "rtl" : "ltr"}
+    >
       <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md border border-gray-100">
         {/* Header */}
         <div className="text-center mb-8">
@@ -124,20 +122,21 @@ export default function FeedbackForm() {
             <FaComment className="text-2xl text-white" />
           </div>
           <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-emerald-600 bg-clip-text text-transparent">
-            Share Your Feedback
+            {t("shareYourFeedback")}
           </h1>
-          <p className="text-gray-500 mt-2 text-sm">We value your opinion</p>
+          <p className="text-gray-500 mt-2 text-sm">{t("weValueYourOpinion")}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Name Field */}
           <div className="relative">
             <label
               htmlFor="name"
-              className="block text-sm font-semibold text-gray-700 mb-2 flex items-center"
+              className={`block text-sm font-semibold text-gray-700 mb-2 flex items-center ${
+                isRTL ? "flex-row-reverse justify-end" : ""
+              }`}
             >
-              <FaUser className="mr-2 text-primary" />
-              Full Name
+              <FaUser className={`mx-2 text-primary ${isRTL ? "ml-0 mr-2" : ""}`} />
+              {t("fullName")}
             </label>
             <div className="relative">
               <input
@@ -145,11 +144,17 @@ export default function FeedbackForm() {
                 id="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
-                placeholder="Enter your full name"
+                className={`w-full px-10 py-3 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 ${
+                  isRTL ? "pr-10 pl-4 text-right" : "pl-10 pr-4"
+                }`}
+                placeholder={t("enterFullName")}
                 required
               />
-              <FaUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <FaUser
+                className={`absolute top-1/2 transform -translate-y-1/2 text-gray-400 ${
+                  isRTL ? "right-3" : "left-3"
+                }`}
+              />
             </div>
           </div>
 
@@ -157,10 +162,12 @@ export default function FeedbackForm() {
           <div className="relative">
             <label
               htmlFor="role"
-              className="block text-sm font-semibold text-gray-700 mb-2 flex items-center"
+              className={`block text-sm font-semibold text-gray-700 mb-2 flex items-center ${
+                isRTL ? "flex-row-reverse justify-end" : ""
+              }`}
             >
-              <FaBriefcase className="mr-2 text-emerald-500" />
-              Your Role
+              <FaBriefcase className={`mx-2 text-emerald-500 ${isRTL ? "ml-0 mr-2" : ""}`} />
+              {t("yourRole")}
             </label>
             <div className="relative">
               <input
@@ -168,11 +175,17 @@ export default function FeedbackForm() {
                 id="role"
                 value={role}
                 onChange={(e) => setRole(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200"
-                placeholder="e.g., Developer, Designer"
+                className={`w-full px-10 py-3 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 ${
+                  isRTL ? "pr-10 pl-4 text-right" : "pl-10 pr-4"
+                }`}
+                placeholder={t("rolePlaceholder")}
                 required
               />
-              <FaBriefcase className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <FaBriefcase
+                className={`absolute top-1/2 transform -translate-y-1/2 text-gray-400 ${
+                  isRTL ? "right-3" : "left-3"
+                }`}
+              />
             </div>
           </div>
 
@@ -180,21 +193,19 @@ export default function FeedbackForm() {
           <div>
             <label
               htmlFor="userImage"
-              className="block text-sm font-semibold text-gray-700 mb-2 flex items-center"
+              className={`block text-sm font-semibold text-gray-700 mb-2 flex items-center ${
+                isRTL ? "flex-row-reverse justify-end" : ""
+              }`}
             >
-              <FaCamera className="mr-2 text-green-500" />
-              Profile Photo
+              <FaCamera className={`mx-2 text-green-500 ${isRTL ? "ml-0 mr-2" : ""}`} />
+              {t("profilePhoto")}
             </label>
             <div className="flex items-center space-x-4 p-4 border border-gray-200 rounded-xl bg-gray-50">
               <div className="w-16 h-16 rounded-full bg-gradient-to-r from-green-100 to-emerald-100 flex items-center justify-center overflow-hidden border-2 border-white shadow-md">
                 {imagePreview ? (
-                  <img
-                    src={imagePreview}
-                    alt="Preview"
-                    className="w-full h-full object-cover"
-                  />
+                  <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
                 ) : (
-                  <FaCamera className="text-green-400 text-xl cursor-pointer " />
+                  <FaCamera className="text-green-400 text-xl cursor-pointer" />
                 )}
               </div>
               <div className="flex-1">
@@ -211,7 +222,9 @@ export default function FeedbackForm() {
                       reader.readAsDataURL(file);
                     }
                   }}
-                  className="block cursor-pointer  w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-gradient-to-r file:from-green-500 file:to-emerald-500 file:text-white hover:file:from-green-600 hover:file:to-emerald-600 transition-all duration-200"
+                  className={`block cursor-pointer w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-gradient-to-r file:from-green-500 file:to-emerald-500 file:text-white hover:file:from-green-600 hover:file:to-emerald-600 transition-all duration-200 ${
+                    isRTL ? "file:ml-4 file:mr-0" : ""
+                  }`}
                 />
               </div>
             </div>
@@ -221,10 +234,12 @@ export default function FeedbackForm() {
           <div className="relative">
             <label
               htmlFor="email"
-              className="block text-sm font-semibold text-gray-700 mb-2 flex items-center"
+              className={`block text-sm font-semibold text-gray-700 mb-2 flex items-center ${
+                isRTL ? "flex-row-reverse justify-end" : ""
+              }`}
             >
-              <FaEnvelope className="mr-2 text-red-500" />
-              Email Address
+              <FaEnvelope className={`mx-2 text-red-500 ${isRTL ? "ml-0 mr-2" : ""}`} />
+              {t("emailAddress")}
             </label>
             <div className="relative">
               <input
@@ -232,51 +247,70 @@ export default function FeedbackForm() {
                 id="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200"
-                placeholder="your@email.com"
+                className={`w-full px-10 py-3 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200 ${
+                  isRTL ? "pr-10 pl-4 text-right" : "pl-10 pr-4"
+                }`}
+                placeholder={t("emailPlaceholder")}
                 required
               />
-              <FaEnvelope className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <FaEnvelope
+                className={`absolute top-1/2 transform -translate-y-1/2 text-gray-400 ${
+                  isRTL ? "right-3" : "left-3"
+                }`}
+              />
             </div>
           </div>
 
-          {/* Rating Field */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
-              <FaStar className="mr-2 text-yellow-500" />
-              Your Rating
+            <label
+              className={`block text-sm font-semibold text-gray-700 mb-2 flex items-center ${
+                isRTL ? "flex-row-reverse justify-end" : ""
+              }`}
+            >
+              <FaStar className={`mx-2 text-yellow-500 `} />
+              {t("yourRating")}
             </label>
-            <div className="flex justify-between mt-1">{renderStars()}</div>
-            <div className="flex justify-between text-xs text-gray-500 mt-2 px-1">
-              <span>Poor</span>
-              <span>Excellent</span>
+            <div className={`flex ${isRTL ? "justify-between" : "justify-between"} mt-1`}>
+              {renderStars()}
+            </div>
+            <div
+              className={`flex text-xs text-gray-500 mt-2 px-1 ${
+                isRTL ? "flex-row-reverse justify-between" : "justify-between"
+              }`}
+            >
+              <span>{t("poor")}</span>
+              <span>{t("excellent")}</span>
             </div>
           </div>
 
-          {/* Comment Field */}
           <div>
             <label
               htmlFor="comment"
-              className="block text-sm font-semibold text-gray-700 mb-2 flex items-center"
+              className={`block text-sm font-semibold text-gray-700 mb-2 flex items-center ${
+                isRTL ? "flex-row-reverse justify-end" : ""
+              }`}
             >
-              <FaComment className="mr-2 text-primary" />
-              Your Feedback
+              <FaComment className={`mx-2 text-primary ${isRTL ? "ml-0 mr-2" : ""}`} />
+              {t("yourFeedback")}
             </label>
             <div className="relative">
               <textarea
                 id="comment"
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 resize-none"
+                className={`w-full px-10 py-3 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 resize-none ${
+                  isRTL ? "pr-10 pl-4 text-right" : "pl-10 pr-4"
+                }`}
                 rows="4"
-                placeholder="Share your thoughts and experience..."
+                placeholder={t("shareThoughts")}
                 required
               />
-              <FaComment className="absolute left-3 top-3 text-gray-400" />
+              <FaComment
+                className={`absolute top-3 text-gray-400 ${isRTL ? "right-3" : "left-3"}`}
+              />
             </div>
           </div>
 
-          {/* Submit Button */}
           <div>
             <button
               type="submit"
@@ -286,26 +320,31 @@ export default function FeedbackForm() {
               {isSubmitting ? (
                 <>
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  <span>Submitting...</span>
+                  <span>{t("submitting")}</span>
                 </>
               ) : (
                 <>
                   <IoMdSend className="text-lg" />
-                  <span>Submit Feedback</span>
+                  <span>{t("submitFeedback")}</span>
                 </>
               )}
             </button>
           </div>
         </form>
 
-        {/* Footer Note */}
         <div className="mt-6 text-center">
-          <p className="text-xs text-gray-500 flex items-center justify-center">
-            <FaSmile className="mr-1 text-yellow-500" />
-            Thank you for helping us improve!
+          <p className="text-xs gap-1 text-gray-500 flex items-center justify-center">
+            <FaSmile className="text-yellow-500" />
+            {t("thankYouForHelping")}
           </p>
         </div>
       </div>
+
+      <style jsx>{`
+        .font-arabic {
+          font-family: 'Cairo', 'Geeza Pro', sans-serif;
+        }
+      `}</style>
     </div>
   );
 }

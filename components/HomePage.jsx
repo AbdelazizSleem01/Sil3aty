@@ -23,18 +23,24 @@ import {
   Play,
 } from "lucide-react";
 
-import NewsletterSection from "../src/app/subscribe/page";
-import FeedbackForm from "../src/app/feedback/page";
-import WhatPeopleSayPage from "../src/app/what-people-say/page";
-import BrandsPage from "../src/app/brands/page";
-import CategoryProductsPage from "../src/app/category/page";
-import FeaturedProductsPage from "../src/app/featured-products/page";
-import TopSellingProductsPage from "../src/app/top-selling/page";
-import OurTeam from "../src/app/ourTeam/page";
-import DiscountedProductsPage from "../src/app/discounted/page";
+import NewsletterSection from "@/app/subscribe/page";
+import FeedbackForm from "@/app/feedback/page";
+import WhatPeopleSayPage from "@/app/what-people-say/page";
+import CategoryProductsPage from "@/app/category/page";
+import FeaturedProductsPage from "@/app/featured-products/page";
+import TopSellingProductsPage from "@/app/top-selling/page";
+import OurTeam from "@/app/ourTeam/page";
+import DiscountedProductsPage from "@/app/discounted/page";
+import BrandsPage from "@/app/brands/page";
 
 function CountdownTimer({ endDate, format = "hours" }) {
-  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  const { t, i18n } = useTranslation();
+  const [timeLeft, setTimeLeft] = useState({
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0,
+  });
 
   useEffect(() => {
     const end = new Date(endDate);
@@ -50,7 +56,9 @@ function CountdownTimer({ endDate, format = "hours" }) {
       }
 
       const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const hours = Math.floor(
+        (diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+      );
       const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
       const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
@@ -62,37 +70,45 @@ function CountdownTimer({ endDate, format = "hours" }) {
     return () => clearInterval(timer);
   }, [endDate]);
 
-  if (timeLeft.days + timeLeft.hours + timeLeft.minutes + timeLeft.seconds === 0) {
-    return <span className="text-red-500 text-sm font-bold">EXPIRED</span>;
+  if (
+    timeLeft.days + timeLeft.hours + timeLeft.minutes + timeLeft.seconds ===
+    0
+  ) {
+    return (
+      <span className="text-red-500 text-sm font-bold">{t("expired")}</span>
+    );
   }
 
   return (
     <div className="flex items-center gap-2">
       {format === "days" && (
-        <>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-red-600">{timeLeft.days}</div>
-            <div className="text-xs text-gray-600">Days</div>
-          </div>
-        </>
+        <div className="text-center">
+          <div className="text-2xl font-bold text-red-600">{timeLeft.days}</div>
+          <div className="text-xs text-gray-600">{t("days")}</div>
+        </div>
       )}
       <div className="text-center">
         <div className="text-2xl font-bold text-red-600">{timeLeft.hours}</div>
-        <div className="text-xs text-gray-600">Hours</div>
+        <div className="text-xs text-gray-600">{t("hours")}</div>
       </div>
       <div className="text-center">
-        <div className="text-2xl font-bold text-red-600">{timeLeft.minutes}</div>
-        <div className="text-xs text-gray-600">Min</div>
+        <div className="text-2xl font-bold text-red-600">
+          {timeLeft.minutes}
+        </div>
+        <div className="text-xs text-gray-600">{t("min")}</div>
       </div>
       <div className="text-center">
-        <div className="text-2xl font-bold text-red-600">{timeLeft.seconds}</div>
-        <div className="text-xs text-gray-600">Sec</div>
+        <div className="text-2xl font-bold text-red-600">
+          {timeLeft.seconds}
+        </div>
+        <div className="text-xs text-gray-600">{t("sec")}</div>
       </div>
     </div>
   );
 }
 
 function LimitedTimeOffersSection() {
+  const { t } = useTranslation();
   const [limitedOffers, setLimitedOffers] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -102,7 +118,7 @@ function LimitedTimeOffersSection() {
         const res = await fetch("/api/products/discounted");
         if (res.ok) {
           const products = await res.json();
-          const offersWithEndDates = products.filter(p => p.discountEndDate);
+          const offersWithEndDates = products.filter((p) => p.discountEndDate);
           setLimitedOffers(offersWithEndDates.slice(0, 4));
         }
       } catch (error) {
@@ -119,12 +135,17 @@ function LimitedTimeOffersSection() {
     return (
       <section className="container mx-auto px-4 py-16 bg-gradient-to-r from-red-50 to-orange-50">
         <div className="text-center mb-12">
-          <h2 className="text-4xl font-bold text-gray-800 mb-4">⏰ Limited Time Offers</h2>
-          <p className="text-gray-600">Act fast! These deals won't last long.</p>
+          <h2 className="text-4xl font-bold text-gray-800 mb-4">
+            {t("limitedTimeOffers")}
+          </h2>
+          <p className="text-gray-600">{t("actFast")}</p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="bg-white rounded-2xl shadow-lg animate-pulse p-6">
+            <div
+              key={i}
+              className="bg-white rounded-2xl shadow-lg animate-pulse p-6"
+            >
               <div className="h-48 bg-gray-200 rounded-lg mb-4"></div>
               <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
               <div className="h-6 bg-gray-200 rounded mb-4 w-1/2"></div>
@@ -143,22 +164,31 @@ function LimitedTimeOffersSection() {
       <div className="text-center mb-12">
         <div className="inline-flex items-center gap-2 bg-red-500 text-white px-4 py-2 rounded-full text-sm font-bold mb-4">
           <Zap className="w-4 h-4" />
-          Flash Sale - Limited Time!
+          {t("flashSale")}
         </div>
-        <h2 className="text-4xl font-bold text-gray-800 mb-4">⏰ Limited Time Offers</h2>
-        <p className="text-gray-600">Don't miss these time-sensitive deals. Shop now!</p>
+        <h2 className="text-4xl font-bold text-gray-800 mb-4">
+          {t("limitedTimeOffers")}
+        </h2>
+        <p className="text-gray-600">{t("dontMissDeals")}</p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {limitedOffers.map((product) => {
-          const discountPercent = product.discountPercentage ||
-            Math.round(((product.price - product.discountPrice) / product.price) * 100);
+          const discountPercent =
+            product.discountPercentage ||
+            Math.round(
+              ((product.price - product.discountPrice) / product.price) * 100
+            );
 
           return (
-            <div key={product._id} className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border-2 border-red-200 overflow-hidden">
+            <div
+              key={product._id}
+              className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border-2 border-red-200 overflow-hidden"
+            >
               <div className="relative p-4 pb-0">
                 <div className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-bold z-10">
-                  {discountPercent}% OFF
+                  {discountPercent}
+                  {t("off")}
                 </div>
 
                 <div className="relative h-48 bg-gray-100 rounded-lg overflow-hidden">
@@ -168,11 +198,16 @@ function LimitedTimeOffersSection() {
                       alt={product.name}
                       fill
                       className="object-cover"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-gray-400">
-                      <svg className="w-12 h-12" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 9.5l2.5 3.01L14.5 7l4.5 6H5l3.5-4.5z"/>
+                      <svg
+                        className="w-12 h-12"
+                        fill="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 9.5l2.5 3.01L14.5 7l4.5 6H5l3.5-4.5z" />
                       </svg>
                     </div>
                   )}
@@ -180,21 +215,33 @@ function LimitedTimeOffersSection() {
               </div>
 
               <div className="p-4">
-                <h3 className="font-bold text-lg text-gray-800 mb-2 line-clamp-2">{product.name}</h3>
+                <h3 className="font-bold text-lg text-gray-800 mb-2 line-clamp-2">
+                  {product.name}
+                </h3>
 
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <span className="text-2xl font-bold text-red-600">${product.discountPrice}</span>
-                    <span className="text-sm text-gray-500 line-through ml-2">${product.price}</span>
+                    <span className="text-2xl font-bold text-red-600">
+                      ${product.discountPrice}
+                    </span>
+                    <span className="text-sm text-gray-500 line-through ml-2">
+                      ${product.price}
+                    </span>
                   </div>
                   <span className="text-sm font-bold text-green-600 bg-green-100 px-2 py-1 rounded">
-                    Save ${(product.price - product.discountPrice).toFixed(2)}
+                    {t("save")}
+                    {(product.price - product.discountPrice).toFixed(2)}
                   </span>
                 </div>
 
                 <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4 flex flex-col items-center justify-center">
-                  <div className="text-xs text-red-600 font-semibold mb-1 text-center">TIME LEFT</div>
-                  <CountdownTimer endDate={product.discountEndDate} format="hours" />
+                  <div className="text-xs text-red-600 font-semibold mb-1 text-center">
+                    {t("timeLeft")}
+                  </div>
+                  <CountdownTimer
+                    endDate={product.discountEndDate}
+                    format="hours"
+                  />
                 </div>
 
                 <Link
@@ -202,7 +249,7 @@ function LimitedTimeOffersSection() {
                   className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 group-hover:scale-105"
                 >
                   <Zap className="w-4 h-4" />
-                  Shop Now - Limited!
+                  {t("shopNowLimited")}
                 </Link>
               </div>
             </div>
@@ -215,7 +262,7 @@ function LimitedTimeOffersSection() {
           href="/discounted"
           className="inline-flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-6 rounded-lg transition-colors"
         >
-          View All Limited Offers
+          {t("viewAllLimitedOffers")}
           <ArrowRight className="w-4 h-4" />
         </Link>
       </div>
@@ -224,7 +271,8 @@ function LimitedTimeOffersSection() {
 }
 
 export default function HomePage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isRTL = i18n.language === "ar";
   const [isVisible, setIsVisible] = useState(false);
   const [latestBlogs, setLatestBlogs] = useState([]);
   const [blogsLoading, setBlogsLoading] = useState(true);
@@ -239,7 +287,6 @@ export default function HomePage() {
       animationDelay: `${Math.random() * 5}s`,
       animationDuration: `${3 + Math.random() * 4}s`,
     }));
-
     setDots(generatedDots);
 
     const fetchLatestBlogs = async () => {
@@ -257,10 +304,17 @@ export default function HomePage() {
     };
 
     fetchLatestBlogs();
-  }, []);
+
+    document.documentElement.dir = isRTL ? "rtl" : "ltr";
+    document.documentElement.lang = i18n.language;
+  }, [isRTL, i18n.language]);
 
   return (
-    <div className="min-h-screen overflow-hidden ">
+    <div
+      className={`min-h-screen overflow-hidden ${
+        isRTL ? "font-arabic rtl-text" : ""
+      }`}
+    >
       <section className="relative min-h-screen pt-8 flex items-center justify-center bg-gradient-to-br from-green-50 via-emerald-50 to-teal-100 overflow-hidden">
         <div className="absolute inset-0">
           <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMSIgZmlsbD0iIzEwYTE0MCIgZmlsbC1vcGFjaXR5PSIwLjEiLz4KPC9zdmc+')] opacity-40"></div>
@@ -285,7 +339,7 @@ export default function HomePage() {
           ))}
         </div>
 
-        <div className="container mx-auto px-4 relative z-10">
+        <div className="container mx-auto px-4 relative z-10 py-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             <div
               className={`text-center lg:text-left transition-all duration-1000 ${
@@ -298,43 +352,36 @@ export default function HomePage() {
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
                   <span className="text-green-800 font-semibold text-sm tracking-wide">
-                    🎉 Premium Shopping Experience
+                    {t("premiumShoppingExperience")}
                   </span>
                 </div>
                 <Sparkles className="w-4 h-4 text-yellow-500 animate-spin" />
               </div>
 
-              <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black leading-tight mb-6">
+              <h1
+                className={`text-4xl  ${
+                  i18n.language === "ar" ? "sm:text-right " : " "
+                }  sm:text-5xl md:text-6xl lg:text-7xl font-black leading-tight mb-6`}
+              >
                 <span className="bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 text-transparent bg-clip-text animate-gradient">
-                  Elevate Your
-                </span>
-                <br />
-                <span className="bg-gradient-to-r from-green-700 via-emerald-700 to-teal-700 text-transparent bg-clip-text">
-                  Shopping Style
+                  {t("elevateYourShoppingStyle")}
                 </span>
               </h1>
 
-              <p className="text-lg sm:text-xl md:text-2xl text-gray-700 mb-8 max-w-2xl leading-relaxed font-light">
-                Discover{" "}
-                <span className="text-green-600 font-semibold">
-                  curated collections
-                </span>{" "}
-                of premium products with{" "}
-                <span className="text-emerald-600 font-semibold">
-                  exclusive deals
-                </span>
-                and{" "}
-                <span className="text-teal-600 font-semibold">
-                  seamless delivery
-                </span>
+              <p
+                className={`text-lg sm:text-xl ${
+                  i18n.language === "ar" ? "text-right" : "text-left"
+                } md:text-2xl text-gray-700 mb-8 max-w-2xl leading-relaxed font-light`}
+              >
+                {t("discoverCuratedCollections")}
               </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
                 {[
-                  "Free Shipping Worldwide",
-                  "24/7 Customer Support",
-                  "Secure Payment",
-                  "Quality Guarantee",
+                  t("freeShippingWorldwide"),
+                  t("customerSupport"),
+                  t("securePayment"),
+                  t("qualityGuarantee"),
                 ].map((feature, index) => (
                   <div
                     key={index}
@@ -349,14 +396,12 @@ export default function HomePage() {
               <div className="flex flex-col sm:flex-row gap-4 items-center justify-center lg:justify-start">
                 <Link
                   href="/product"
-                  className="group relative bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-4 px-8 rounded-2xl shadow-2xl transform transition-all duration-300 hover:scale-105 hover:shadow-3xl active:scale-95 overflow-hidden w-full sm:w-auto text-center"
+                  className="group relative flex items-center gap-3 justify-center  bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-4 px-6 rounded-2xl shadow-2xl transform transition-all duration-300 hover:scale-105 hover:shadow-3xl active:scale-95 overflow-hidden  sm:w-auto text-center"
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 transform translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
-
-                  <span className="relative flex items-center gap-3 justify-center">
-                    <ShoppingBag className="w-5 h-5" />
-                    Start Shopping
-                    <ArrowRight className="w-5 h-5 transform group-hover:translate-x-1 transition-transform" />
+                  <ShoppingBag className="w-5 h-5" />
+                  <span className="relative  whitespace-nowrap">
+                    {t("startShopping")}
                   </span>
                 </Link>
 
@@ -365,17 +410,17 @@ export default function HomePage() {
                   className="group btn btn-outline flex items-center gap-2 text-green-700 hover:text-emerald-800 font-semibold py-6 px-8 rounded-2xl transition-all duration-300 w-full sm:w-auto justify-center hover:bg-transparent"
                 >
                   <Play className="w-4 h-4" />
-                  Watch Demo
+                  {t("watchDemo")}
                 </Link>
               </div>
 
               <div className="flex flex-wrap justify-center lg:justify-start gap-6 mt-12">
                 {[
-                  { number: "50K+", label: "Happy Customers", icon: Users },
-                  { number: "2K+", label: "Premium Products", icon: Award },
+                  { number: "50K+", label: t("happyCustomers"), icon: Users },
+                  { number: "2K+", label: t("premiumProducts"), icon: Award },
                   {
                     number: "98%",
-                    label: "Satisfaction Rate",
+                    label: t("satisfactionRate"),
                     icon: TrendingUp,
                   },
                 ].map((stat, index) => (
@@ -394,11 +439,11 @@ export default function HomePage() {
               </div>
             </div>
 
-            <div className="relative w-full sm:block  hidden">
+            <div className="relative w-full sm:block hidden">
               <div className="relative group -top-24">
                 <div className="absolute -inset-6 bg-gradient-to-r from-green-400 to-emerald-500 rounded-3xl blur-xl opacity-20 group-hover:opacity-30 transition-opacity duration-500 animate-glow"></div>
 
-                <div className="relative rounded-2xl overflow-hidden  transform transition-all duration-700 group-hover:scale-105 group-hover:rotate-1">
+                <div className="relative rounded-2xl overflow-hidden transform transition-all duration-700 group-hover:scale-105 group-hover:rotate-1">
                   <Image
                     className="object-cover w-full h-auto"
                     src="/images/banner3.png"
@@ -406,10 +451,8 @@ export default function HomePage() {
                     width={600}
                     height={600}
                     priority
-                    sizes="(max-width: 1024px) 100vw, 50vw"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                   />
-
-                  <div className="absolute inset-0 "></div>
                 </div>
 
                 <div className="absolute top-6 right-6 z-20">
@@ -431,21 +474,10 @@ export default function HomePage() {
             </div>
           </div>
         </div>
-
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
-          <div className="flex flex-col items-center gap-2">
-            <span className="text-sm text-green-700 font-medium">
-              Scroll to explore
-            </span>
-            <div className="w-6 h-10 border-2 border-green-500 rounded-full flex justify-center">
-              <div className="w-1 h-3 bg-green-500 rounded-full mt-2 animate-pulse"></div>
-            </div>
-          </div>
-        </div>
       </section>
 
       <FeaturedProductsPage />
-      <DiscountedProductsPage/>
+      <DiscountedProductsPage />
       <LimitedTimeOffersSection />
       <TopSellingProductsPage />
       <CategoryProductsPage />
@@ -457,10 +489,10 @@ export default function HomePage() {
               <Truck className="w-12 h-12 text-emerald-500 mx-auto" />
             </div>
             <h3 className="text-2xl font-bold mb-4 text-gray-800 text-center">
-              Fast Shipping
+              {t("fastShipping")}
             </h3>
             <p className="text-gray-600 text-center leading-relaxed">
-              Worldwide delivery in 2-5 business days with real-time tracking
+              {t("worldwideDelivery")}
             </p>
           </div>
 
@@ -469,11 +501,10 @@ export default function HomePage() {
               <Shield className="w-12 h-12 text-green-500 mx-auto" />
             </div>
             <h3 className="text-2xl font-bold mb-4 text-gray-800 text-center">
-              Secure Payments
+              {t("securePayments")}
             </h3>
             <p className="text-gray-600 text-center leading-relaxed">
-              256-bit SSL encryption and multiple payment options for your
-              safety
+              {t("sslEncryption")}
             </p>
           </div>
 
@@ -482,10 +513,10 @@ export default function HomePage() {
               <Star className="w-12 h-12 text-yellow-500 mx-auto" />
             </div>
             <h3 className="text-2xl font-bold mb-4 text-gray-800 text-center">
-              Premium Quality
+              {t("premiumQuality")}
             </h3>
             <p className="text-gray-600 text-center leading-relaxed">
-              Authentic products with 2-year warranty and quality guarantee
+              {t("authenticProducts")}
             </p>
           </div>
         </div>
@@ -499,22 +530,21 @@ export default function HomePage() {
             </div>
           </div>
           <h2 className="text-4xl font-bold text-gray-800 mb-4 flex items-center justify-center gap-3">
-            <span>Latest</span>
+            <span>{t("latest")}</span>
             <span className="bg-gradient-to-r from-green-600 to-emerald-600 text-transparent bg-clip-text">
-              Insights
+              {t("insights")}
             </span>
           </h2>
-          <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-            Stay updated with our latest articles, tutorials, and industry
-            insights
+          <p className="text-gray-600 text-lg max-w-2xl mx-auto text-center">
+            {t("stayUpdated")}
           </p>
         </div>
 
         {blogsLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[...Array(3)].map((_, index) => (
+            {[...Array(3)].map((_, i) => (
               <div
-                key={index}
+                key={i}
                 className="bg-white rounded-2xl shadow-lg border border-gray-200 animate-pulse overflow-hidden"
               >
                 <div className="h-48 bg-gray-200 rounded-t-2xl"></div>
@@ -547,11 +577,11 @@ export default function HomePage() {
                   <div className="absolute top-4 left-4 flex gap-2 z-10">
                     {blog.featured && (
                       <span className="px-2 py-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs rounded-full">
-                        Featured
+                        {t("featured")}
                       </span>
                     )}
                     <span className="px-2 py-1 bg-white/90 text-gray-700 text-xs rounded-full">
-                      {blog.difficulty || "beginner"}
+                      {blog.difficulty || t("beginner")}
                     </span>
                   </div>
                 </div>
@@ -560,11 +590,13 @@ export default function HomePage() {
                   <div className="flex items-center gap-4 text-sm text-gray-500 mb-3">
                     <div className="flex items-center gap-1">
                       <div className="w-5 h-5 bg-green-500 rounded-full"></div>
-                      <span>{blog.author?.name || "Unknown Author"}</span>
+                      <span>{blog.author?.name || t("unknownAuthor")}</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <Clock className="w-3 h-3" />
-                      <span>{blog.estimatedReadTime || 5} min read</span>
+                      <span>
+                        {blog.estimatedReadTime || 5} {t("minRead")}
+                      </span>
                     </div>
                   </div>
 
@@ -578,7 +610,7 @@ export default function HomePage() {
                   </h3>
 
                   <p className="text-gray-600 line-clamp-3 mb-4 text-sm">
-                    {blog.excerpt || "Read this amazing blog post..."}
+                    {blog.excerpt || t("readThisBlog")}
                   </p>
 
                   <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
@@ -618,7 +650,7 @@ export default function HomePage() {
                       href={`/blogs/${blog.slug}`}
                       className="inline-flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-all duration-300 group-hover:scale-105"
                     >
-                      Read More
+                      {t("readMore")}
                       <ArrowRight className="w-3 h-3" />
                     </Link>
                   </div>
@@ -627,20 +659,20 @@ export default function HomePage() {
             ))}
           </div>
         ) : (
-          <div className="text-center py-16">
+          <div className=" py-16">
             <BookOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-600 mb-2">
-              No Blog Posts Yet
+            <h3 className="text-xl text-center font-semibold text-gray-600 mb-2">
+              {t("noBlogPostsYet")}
             </h3>
-            <p className="text-gray-500 mb-6">
-              Be the first to share your insights with our community
+            <p className="text-gray-500 text-center mb-6">
+              {t("beFirstToShare")}
             </p>
             <Link
               href="/blogs/create"
-              className="inline-flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg transition-colors"
+              className="flex justify-center mx-auto items-center w-fit gap-2 bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg transition-colors"
             >
               <BookOpen className="w-4 h-4" />
-              Create First Post
+              {t("createFirstPost")}
             </Link>
           </div>
         )}
@@ -650,7 +682,7 @@ export default function HomePage() {
             href="/blogs"
             className="inline-flex items-center gap-2 border-2 border-green-500 text-green-500 hover:bg-green-500 hover:text-white px-8 py-4 rounded-2xl transition-all duration-300"
           >
-            View All Posts
+            {t("viewAllPosts")}
             <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
@@ -665,19 +697,18 @@ export default function HomePage() {
       <section className="relative py-20 bg-gradient-to-r from-green-600 to-emerald-600 overflow-hidden">
         <div className="absolute inset-0 bg-black/10"></div>
         <div className="container mx-auto px-4 text-center relative z-10">
-          <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-            Ready to Elevate Your Shopping Experience?
+          <h2 className="text-4xl md:text-5xl font-bold text-white mb-6 text-center">
+            {t("readyToElevate")}
           </h2>
-          <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
-            Join thousands of satisfied customers and discover the difference of
-            premium shopping with Sil3aty.
+          <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto text-center">
+            {t("joinThousands")}
           </p>
           <Link
             href="/product"
             className="inline-flex items-center gap-3 bg-white text-green-600 font-bold py-4 px-8 rounded-2xl shadow-2xl transform transition-all duration-300 hover:scale-105 hover:shadow-3xl"
           >
             <Zap className="w-5 h-5" />
-            Start Shopping Now
+            {t("startShoppingNow")}
             <ArrowRight className="w-5 h-5" />
           </Link>
         </div>
@@ -802,6 +833,9 @@ export default function HomePage() {
           -webkit-line-clamp: 3;
           -webkit-box-orient: vertical;
           overflow: hidden;
+        }
+        .font-arabic {
+          font-family: "Cairo", "Geeza Pro", sans-serif;
         }
       `}</style>
     </div>

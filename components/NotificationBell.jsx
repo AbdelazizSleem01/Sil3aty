@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import axios from "axios";
 import Swal from "sweetalert2";
+import { useTranslation } from "react-i18next";
 
 export const metadata = {
   title: "Notifications - Admin Portal",
@@ -42,7 +43,7 @@ export default function NotificationBell({ session }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [isMarkingAll, setIsMarkingAll] = useState(false);
-
+  const {i18n} = useTranslation();
   const fetchNotifications = async () => {
     try {
       if (!session?.user?.id) return;
@@ -139,14 +140,14 @@ export default function NotificationBell({ session }) {
       >
         <BellIcon className="h-6 w-6" />
         {unreadCount > 0 && (
-          <span className="absolute top-0 right-0 badge badge-sm badge-error animate-pulse">
+          <span className={`absolute  top-0 badge badge-sm badge-error animate-pulse`}>
             {unreadCount > 9 ? "9+" : unreadCount}
           </span>
         )}
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 md:w-96 bg-base-100 border border-base-300 rounded-lg shadow-lg z-50">
+        <div className={`absolute ${i18n.language === "ar" ? "left-0" : "right-0 "} mt-2 w-80 md:w-96 bg-base-100 border border-base-300 rounded-lg shadow-lg z-50`}>
           <div className="flex justify-between items-center p-3 border-b border-base-300 bg-base-200 rounded-t-lg">
             <h3 className="font-bold text-lg flex items-center gap-2">
               <BellIcon className="h-5 w-5 text-primary" />

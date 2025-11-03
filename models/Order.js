@@ -14,6 +14,11 @@ const orderSchema = new mongoose.Schema({
     },
   ],
   totalPrice: { type: Number, required: true },
+  subTotal: { type: Number, default: 0 }, 
+  discountAmount: { type: Number, default: 0 }, 
+  discountCode: { type: String }, 
+  coupon: { type: mongoose.Schema.Types.ObjectId, ref: 'Coupon' }, 
+  finalTotal: { type: Number, default: 0 }, 
   paymentResult: {
     id: { type: String },
     status: { type: String },
@@ -21,8 +26,8 @@ const orderSchema = new mongoose.Schema({
   tracking: {
     number: { type: String, unique: true },
     carrier: String,
-    status: { 
-      type: String, 
+    status: {
+      type: String,
       enum: ['processing', 'shipped', 'in-transit', 'delivered', 'cancelled'],
       default: 'processing'
     },

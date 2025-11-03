@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState, useMemo } from "react";
 import { toast } from "react-toastify";
+import { useTranslation } from "react-i18next";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
@@ -19,6 +20,7 @@ import Image from "next/image";
 import { useCart } from "../../../components/CartContext";
 
 export default function AllProductsPage() {
+  const { t } = useTranslation();
   const { updateCartCount } = useCart();
   const [products, setProducts] = useState([]);
   const [brands, setBrands] = useState([]);
@@ -268,7 +270,7 @@ export default function AllProductsPage() {
     <div className="min-h-screen py-8 bg-gradient-to-br from-gray-50 to-emerald-50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <h1 className="text-4xl font-bold mb-8 text-center text-primary ">
-          All Products
+          {t("allProducts")}
         </h1>
 
         {/* Search and Filter Bar */}
@@ -278,7 +280,7 @@ export default function AllProductsPage() {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input
                 type="text"
-                placeholder="Search products by name, brand, or description..."
+                placeholder={t("searchProductsByNameBrandDescription")}
                 value={filters.search}
                 onChange={(e) => handleFilterChange("search", e.target.value)}
                 className="w-full pl-10 pr-4 py-3 border border-primary rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 bg-white shadow-sm"
@@ -301,7 +303,7 @@ export default function AllProductsPage() {
                 className="btn btn-primary btn-lg flex items-center gap-2"
               >
                 <SlidersHorizontal size={20} />
-                Filters
+                {t("filters")}
                 {activeFiltersCount > 0 && (
                   <span className="badge badge-primary badge-sm">
                     {activeFiltersCount}
@@ -314,7 +316,7 @@ export default function AllProductsPage() {
                   onClick={clearAllFilters}
                   className="btn btn-warning btn-sm text-white hover:text-gray-700"
                 >
-                  Clear All
+                  {t("clearAll")}
                 </button>
               )}
             </div>

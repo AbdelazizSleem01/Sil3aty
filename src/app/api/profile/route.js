@@ -35,7 +35,6 @@ export async function PUT(req) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // Password change validation
     if (newPassword) {
       if (!currentPassword) {
         return NextResponse.json(
@@ -44,10 +43,16 @@ export async function PUT(req) {
         );
       }
 
-      const isValid = await bcrypt.compare(currentPassword, user.password);
+      const trimmedCurrent =
+        typeof currentPassword === "string" ? currentPassword.trim() : "";
+
+      const isValid = await user.matchPassword(trimmedCurrent);
       if (!isValid) {
         return NextResponse.json(
-          { error: "Invalid current password" },
+          {
+            error:
+              "Invalid current password. If you cannot remember your password, please use the password reset flow.",
+          },
           { status: 400 }
         );
       }
@@ -59,11 +64,9 @@ export async function PUT(req) {
         );
       }
 
-      const salt = await bcrypt.genSalt(10);
-      user.password = await bcrypt.hash(newPassword, salt);
+      user.password = newPassword;
     }
 
-    // Email uniqueness check
     if (email && email !== user.email) {
       const existingUser = await User.findOne({ email });
       if (existingUser) {
@@ -80,7 +83,13 @@ export async function PUT(req) {
     await user.save();
 
     const updatedUser = await User.findById(user._id).select("-password");
-    return NextResponse.json(updatedUser, { status: 200 });
+    return NextResponse.json(
+      {
+        ...updatedUser.toObject(),
+        passwordUpdated: Boolean(newPassword),
+      },
+      { status: 200 }
+    );
   } catch (error) {
     return NextResponse.json(
       { error: error.message || "Failed to update profile" },

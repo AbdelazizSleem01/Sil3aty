@@ -6,7 +6,6 @@ import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
 import { authOptions } from "../../lib/authOptions";
 import { ToastContainer } from "react-toastify";
-import GTranslate from "../../components/GTranslate";
 
 const cairo = Cairo({ subsets: ["arabic"] });
 
@@ -61,7 +60,12 @@ export const metadata = {
 };
 
 export default async function RootLayout({ children }) {
-  const session = await getServerSession(authOptions);
+  let session = null;
+  try {
+    session = await getServerSession(authOptions);
+  } catch (error) {
+    console.error("Error getting server session:", error);
+  }
 
   return (
     <html lang="en">
@@ -82,7 +86,6 @@ export default async function RootLayout({ children }) {
             <Navbar />
             <main className="flex-grow mt-6">
               {children}
-              <GTranslate />
             </main>
             <Footer />
           </div>

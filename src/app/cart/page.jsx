@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
+import { useTranslation } from "react-i18next";
 import axios from "axios";
 import Image from "next/image";
 import Link from "next/link";
@@ -12,6 +13,7 @@ import { Trash2 } from "lucide-react";
 export default function CartPage() {
   const { data: session } = useSession();
   const router = useRouter();
+  const { t, i18n } = useTranslation();
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -54,30 +56,30 @@ export default function CartPage() {
           item._id === itemId ? { ...item, ...updates } : item
         )
       );
-      toast.success("Cart updated");
+      toast.success(t("cartUpdated"));
     } catch (error) {
-      toast.error("Failed to update cart");
+      toast.error(t("failedToUpdateCart"));
     }
   };
 
   const removeItem = async (itemId) => {
     const result = await Swal.fire({
-      title: "Are you sure?",
-      text: "You won't be able to revert this!",
+      title: t("areYouSure"),
+      text: t("youWontBeAbleToRevertThis"),
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#3085d6",
       cancelButtonColor: "#d33",
-      confirmButtonText: "Yes, remove it!",
+      confirmButtonText: t("yesRemoveIt"),
     });
 
     if (result.isConfirmed) {
       try {
         await axios.delete(`/api/cart/${itemId}`);
         setCartItems((items) => items.filter((item) => item._id !== itemId));
-        toast.success("Item removed");
+        toast.success(t("itemRemoved"));
       } catch (error) {
-        toast.error("Failed to remove item");
+        toast.error(t("failedToRemoveItem"));
       }
     }
   };
@@ -97,7 +99,9 @@ export default function CartPage() {
     const validation = validateCartItems();
     if (!validation.isValid) {
       toast.error(
-        `Please select size, color, and quantity for ${validation.invalidCount} item(s)`
+        `${t("pleaseSelectSizeColorAndQuantityFor")} ${
+          validation.invalidCount
+        } ${t("items")}`
       );
       return;
     }
@@ -124,10 +128,10 @@ export default function CartPage() {
   if (loading) {
     return (
       <div className="max-w-6xl mx-auto px-4 py-8 text-gray-700">
-        <h1 className="text-3xl font-bold mb-8">Shopping Cart</h1>
+        <h1 className="text-3xl font-bold mb-8">{t("shoppingCart")}</h1>
         <div className="text-center py-12 flex items-center justify-center">
           <span className="loading loading-infinity text-primary mx-2"></span>
-          <p className="text-xl">Loading your cart...</p>
+          <p className="text-xl">{t("loadingYourCart")}</p>
         </div>
       </div>
     );
@@ -136,7 +140,7 @@ export default function CartPage() {
   if (error) {
     return (
       <div className="max-w-6xl mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-8">Shopping Cart</h1>
+        <h1 className="text-3xl font-bold mb-8">{t("shoppingCart")}</h1>
         <div className="text-center py-12">
           <p className="text-xl text-red-500">{error}</p>
         </div>
@@ -147,11 +151,13 @@ export default function CartPage() {
   if (cartItems.length === 0) {
     return (
       <div className="max-w-6xl mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-8 text-gray-700">Shopping Cart</h1>
+        <h1 className="text-3xl font-bold mb-8 text-gray-700">
+          {t("shoppingCart")}
+        </h1>
         <div className="text-center py-12">
-          <p className="text-xl mb-4 text-gray-700">Your cart is empty</p>
+          <p className="text-xl mb-4 text-gray-700">{t("yourCartIsEmpty")}</p>
           <Link href="/" className="btn btn-primary">
-            Continue shopping
+            {t("continueShopping")}
           </Link>
         </div>
       </div>
@@ -160,7 +166,9 @@ export default function CartPage() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8 text-gray-700">Shopping Cart</h1>
+      <h1 className="text-3xl font-bold mb-8 text-gray-700">
+        {t("shoppingCart")}
+      </h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Cart Items */}
@@ -170,7 +178,6 @@ export default function CartPage() {
               key={item._id}
               className="card card-side bg-base-100 shadow-lg px-5"
             >
-              {/* Product Image */}
               <figure className="w-32 h-32 mt-5">
                 {item.product?.images?.[0] ? (
                   <Image
@@ -187,7 +194,6 @@ export default function CartPage() {
                 )}
               </figure>
 
-              {/* Product Details */}
               <div className="card-body">
                 <Link
                   href={`/product/${item.product?._id}`}
@@ -202,9 +208,8 @@ export default function CartPage() {
                   ${item.product?.price?.toFixed(2) || "0.00"}
                 </p>
 
-                {/* Size Selector */}
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Size:</label>
+                  <label className="text-sm font-medium">{t("size")}</label>
                   <div className="flex flex-wrap gap-2">
                     {item.product?.sizes?.map((size) => (
                       <button
@@ -221,13 +226,15 @@ export default function CartPage() {
                     ))}
                   </div>
                   {!item.size && (
-                    <p className="text-xs text-error">Please select a size</p>
+                    <p className="text-xs text-error">
+                      {t("pleaseSelectASize")}
+                    </p>
                   )}
                 </div>
 
-                {/* Color Selector */}
+                {/* Color  */}
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Color:</label>
+                  <label className="text-sm font-medium">{t("color")}</label>
                   <div className="flex flex-wrap gap-2">
                     {item.product?.colors?.map((color) => (
                       <button
@@ -244,34 +251,46 @@ export default function CartPage() {
                     ))}
                   </div>
                   {!item.color && (
-                    <p className="text-xs text-error">Please select a color</p>
+                    <p className="text-xs text-error">
+                      {t("pleaseSelectAColor")}
+                    </p>
                   )}
                 </div>
 
-                {/* Quantity and Remove Button */}
                 <div className="flex items-center gap-4 mt-4">
                   <div className="flex items-center ">
                     <button
                       onClick={() => decreaseQuantity(item._id, item.quantity)}
-                      className="btn btn-sm btn-primary rounded-tr-none rounded-br-none"
+                      className={`btn btn-sm btn-primary ${
+                        i18n.language === "ar"
+                          ? "rounded-tl-none rounded-bl-none"
+                          : "rounded-tr-none rounded-br-none"
+                      } `}
+                      disabled={item.quantity === 1}
+                      title="Decrease Quantity"
                     >
                       -
                     </button>
-                    <span className="text-lg font-medium border-t border-b w-[100px] text-center">
+                    <span className="text-lg font-medium border-t border-b w-[100px] border-gray-300 text-center">
                       {item.quantity}
                     </span>
                     <button
                       onClick={() => increaseQuantity(item._id, item.quantity)}
-                      className="btn btn-sm btn-primary rounded-tl-none rounded-bl-none"
+                      title="Increase Quantity"
+                      className={`btn btn-sm btn-primary ${
+                        i18n.language === "ar"
+                          ? "rounded-tr-none rounded-br-none"
+                          : "rounded-tl-none rounded-bl-none"
+                      } `}
                     >
                       +
                     </button>
                   </div>
                   <button
                     onClick={() => removeItem(item._id)}
-                    className="btn btn-error btn-sm w-[30%]"
+                    className="btn btn-error btn-sm w-[30%] text-white"
                   >
-                    <Trash2 size={18} /> Remove
+                    <Trash2 size={18} /> {t("remove")}
                   </button>
                 </div>
               </div>
@@ -281,19 +300,19 @@ export default function CartPage() {
 
         {/* Order Summary */}
         <div className="card bg-base-200 p-6 rounded-lg h-fit sticky top-8">
-          <h2 className="text-xl font-semibold mb-6">Order Summary</h2>
+          <h2 className="text-xl font-semibold mb-6">{t("orderSummary")}</h2>
           <div className="space-y-4">
             <div className="flex justify-between">
-              <span>Subtotal</span>
+              <span>{t("subtotal")}</span>
               <span>${total.toFixed(2)}</span>
             </div>
             <div className="flex justify-between">
-              <span>Shipping</span>
-              <span>Calculated at checkout</span>
+              <span>{t("shipping")}</span>
+              <span>{t("calculatedAtCheckout")}</span>
             </div>
             <div className="border-t pt-4">
               <div className="flex justify-between font-semibold">
-                <span>Total</span>
+                <span>{t("total")}</span>
                 <span>${total.toFixed(2)}</span>
               </div>
             </div>
@@ -302,7 +321,7 @@ export default function CartPage() {
             onClick={handleCheckout}
             className="btn btn-primary w-full mt-6"
           >
-            Proceed to Checkout
+            {t("proceedToCheckout")}
           </button>
         </div>
       </div>

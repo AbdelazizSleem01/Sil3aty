@@ -13,13 +13,6 @@ export async function GET(req) {
   await dbConnect();
   const { searchParams } = new URL(req.url);
   const category = searchParams.get("category");
-
-  const session = await getServerSession(authOptions);
-
-  if (!session || !session.user.isAdmin) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-  }
-
   try {
     const query = {};
     if (category) query.category = category;

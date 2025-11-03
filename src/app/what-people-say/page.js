@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   FaChevronLeft,
   FaChevronRight,
@@ -16,6 +17,7 @@ import {
 import { IoSparkles, IoPeople, IoStar } from "react-icons/io5";
 
 export default function WhatPeopleSayPage() {
+  const { t } = useTranslation();
   const [feedbacks, setFeedbacks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -87,7 +89,7 @@ export default function WhatPeopleSayPage() {
         <div className="text-center">
           <div className="w-12 h-12 sm:w-16 sm:h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <span className="text-gray-600 text-base sm:text-lg">
-            Loading testimonials...
+            {t("loadingTestimonials")}
           </span>
         </div>
       </div>
@@ -125,28 +127,28 @@ export default function WhatPeopleSayPage() {
             </div>
           </div>
 
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent mb-4 sm:mb-6 px-2">
-            What People Say
+          <h1 className="text-3xl sm:text-4xl pb-2 md:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent mb-4 sm:mb-6 px-2">
+            {t("whatPeopleSay")}
           </h1>
 
           <div className="w-24 sm:w-32 h-1 sm:h-1.5 bg-gradient-to-r from-primary to-emerald-500 rounded-full mx-auto mb-4 sm:mb-6"></div>
 
-          <p className="text-base sm:text-lg lg:text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed px-4">
-            Discover what our clients are saying about their experience with us
-          </p>
+            <p className="text-base sm:text-lg lg:text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed px-4">
+              {t("discoverClientExperience")}
+            </p>
 
           {/* Stats */}
           <div className="flex flex-col sm:flex-row justify-center items-center space-y-2 sm:space-y-0 sm:space-x-6 lg:space-x-8 mt-6 text-gray-500 text-sm sm:text-base">
             <div className="flex items-center space-x-2">
               <FaHeart className="text-red-400 text-sm" />
-              <span>{feedbacks.length}+ Reviews</span>
+            <span>{feedbacks.length}+ {t("reviews")}</span>
             </div>
             <div className="flex items-center space-x-2">
               <IoStar className="text-yellow-400 text-sm" />
               <span>
                 {feedbacks.length > 0
-                  ? `${averageRating} Average Rating`
-                  : "No ratings yet"}
+                  ? `${averageRating} ${t("averageRating")}`
+                  : t("noRatingsYet")}
               </span>
             </div>
           </div>
@@ -219,12 +221,12 @@ export default function WhatPeopleSayPage() {
                         </div>
                         <div className="text-xs sm:text-sm text-gray-500">
                           {feedback.rating === 5
-                            ? "Excellent!"
+                            ? t("excellent")
                             : feedback.rating >= 4
-                            ? "Great!"
+                            ? t("great")
                             : feedback.rating >= 3
-                            ? "Good"
-                            : "Fair"}
+                            ? t("good")
+                            : t("fair")}
                         </div>
                       </div>
                     </div>
@@ -232,7 +234,7 @@ export default function WhatPeopleSayPage() {
                     {/* Comment */}
                     <blockquote className="text-gray-700 text-sm sm:text-base lg:text-lg leading-relaxed bg-gradient-to-r from-gray-50 to-green-50 rounded-xl sm:rounded-2xl p-4 sm:p-6 border-l-2 sm:border-l-4 border-green-400">
                       <div className="flex">
-                        <FaQuoteLeft className="text-green-300 text-base sm:text-xl mr-2 sm:mr-3 mt-0.5 sm:mt-1 flex-shrink-0" />
+                        <FaQuoteLeft className="text-green-300 text-base sm:text-xl mx-2 sm:mx-3 mt-0.5 sm:mt-1 flex-shrink-0" />
                         <p className="italic text-justify">
                           {feedback.comment}
                         </p>
@@ -244,7 +246,6 @@ export default function WhatPeopleSayPage() {
             </div>
           </div>
 
-          {/* Navigation Buttons - Hidden on mobile, shown on tablet and up */}
           <div className="hidden sm:flex absolute inset-y-0 -left-4 lg:-left-6 items-center">
             <button
               onClick={goToPrev}
@@ -262,7 +263,6 @@ export default function WhatPeopleSayPage() {
             </button>
           </div>
 
-          {/* Mobile Navigation Buttons */}
           <div className="flex sm:hidden justify-center space-x-4 mt-6">
             <button
               onClick={goToPrev}
@@ -279,7 +279,6 @@ export default function WhatPeopleSayPage() {
           </div>
         </div>
 
-        {/* Pagination Dots */}
         {feedbacks.length > 1 && (
           <div className="flex justify-center mt-8 sm:mt-12 space-x-2 sm:space-x-3">
             {feedbacks.map((_, index) => (
@@ -296,21 +295,19 @@ export default function WhatPeopleSayPage() {
           </div>
         )}
 
-        {/* Footer Note */}
         <div className="text-center mt-8 sm:mt-12">
           <p className="text-gray-500 text-sm sm:text-base flex flex-col sm:flex-row items-center justify-center space-y-2 sm:space-y-0 sm:space-x-2">
             <span className="flex items-center space-x-2">
               <FaHeart className="text-red-400 animate-pulse" />
-              <span>Thank you for your trust and feedback</span>
+              <span>{t("thankYouForTrust")}</span>
               <FaHeart className="text-red-400 animate-pulse" />
             </span>
           </p>
         </div>
 
-        {/* Mobile Swipe Hint */}
         <div className="sm:hidden text-center mt-6">
           <p className="text-gray-400 text-xs">
-            Swipe left or right to navigate reviews
+            {t("swipeNavigateReviews")}
           </p>
         </div>
       </div>

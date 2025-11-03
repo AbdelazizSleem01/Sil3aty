@@ -22,6 +22,7 @@ import {
   CheckCircle,
   Clock,
   MessageCircle,
+  Ticket,
 } from "lucide-react";
 import { IoInformation } from "react-icons/io5";
 
@@ -230,6 +231,11 @@ export default function AdminDashboard() {
               icon={<Bell className="w-5 h-5" />}
               title="Notifications"
               href="/admin/notifications"
+            />
+            <DashboardButton
+              icon={<Ticket className="w-5 h-5" />}
+              title="Coupons"
+              href="/admin/coupons"
             />
             <DashboardButton
               icon={<IoInformation className="w-5 h-5" />}

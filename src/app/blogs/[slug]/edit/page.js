@@ -30,6 +30,7 @@ import {
   HiRefresh,
 } from "react-icons/hi";
 import SimpleEditor from "../../../../../components/SimpleEditor";
+import TagInput from "../../../../../components/TagInput";
 
 const MDEditor = dynamic(() => import("@uiw/react-md-editor"), {
   ssr: false,
@@ -53,7 +54,7 @@ export default function EditBlog() {
   const [excerpt, setExcerpt] = useState("");
   const [coverImage, setCoverImage] = useState(null);
   const [existingImage, setExistingImage] = useState("");
-  const [tags, setTags] = useState("");
+  const [tags, setTags] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
@@ -80,7 +81,7 @@ export default function EditBlog() {
         setExcerpt(data.excerpt);
         setExistingImage(data.coverImage);
         setImagePreview(data.coverImage);
-        setTags(data.tags.join(", "));
+        setTags(data.tags || []);
         setLoading(false);
       } catch (err) {
         setError(err.message);
@@ -146,7 +147,7 @@ export default function EditBlog() {
       formData.append("content", content);
       formData.append("excerpt", excerpt);
       if (coverImage) formData.append("coverImage", coverImage);
-      formData.append("tags", tags);
+      formData.append("tags", JSON.stringify(tags));
       formData.append(
         "authorAvatar",
         session.user.profilePicture || "/images/default-avatar.png"
@@ -544,16 +545,15 @@ export default function EditBlog() {
                     Tags
                   </span>
                 </label>
-                <input
-                  type="text"
-                  value={tags}
-                  onChange={(e) => setTags(e.target.value)}
-                  placeholder="technology, programming, design, marketing..."
-                  className="input input-bordered w-full focus:ring-3 focus:ring-cyan-200 border-2 transition-all duration-300 rounded-2xl text-lg py-4"
+                <TagInput
+                  tags={tags}
+                  setTags={setTags}
+                  placeholder="اكتب علامة واضغط Enter"
+                  maxTags={10}
                 />
                 <label className="label">
                   <span className="label-text-alt text-gray-500">
-                    Separate tags with commas
+                    اكتب العلامة واضغط Enter للإضافة
                   </span>
                 </label>
               </div>
@@ -644,7 +644,7 @@ export default function EditBlog() {
               Tags Added
             </div>
             <div className="stat-value text-2xl text-gray-800">
-              {tags ? tags.split(",").length : 0}
+              {tags.length}
             </div>
           </div>
 

@@ -5,6 +5,7 @@ import axios from "axios";
 import Image from "next/image";
 import Link from "next/link";
 import { toast } from "react-toastify";
+import { useTranslation } from "react-i18next";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination } from "swiper/modules";
 import { useSession } from "next-auth/react";
@@ -32,6 +33,7 @@ import "swiper/css/pagination";
 import Swal from "sweetalert2";
 
 export default function ProductPage() {
+  const { t } = useTranslation();
   const { id } = useParams();
   const { data: session } = useSession();
   const { updateCartCount } = useCart();
@@ -61,7 +63,7 @@ export default function ProductPage() {
           fetchRecommendations();
         }
       } catch (error) {
-        toast.error("Failed to load product");
+        toast.error(t("failedToLoadProduct"));
       } finally {
         setLoading(false);
       }
@@ -344,7 +346,7 @@ export default function ProductPage() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-slate-50 to-emerald-50">
         <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-green-600 mb-4"></div>
-        <p className="text-gray-600 text-lg">Loading product details...</p>
+        <p className="text-gray-600 text-lg">{t("loadingProductDetails")}</p>
       </div>
     );
   }
@@ -355,16 +357,16 @@ export default function ProductPage() {
         <div className="text-center">
           <div className="text-6xl mb-4">😔</div>
           <h2 className="text-2xl font-bold text-gray-800 mb-2">
-            Product Not Found
+            {t("productNotFound")}
           </h2>
           <p className="text-gray-600 mb-6">
-            The product you're looking for doesn't exist.
+            {t("productDoesNotExist")}
           </p>
           <Link
             href="/"
             className="btn bg-green-600 text-white hover:bg-green-700 px-6 py-3 rounded-lg"
           >
-            Back to Home
+            {t("backToHome")}
           </Link>
         </div>
       </div>
@@ -418,13 +420,15 @@ export default function ProductPage() {
                   key={index}
                   className="bg-white rounded-2xl p-3 shadow-lg border border-gray-100"
                 >
-                  <Image
-                    src={image}
-                    alt={`Thumbnail ${index + 1}`}
-                    width={200}
-                    height={200}
-                    className="w-full h-24 object-cover rounded-xl"
-                  />
+                  <Link href={image} target="_blank" rel="noopener noreferrer" className="">
+                    <Image
+                      src={image}
+                      alt={`Thumbnail ${index + 1}`}
+                      width={200}
+                      height={200}
+                      className="w-full h-24 object-cover rounded-xl hover:blur-sm transition-all duration-300"
+                    />
+                  </Link>
                 </div>
               ))}
             </div>
@@ -433,10 +437,10 @@ export default function ProductPage() {
           <div className="space-y-6">
             <div className="flex flex-wrap gap-2">
               <span className="bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 px-4 py-2 rounded-full font-medium text-sm border border-green-200">
-                {product.category?.name || "Uncategorized"}
+                {product.category?.name || t("uncategorized")}
               </span>
               <span className="bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 px-4 py-2 rounded-full font-medium text-sm border border-green-200">
-                {product.brand?.name || "No Brand"}
+                {product.brand?.name || t("noBrand")}
               </span>
               {product.isFeatured && (
                 <span className="bg-gradient-to-r from-amber-100 to-orange-100 text-amber-800 px-4 py-2 rounded-full font-medium text-sm border border-amber-200">
@@ -532,14 +536,16 @@ export default function ProductPage() {
                       <button
                         key={color}
                         onClick={() => setSelectedColor(color)}
-                        className={`w-12 h-12 rounded-xl border-3 transition-all duration-300 shadow-md ${
+                        className={`rounded-xl border-1 transition-all duration-300 shadow-md p-2  text-white ${
                           selectedColor === color
                             ? "border-green-600 scale-110 ring-4 ring-green-200"
                             : "border-gray-200 hover:border-green-400 hover:scale-105"
                         }`}
                         style={{ backgroundColor: color }}
                         title={color}
-                      />
+                      >
+                        {color}
+                      </button>
                     ))}
                   </div>
                 </div>
