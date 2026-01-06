@@ -195,7 +195,7 @@ export default function FeaturedProductsPage() {
                   }`}
                 >
                   
-                  <div className="relative overflow-hidden rounded-t-2xl h-72 w-full bg-white">
+                  <div className="relative overflow-hidden rounded-t-2xl aspect-[4/3] w-full bg-white">
                     <Link href={`/product/${product._id}`} className="relative block w-full h-full">
                       {product.images?.length > 0 ? (
                         <Image
