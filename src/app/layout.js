@@ -4,12 +4,16 @@ import { getServerSession } from "next-auth";
 import Providers from "../../components/Providers";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
+import ServiceWorker from "../../components/ServiceWorker";
 import { authOptions } from "../../lib/authOptions";
 import { ToastContainer } from "react-toastify";
 
 export const dynamic = "force-dynamic";
 
-const cairo = Cairo({ subsets: ["arabic"] });
+const cairo = Cairo({
+  subsets: ["arabic"],
+  display: 'swap'
+});
 
 export const metadata = {
   title: {
@@ -81,12 +85,12 @@ export default async function RootLayout({ children }) {
         />
         <meta name="msapplication-TileColor" content="#7C3AED" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="//res.cloudinary.com" />
+        <link rel="dns-prefetch" href="//fonts.gstatic.com" />
         <link
           rel="preload"
-          href="https://fonts.gstatic.com/s/cairo/v28/SLXgcAAEaiFiKgAL.woff2"
-          as="font"
-          type="font/woff2"
-          crossOrigin="anonymous"
+          href="/images/banner3.png"
+          as="image"
         />
       </head>
       <body className={cairo.className} data-theme="Sil3aty">
@@ -97,6 +101,7 @@ export default async function RootLayout({ children }) {
             <Footer />
           </div>
           <ToastContainer />
+          <ServiceWorker />
         </Providers>
       </body>
     </html>

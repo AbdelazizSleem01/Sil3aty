@@ -73,7 +73,8 @@ body {
 }
 
 .animate-float {
-  animation: float 6s infinite;
+  animation: float 6s ease-in-out infinite;
+  will-change: transform;
 }
 
 .animate-fade-in {
@@ -249,10 +250,12 @@ body {
 
 @keyframes blur-in {
   0% {
+    -webkit-backdrop-filter: blur(0px);
     backdrop-filter: blur(0px);
     opacity: 0;
   }
   100% {
+    -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
     opacity: 1;
   }

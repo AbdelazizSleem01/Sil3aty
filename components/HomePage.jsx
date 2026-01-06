@@ -318,13 +318,12 @@ export default function HomePage() {
       }`}
     >
       <section className="relative min-h-screen pt-8 flex items-center justify-center bg-gradient-to-br from-green-50 via-emerald-50 to-teal-100 overflow-hidden">
-        <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMSIgZmlsbD0iIzEwYTE0MCIgZmlsbC1vcGFjaXR5PSIwLjEiLz4KPC9zdmc+')] opacity-40"></div>
-
-          <div className="absolute top-1/4 -left-32 w-96 h-96 bg-gradient-to-r from-green-200 to-emerald-300 rounded-full mix-blend-multiply opacity-40 animate-float-slow"></div>
-          <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-gradient-to-r from-teal-200 to-cyan-300 rounded-full mix-blend-multiply opacity-40 animate-float-slow delay-2000"></div>
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-gradient-to-r from-lime-200 to-green-300 rounded-full mix-blend-multiply opacity-30 animate-pulse-slow"></div>
+        <div className="absolute inset-0" style={{ backgroundImage: `url("data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMSIgZmlsbD0iIzEwYTE0MCIgZmlsbC1vcGFjaXR5PSIwLjEiLz4KPC9zdmc+")`, backgroundSize: '60px 60px', opacity: 0.4 }}>
         </div>
+
+        <div className="absolute top-1/4 -left-32 w-96 h-96 bg-gradient-to-r from-green-200 to-emerald-300 rounded-full mix-blend-multiply opacity-40 animate-float-slow"></div>
+        <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-gradient-to-r from-teal-200 to-cyan-300 rounded-full mix-blend-multiply opacity-40 animate-float-slow delay-2000"></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-gradient-to-r from-lime-200 to-green-300 rounded-full mix-blend-multiply opacity-30 animate-pulse-slow"></div>
 
         <div className="absolute inset-0">
           {dots.map((dot, i) => (
