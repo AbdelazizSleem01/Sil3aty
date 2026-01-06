@@ -81,6 +81,13 @@ export default async function RootLayout({ children }) {
           content="XmY_2KMylvB5fL9pedfQYmV4Pqj1NmhwVvt07VIVzG4"
         />
         <meta name="msapplication-TileColor" content="#7C3AED" />
+        <link
+          rel="preload"
+          href="https://fonts.gstatic.com/s/cairo/v28/SLXgcAAEaiFiKgAL.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -91,6 +98,7 @@ export default async function RootLayout({ children }) {
               })(window, document, "clarity", "script", "u0sa4o2qqw");
             `,
           }}
+          defer
         />
       </head>
       <body className={cairo.className} data-theme="Sil3aty">

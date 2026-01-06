@@ -36,10 +36,14 @@ const nextConfig = {
         hostname: "lh3.googleusercontent.com",
       },
     ],
-    qualities: [75, 90], 
+    qualities: [50, 75, 90],
+    formats: ['image/webp', 'image/avif'],
   },
   env: {
     MONGODB_URI: process.env.MONGODB_URI,
+  },
+  experimental: {
+    optimizeCss: true,
   },
   async rewrites() {
     return [];

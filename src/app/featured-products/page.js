@@ -184,7 +184,7 @@ export default function FeaturedProductsPage() {
               return (
                 <div
                   key={product._id}
-                  className={`group flex flex-col bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 border-2 ${
+                  className={`group flex flex-col bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 border-2 min-h-[500px] ${
                     hasDiscount
                       ? discountIntensity === "high"
                         ? "border-red-200 hover:border-red-300"

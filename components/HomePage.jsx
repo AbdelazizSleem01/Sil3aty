@@ -1,7 +1,8 @@
 "use client";
 import Link from "next/link";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
+import { useEffect, useState, Suspense } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ArrowRight,
@@ -23,15 +24,16 @@ import {
   Play,
 } from "lucide-react";
 
-import NewsletterSection from "@/app/subscribe/page";
-import FeedbackForm from "@/app/feedback/page";
-import WhatPeopleSayPage from "@/app/what-people-say/page";
-import CategoryProductsPage from "@/app/category/page";
-import FeaturedProductsPage from "@/app/featured-products/page";
-import TopSellingProductsPage from "@/app/top-selling/page";
-import OurTeam from "@/app/ourTeam/page";
-import DiscountedProductsPage from "@/app/discounted/page";
-import BrandsPage from "@/app/brands/page";
+// Lazy load sections for better performance
+const NewsletterSection = dynamic(() => import("@/app/subscribe/page"), { ssr: false });
+const FeedbackForm = dynamic(() => import("@/app/feedback/page"), { ssr: false });
+const WhatPeopleSayPage = dynamic(() => import("@/app/what-people-say/page"), { ssr: false });
+const CategoryProductsPage = dynamic(() => import("@/app/category/page"), { ssr: false });
+const FeaturedProductsPage = dynamic(() => import("@/app/featured-products/page"), { ssr: false });
+const TopSellingProductsPage = dynamic(() => import("@/app/top-selling/page"), { ssr: false });
+const OurTeam = dynamic(() => import("@/app/ourTeam/page"), { ssr: false });
+const DiscountedProductsPage = dynamic(() => import("@/app/discounted/page"), { ssr: false });
+const BrandsPage = dynamic(() => import("@/app/brands/page"), { ssr: false });
 
 function CountdownTimer({ endDate, format = "hours" }) {
   const { t, i18n } = useTranslation();
