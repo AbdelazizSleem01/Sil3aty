@@ -25,7 +25,9 @@ export async function GET(request) {
       .lean();
 
     if (!discountedProducts || discountedProducts.length === 0) {
-      return NextResponse.json([]);
+      const response = NextResponse.json([]);
+      response.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=3600');
+      return response;
     }
 
     const productsWithReviews = await Promise.all(
@@ -67,7 +69,9 @@ export async function GET(request) {
       })
     );
 
-    return NextResponse.json(productsWithReviews);
+    const response = NextResponse.json(productsWithReviews);
+    response.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=3600');
+    return response;
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to fetch discounted products", details: error.message },

@@ -28,7 +28,7 @@
     "lucide-react": "^0.482.0",
     "mongoose": "^8.12.1",
     "nanoid": "^5.1.5",
-    "next": "^16.0.1",
+    "next": "^16.1.1-canary.14",
     "next-auth": "^4.24.11",
     "next-i18next": "^15.4.2",
     "next-sitemap": "^4.2.3",
@@ -41,6 +41,7 @@
     "react-icons": "^5.5.0",
     "react-intersection-observer": "^9.16.0",
     "react-toastify": "^11.0.5",
+    "recharts": "^3.3.0",
     "rehype-sanitize": "^6.0.0",
     "stripe": "^17.7.0",
     "sweetalert2": "^11.17.2",
@@ -50,6 +51,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.0.14",
+    "baseline-browser-mapping": "^2.9.11",
     "tailwindcss": "^4.0.14"
   }
 }

@@ -1,4 +1,5 @@
 "use client";
+
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
@@ -23,12 +24,18 @@ import {
   Clock,
   MessageCircle,
   Ticket,
+  BarChart3,
 } from "lucide-react";
 import { IoInformation } from "react-icons/io5";
+import { useTranslation } from "react-i18next";
 
 export default function AdminDashboard() {
+  const { t, i18n } = useTranslation();
+  const isRTL = i18n.language === "ar";
+
   const { data: session, status } = useSession();
   const router = useRouter();
+
   const [stats, setStats] = useState({
     users: 0,
     products: 0,
@@ -47,13 +54,12 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (status === "loading") return; 
+    if (status === "loading") return;
 
     if (status === "unauthenticated" || !session) {
       router.push("/login");
       return;
     }
-
     if (!session.user.isAdmin) {
       router.push("/unauthorized");
       return;
@@ -69,236 +75,240 @@ export default function AdminDashboard() {
           fetch("/api/admin/activity"),
         ]);
 
-        if (statsRes.ok) {
-          const statsData = await statsRes.json();
-          setStats(statsData);
-        } else {
-          toast.error("Failed to fetch dashboard stats");
-        }
+        if (statsRes.ok) setStats(await statsRes.json());
+        else toast.error(t("failedToFetchStats"));
 
-        if (activityRes.ok) {
-          const activityData = await activityRes.json();
-          setActivity(activityData);
-        } else {
-          toast.error("Failed to fetch activity data");
-        }
-      } catch (error) {
-        toast.error("Error loading dashboard data");
+        if (activityRes.ok) setActivity(await activityRes.json());
+        else toast.error(t("failedToFetchActivity"));
+      } catch {
+        toast.error(t("errorLoadingDashboard"));
       } finally {
         setLoading(false);
       }
     };
-
     fetchDashboardData();
-  }, []);
+  }, [t]);
 
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
         <div className="text-center">
-          <div className="loading loading-spinner text-primary w-16 h-16"></div>
-          <p className="mt-4 text-gray-600">Loading dashboard...</p>
+          <div className="loading loading-spinner text-primary w-16 h-16" />
+          <p className="mt-4 text-gray-600">{t("loadingDashboard")}</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div
+      dir={isRTL ? "rtl" : "ltr"}
+      className={`min-h-screen bg-gray-50 p-6 ${isRTL ? "font-arabic" : ""}`}
+    >
+    
+
       <div className="max-w-7xl mx-auto">
         <h1 className="text-3xl font-bold text-gray-800 mb-8">
-          Admin Dashboard
+          {t("adminDashboard")}
         </h1>
-        {/* Statistics Cards */}
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <DashboardCard
             icon={<Users className="w-6 h-6" />}
-            title="Total Users"
+            title={t("totalUsers")}
             value={stats.users}
             color="bg-emerald-100 text-emerald-600"
           />
           <DashboardCard
             icon={<Package className="w-6 h-6" />}
-            title="Products"
+            title={t("products")}
             value={stats.products}
             color="bg-green-100 text-green-600"
           />
           <DashboardCard
             icon={<ShoppingCart className="w-6 h-6" />}
-            title="Total Orders"
+            title={t("totalOrders")}
             value={stats.orders}
             color="bg-green-100 text-green-600"
           />
           <DashboardCard
             icon={<Mail className="w-6 h-6" />}
-            title="Messages"
+            title={t("messages")}
             value={stats.messages}
             color="bg-amber-100 text-amber-600"
           />
         </div>
-        {/* Summary Statistics */}
+
         <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
           <h2 className="text-xl font-semibold text-gray-700 mb-6">
-            Summary Statistics
+            {t("summaryStatistics")}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <SummaryCard
               icon={<DollarSign className="w-8 h-8" />}
-              title="Total Revenue"
+              title={t("totalRevenue")}
               value={`$${stats.revenue.toFixed(2)}`}
-              description="Revenue from all orders"
+              description={t("revenueFromAllOrders")}
               color="bg-green-100 text-green-700"
             />
             <SummaryCard
               icon={<TrendingUp className="w-8 h-8" />}
-              title="Avg Order Value"
+              title={t("avgOrderValue")}
               value={`$${stats.averageOrderValue.toFixed(2)}`}
-              description="Average value per order"
+              description={t("averageValuePerOrder")}
               color="bg-emerald-100 text-emerald-700"
             />
             <SummaryCard
               icon={<CheckCircle className="w-8 h-8" />}
-              title="Completed Orders"
+              title={t("completedOrders")}
               value={stats.completedOrders}
-              description="Successfully delivered orders"
+              description={t("successfullyDeliveredOrders")}
               color="bg-emerald-100 text-emerald-700"
             />
             <SummaryCard
               icon={<ShoppingCart className="w-8 h-8" />}
-              title="Total Orders"
+              title={t("totalOrders")}
               value={stats.orders}
-              description="All orders in the system"
+              description={t("allOrdersInSystem")}
               color="bg-green-100 text-green-700"
             />
           </div>
         </div>
+
         <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
           <h2 className="text-xl font-semibold text-gray-700 mb-6">
-            Quick Actions
+            {t("quickActions")}
           </h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
             <DashboardButton
               icon={<Users className="w-5 h-5" />}
-              title="Users"
+              title={t("users")}
               href="/admin/users"
             />
             <DashboardButton
               icon={<UserCog className="w-5 h-5" />}
-              title="Team"
+              title={t("team")}
               href="/admin/ourTeams"
             />
             <DashboardButton
               icon={<Package className="w-5 h-5" />}
-              title="Products"
+              title={t("products")}
               href="/admin/products"
             />
             <DashboardButton
               icon={<Tags className="w-5 h-5" />}
-              title="Categories"
+              title={t("categories")}
               href="/admin/categories"
             />
             <DashboardButton
               icon={<ListChecks className="w-5 h-5" />}
-              title="Orders"
+              title={t("orders")}
               href="/admin/orders"
             />
             <DashboardButton
               icon={<Factory className="w-5 h-5" />}
-              title="Brands"
+              title={t("brands")}
               href="/admin/brands"
             />
             <DashboardButton
               icon={<Mail className="w-5 h-5" />}
-              title="Subscribers"
+              title={t("subscribers")}
               href="/admin/subscribers"
             />
             <DashboardButton
               icon={<MessageCircle className="w-5 h-5" />}
-              title="Reviews"
+              title={t("reviews")}
               href="/admin/reviews"
             />
             <DashboardButton
               icon={<MessageSquare className="w-5 h-5" />}
-              title="Contacts"
+              title={t("contacts")}
               href="/admin/contacts"
             />
             <DashboardButton
               icon={<MessageSquare className="w-5 h-5" />}
-              title="Feedback"
+              title={t("feedback")}
               href="/admin/feedback"
             />
             <DashboardButton
               icon={<Bell className="w-5 h-5" />}
-              title="Notifications"
+              title={t("notifications")}
               href="/admin/notifications"
             />
             <DashboardButton
               icon={<Ticket className="w-5 h-5" />}
-              title="Coupons"
+              title={t("coupons")}
               href="/admin/coupons"
             />
             <DashboardButton
+              icon={<BarChart3 className="w-5 h-5" />}
+              title={t("comprehensiveStatistics")}
+              href="/admin/statistics"
+            />
+            <DashboardButton
               icon={<IoInformation className="w-5 h-5" />}
-              title="About Us Sections"
+              title={t("aboutUsSections")}
               href="/admin/about-us"
             />
             <DashboardButton
               icon={<Users className="w-5 h-5" />}
-              title="Users & Orders"
+              title={t("usersAndOrders")}
               href="/admin/user-orders"
             />
           </div>
         </div>
-        {/* Recent Activity Section */}
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Recent Users */}
           <div className="bg-white rounded-xl shadow-sm p-6">
             <h2 className="text-xl font-semibold text-gray-700 mb-6 flex items-center">
-              <Users className="w-5 h-5 mr-2 text-emerald-500" />
-              Recent Users
+              <Users className="w-5 h-5 mx-2 text-emerald-500" />
+              {t("recentUsers")}
             </h2>
             <div className="space-y-4">
-              {activity.users.length > 0 ? (
+              {activity.users.length ? (
                 activity.users.map((user) => (
                   <ActivityItem
                     key={user._id}
                     icon={<Users className="w-5 h-5 text-emerald-500" />}
-                    title="New User Registered"
+                    title={t("newUserRegistered")}
                     description={user.email}
-                    time={new Date(user.createdAt).toLocaleDateString()}
+                    time={new Date(user.createdAt).toLocaleDateString(
+                      i18n.language
+                    )}
                   />
                 ))
               ) : (
                 <p className="text-gray-500 text-center py-4">
-                  No recent users
+                  {t("noRecentUsers")}
                 </p>
               )}
             </div>
           </div>
 
-          {/* Recent Orders & Messages */}
           <div className="space-y-8">
             <div className="bg-white rounded-xl shadow-sm p-6">
               <h2 className="text-xl font-semibold text-gray-700 mb-6 flex items-center">
-                <ShoppingCart className="w-5 h-5 mr-2 text-green-500" />
-                Recent Orders
+                <ShoppingCart className="w-5 h-5 mx-2 text-green-500" />
+                {t("recentOrders")}
               </h2>
               <div className="space-y-4">
-                {activity.orders.length > 0 ? (
+                {activity.orders.length ? (
                   activity.orders.map((order) => (
                     <ActivityItem
                       key={order._id}
                       icon={<ShoppingCart className="w-5 h-5 text-green-500" />}
-                      title={`Order #${order._id.slice(-6)}`}
+                      title={`${t("order")} #${order._id.slice(-6)}`}
                       description={`${order.status} - $${
-                        order.totalPrice?.toFixed(2) || "0.00"
+                        order.totalPrice?.toFixed(2) ?? "0.00"
                       }`}
-                      time={new Date(order.createdAt).toLocaleDateString()}
+                      time={new Date(order.createdAt).toLocaleDateString(
+                        i18n.language
+                      )}
                     />
                   ))
                 ) : (
                   <p className="text-gray-500 text-center py-4">
-                    No recent orders
+                    {t("noOrderRecent")}
                   </p>
                 )}
               </div>
@@ -306,23 +316,25 @@ export default function AdminDashboard() {
 
             <div className="bg-white rounded-xl shadow-sm p-6">
               <h2 className="text-xl font-semibold text-gray-700 mb-6 flex items-center">
-                <Mail className="w-5 h-5 mr-2 text-amber-500" />
-                Recent Messages
+                <Mail className="w-5 h-5 mx-2 text-amber-500" />
+                {t("recentMessages")}
               </h2>
               <div className="space-y-4">
-                {activity.messages.length > 0 ? (
+                {activity.messages.length ? (
                   activity.messages.map((msg) => (
                     <ActivityItem
                       key={msg._id}
                       icon={<Mail className="w-5 h-5 text-amber-500" />}
                       title={msg.subject}
-                      description={`From: ${msg.name} (${msg.email})`}
-                      time={new Date(msg.createdAt).toLocaleDateString()}
+                      description={`${t("from")}: ${msg.name} (${msg.email})`}
+                      time={new Date(msg.createdAt).toLocaleDateString(
+                        i18n.language
+                      )}
                     />
                   ))
                 ) : (
                   <p className="text-gray-500 text-center py-4">
-                    No recent messages
+                    {t("noMessageRecent")}
                   </p>
                 )}
               </div>
@@ -330,15 +342,21 @@ export default function AdminDashboard() {
           </div>
         </div>
       </div>
+
+      <style jsx>{`
+        .font-arabic {
+          font-family: "Cairo", "Geeza Pro", sans-serif;
+        }
+      `}</style>
     </div>
   );
 }
 
-// Reusable Dashboard Card Component
 function DashboardCard({ icon, title, value, color }) {
+  const { t } = useTranslation();
   return (
     <div className="bg-white rounded-xl shadow-sm p-6 flex items-center">
-      <div className={`rounded-full p-3 ${color} mr-4`}>{icon}</div>
+      <div className={`rounded-full p-3 ${color} mx-4`}>{icon}</div>
       <div>
         <p className="text-sm font-medium text-gray-500">{title}</p>
         <p className="text-2xl font-bold text-gray-800">{value}</p>
@@ -348,13 +366,14 @@ function DashboardCard({ icon, title, value, color }) {
 }
 
 function DashboardButton({ icon, title, href }) {
+  const { t } = useTranslation();
   return (
     <Link href={href}>
       <div className="flex flex-col items-center justify-center p-4 border border-gray-200 rounded-lg hover:bg-primary/20 transition-colors cursor-pointer">
         <div className="bg-gray-100 p-3 rounded-full mb-2 text-gray-500">
           {icon}
         </div>
-        <span className="text-md text-primary font-bold text-center">
+        <span className="text-md text-primary font-bold text-center ">
           {title}
         </span>
       </div>
@@ -363,10 +382,11 @@ function DashboardButton({ icon, title, href }) {
 }
 
 function SummaryCard({ icon, title, value, description, color }) {
+  const { t } = useTranslation();
   return (
     <div className="bg-white rounded-xl shadow-sm p-6 flex flex-col border border-gray-100">
       <div className="flex items-center mb-4">
-        <div className={`rounded-lg p-3 ${color} mr-4`}>{icon}</div>
+        <div className={`rounded-lg p-3 ${color} mx-4`}>{icon}</div>
         <div>
           <p className="text-lg font-bold text-gray-800">{value}</p>
           <p className="text-sm font-medium text-gray-500">{title}</p>
@@ -377,11 +397,10 @@ function SummaryCard({ icon, title, value, description, color }) {
   );
 }
 
-// Reusable Activity Item Component
 function ActivityItem({ icon, title, description, time }) {
   return (
     <div className="flex items-start p-3 hover:bg-gray-50 rounded-lg transition-colors">
-      <div className="mt-1 mr-3 flex-shrink-0">{icon}</div>
+      <div className="mt-1 mx-3 flex-shrink-0">{icon}</div>
       <div className="flex-1 min-w-0">
         <h3 className="font-medium text-gray-800 truncate">{title}</h3>
         <p className="text-sm text-gray-600 truncate">{description}</p>

@@ -65,6 +65,8 @@ export default async function RootLayout({ children }) {
     session = await getServerSession(authOptions);
   } catch (error) {
     console.error("Error getting server session:", error);
+    // Ensure session is null if there's an error
+    session = null;
   }
 
   return (

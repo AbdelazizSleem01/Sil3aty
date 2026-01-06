@@ -522,7 +522,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="container mx-auto px-4 py-20">
+      <section className="container mx-auto py-20">
         <div className="text-center mb-12">
           <div className="flex justify-center mb-4">
             <div className="p-3 bg-gradient-to-r from-green-100 to-emerald-100 rounded-2xl">
@@ -558,7 +558,7 @@ export default function HomePage() {
             ))}
           </div>
         ) : latestBlogs.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {latestBlogs.map((blog) => (
               <div
                 key={blog._id}
@@ -613,8 +613,8 @@ export default function HomePage() {
                     {blog.excerpt || t("readThisBlog")}
                   </p>
 
-                  <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
-                    <div className="flex items-center gap-4">
+                  <div className="flex items-center text-sm text-gray-500 mb-4">
+                    <div className="flex items-center gap-8">
                       <div className="flex items-center gap-1">
                         <Eye className="w-3 h-3" />
                         <span>{blog.views || 0}</span>
@@ -627,10 +627,6 @@ export default function HomePage() {
                         <MessageCircle className="w-3 h-3" />
                         <span>{blog.commentsCount || 0}</span>
                       </div>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Star className="w-3 h-3 text-yellow-500" />
-                      <span>{blog.averageRating || 0}</span>
                     </div>
                   </div>
 

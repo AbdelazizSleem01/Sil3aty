@@ -70,7 +70,7 @@ export default function Footer() {
                       src="/images/logo2.png"
                       width={70}
                       height={70}
-                      className="w-14 h-auto"
+                      className="w-14 h-14"
                       alt="Sil3aty Logo"
                     />
                   </div>

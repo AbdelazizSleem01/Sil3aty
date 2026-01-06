@@ -131,7 +131,7 @@ export default function Navbar() {
                 width={isScrolled ? 48 : 52}
                 height={isScrolled ? 48 : 52}
                 className={`transition-all duration-300 group-hover:scale-105 ${
-                  isScrolled ? " h-auto w-12" : " h-auto w-12"
+                  isScrolled ? "w-12 h-12" : "w-12 h-12"
                 }`}
                 alt="Sil3aty"
                 priority

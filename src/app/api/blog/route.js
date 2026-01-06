@@ -31,7 +31,9 @@ export async function GET() {
       };
     });
 
-    return NextResponse.json(blogsWithStats);
+    const response = NextResponse.json(blogsWithStats);
+    response.headers.set('Cache-Control', 'public, s-maxage=600, stale-while-revalidate=7200');
+    return response;
   } catch (error) {
     return NextResponse.json(
       { message: "Error fetching blogs", error: error.message },

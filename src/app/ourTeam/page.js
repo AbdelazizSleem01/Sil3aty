@@ -138,6 +138,7 @@ export default function OurTeam() {
                         src={member.image}
                         alt={member.name}
                         fill
+                        sizes="144px"
                         className="rounded-full object-cover border-4 border-white"
                       />
                     </div>

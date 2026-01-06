@@ -117,7 +117,7 @@ export default function TopSellingProductsPage() {
       }`}
       dir={isRTL ? "rtl" : "ltr"}
     >
-      <div className="container mx-auto px-4">
+      <div className="container mx-auto ">
         {/* Header Section */}
         <div className="text-center mb-16">
           <div className="relative inline-block mb-6">
@@ -178,7 +178,7 @@ export default function TopSellingProductsPage() {
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 px-2 md:px-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 ">
             {topSellingProducts.map((product, index) => {
               const hasDiscount =
                 product.isOnSale &&
