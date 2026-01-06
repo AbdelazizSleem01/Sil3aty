@@ -42,7 +42,6 @@ export default function EditCategory() {
         setImage(data.image || "");
         setOriginalData(data);
         
-        toast.success("Category loaded successfully!");
       } catch (err) {
         toast.error(`❌ ${err.message}`);
         setTimeout(() => {

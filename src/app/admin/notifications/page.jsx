@@ -55,7 +55,6 @@ export default function NotificationsTable() {
     try {
       const { data } = await axios.get("/api/admin/notifications");
       setNotifications(data);
-      toast.success("Notifications loaded successfully!");
     } catch (error) {
     } finally {
       setLoading(false);

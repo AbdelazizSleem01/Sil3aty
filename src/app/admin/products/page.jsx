@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
 import Swal from "sweetalert2";
 import AdminProductForm from "../../../../components/AdminProductForm";
@@ -20,10 +21,26 @@ import {
 export default function AdminProducts() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const { t, i18n } = useTranslation();
   const [products, setProducts] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const isRTL = i18n.language === "ar";
+
+  useEffect(() => {
+    document.title = isRTL ? "Sil3aty - إدارة المنتجات" : "Sil3aty - Product Management";
+    document.documentElement.dir = isRTL ? "rtl" : "ltr";
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) {
+      metaDesc.setAttribute(
+        "content",
+        isRTL
+          ? "إدارة كتالوج المنتجات والمخزون. أضف، عدل، واحذف المنتجات من لوحة التحكم."
+          : "Manage your product catalog and inventory. Add, edit, and delete products from the admin dashboard."
+      );
+    }
+  }, [isRTL, i18n.language]);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -46,7 +63,6 @@ export default function AdminProducts() {
       if (!Array.isArray(data)) throw new Error("API did not return an array");
 
       setProducts(data);
-      toast.success("Products loaded successfully!");
     } catch (error) {
       toast.error(`❌ ${error.message || "Failed to load products"}`);
     } finally {
@@ -138,12 +154,12 @@ export default function AdminProducts() {
       <div className="min-h-screen bg-gradient-to-br from-base-100 to-base-200 flex items-center justify-center">
         <div className="text-center">
           <FaSpinner className="text-8xl text-primary animate-spin mx-auto mb-6" />
-          <div className="flex items-center gap-3 text-2xl font-semibold text-gray-700">
+          <div className={`flex items-center gap-3 text-2xl font-semibold text-gray-700 ${isRTL ? 'flex-row-reverse' : ''}`}>
             <FaBox className="text-primary" />
-            <span>Loading Products...</span>
+            <span>{t("loadingProducts") || "Loading Products..."}</span>
           </div>
           <p className="text-gray-500 mt-2">
-            Please wait while we fetch your products
+            {t("fetchingProducts") || "Please wait while we fetch your products"}
           </p>
         </div>
       </div>
@@ -175,29 +191,29 @@ export default function AdminProducts() {
               </div>
               <div>
                 <h1 className="text-4xl font-bold text-gray-800">
-                  Product Management
+                  {t("productManagement") || "Product Management"}
                 </h1>
-                <p className="text-gray-600 mt-2 flex items-center gap-2">
+                <p className={`text-gray-600 mt-2 flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
                   <FaEye className="text-primary" />
-                  Manage your product catalog and inventory
+                  {t("manageCatalogInventory") || "Manage your product catalog and inventory"}
                 </p>
               </div>
             </div>
 
-            <div className="flex gap-4">
+            <div className={`flex gap-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
               <button
                 onClick={handleRefresh}
                 className="btn btn-primary btn-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 flex items-center gap-3 px-6 rounded-xl"
               >
-                <FaSync className="text-lg" />
-                Refresh
+                <FaSync className={`text-lg ${isRTL ? 'ml-2' : 'mr-2'}`} />
+                {t("refresh") || "Refresh"}
               </button>
               <button
                 onClick={() => setSelectedProduct("new")}
                 className="btn btn-success btn-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 flex items-center gap-3 px-6 rounded-xl"
               >
-                <FaPlus className="text-lg" />
-                Add Product
+                <FaPlus className={`text-lg ${isRTL ? 'ml-2' : 'mr-2'}`} />
+                {t("addProduct") || "Add Product"}
               </button>
             </div>
           </div>
@@ -210,7 +226,7 @@ export default function AdminProducts() {
                   {products.length}
                 </span>
               </div>
-              <p className="text-gray-600 font-semibold">Total Products</p>
+              <p className="text-gray-600 font-semibold">{t("totalProducts") || "Total Products"}</p>
             </div>
 
             <div className="bg-base-100 rounded-2xl p-6 shadow-lg border border-base-300 text-center">
@@ -220,7 +236,7 @@ export default function AdminProducts() {
                   {featuredCount}
                 </span>
               </div>
-              <p className="text-gray-600 font-semibold">Featured</p>
+              <p className="text-gray-600 font-semibold">{t("featured") || "Featured"}</p>
             </div>
 
             <div className="bg-base-100 rounded-2xl p-6 shadow-lg border border-base-300 text-center">
@@ -230,7 +246,7 @@ export default function AdminProducts() {
                   {onSaleCount}
                 </span>
               </div>
-              <p className="text-gray-600 font-semibold">On Sale</p>
+              <p className="text-gray-600 font-semibold">{t("onSale") || "On Sale"}</p>
             </div>
 
             <div className="bg-base-100 rounded-2xl p-6 shadow-lg border border-base-300 text-center">
@@ -240,7 +256,7 @@ export default function AdminProducts() {
                   {outOfStockCount}
                 </span>
               </div>
-              <p className="text-gray-600 font-semibold">Out of Stock</p>
+              <p className="text-gray-600 font-semibold">{t("outOfStock") || "Out of Stock"}</p>
             </div>
           </div>
 
@@ -248,21 +264,21 @@ export default function AdminProducts() {
             <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
               <div className="flex-1 w-full">
                 <div className="relative">
-                  <FaSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-lg" />
+                  <FaSearch className={`absolute ${isRTL ? 'right-4' : 'left-4'} top-1/2 transform -translate-y-1/2 text-gray-400 text-lg`} />
                   <input
                     type="text"
-                    placeholder="Search products by name, category, brand, or description..."
+                    placeholder={t("searchProducts") || "Search products by name, category, brand, or description..."}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="input input-bordered input-lg w-full pl-12 pr-4 rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20"
+                    className={`input input-bordered input-lg w-full ${isRTL ? 'pr-12 pl-4' : 'pl-12 pr-4'} rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20`}
                   />
                 </div>
               </div>
-              <div className="flex items-center gap-2 text-sm text-gray-500">
+              <div className={`flex items-center gap-2 text-sm text-gray-500 ${isRTL ? 'flex-row-reverse' : ''}`}>
                 <FaBox className="text-primary" />
                 <span>
                   {filteredProducts.length}{" "}
-                  {filteredProducts.length === 1 ? "product" : "products"} found
+                  {filteredProducts.length === 1 ? (t("product") || "product") : (t("products") || "products")} {t("found") || "found"}
                 </span>
               </div>
             </div>
@@ -287,20 +303,20 @@ export default function AdminProducts() {
             <div className="text-center py-16">
               <FaExclamationTriangle className="text-6xl text-gray-300 mx-auto mb-4" />
               <h3 className="text-2xl font-semibold text-gray-600 mb-2">
-                {searchTerm ? "No products found" : "No products yet"}
+                {searchTerm ? (t("noProductsFound") || "No products found") : (t("noProductsYet") || "No products yet")}
               </h3>
               <p className="text-gray-500 max-w-md mx-auto mb-6">
                 {searchTerm
-                  ? "Try adjusting your search terms to find what you're looking for."
-                  : "Get started by adding your first product to your store."}
+                  ? (t("tryAdjustingSearch") || "Try adjusting your search terms to find what you're looking for.")
+                  : (t("getStartedAddProduct") || "Get started by adding your first product to your store.")}
               </p>
               {!searchTerm && (
                 <button
                   onClick={() => setSelectedProduct("new")}
                   className="btn btn-success btn-lg flex items-center gap-2 mx-auto"
                 >
-                  <FaPlus />
-                  Add Your First Product
+                  <FaPlus className={`${isRTL ? 'ml-2' : 'mr-2'}`} />
+                  {t("addYourFirstProduct") || "Add Your First Product"}
                 </button>
               )}
             </div>
@@ -324,7 +340,7 @@ export default function AdminProducts() {
                   <p className="text-2xl font-bold text-gray-800">
                     {products.length}
                   </p>
-                  <p className="text-sm text-gray-600">Total Products</p>
+                  <p className="text-sm text-gray-600">{t("totalProducts") || "Total Products"}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
@@ -336,7 +352,7 @@ export default function AdminProducts() {
                     {featuredCount} (
                     {Math.round((featuredCount / products.length) * 100)}%)
                   </p>
-                  <p className="text-sm text-gray-600">Featured Rate</p>
+                  <p className="text-sm text-gray-600">{t("featuredRate") || "Featured Rate"}</p>
                 </div>
               </div>
             </div>

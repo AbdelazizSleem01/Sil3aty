@@ -157,7 +157,7 @@ export default function Returns() {
                   </div>
                   <p className="opacity-90 mb-3">{step.description}</p>
                   <div className="badge badge-outline">
-                    <Clock className="w-4 h-4 mr-1" />
+                    <Clock className="w-4 h-4 mx-1" />
                     {step.time}
                   </div>
                 </div>

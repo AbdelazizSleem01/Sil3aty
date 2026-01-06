@@ -262,9 +262,9 @@ export default function StatisticsPage() {
                     }`}
                   >
                     {stats.salesRevenue.revenueGrowth >= 0 ? (
-                      <TrendingUp className="inline w-5 h-5 mr-1" />
+                      <TrendingUp className="inline w-5 h-5 mx-1" />
                     ) : (
-                      <TrendingDown className="inline w-5 h-5 mr-1" />
+                      <TrendingDown className="inline w-5 h-5 mx-1" />
                     )}
                     {stats.salesRevenue.revenueGrowth >= 0 ? "+" : ""}
                     {stats.salesRevenue.revenueGrowth.toFixed(2)}%
@@ -415,7 +415,7 @@ export default function StatisticsPage() {
               </div>
               <p className="text-gray-600">{t("averageValuePerOrder")}</p>
               <div className="mt-4 flex items-center text-green-600">
-                <TrendingUp className="w-5 h-5 mr-1" />
+                <TrendingUp className="w-5 h-5 mx-1" />
                 <span className="text-sm">+5.2% from last month</span>
               </div>
             </div>
@@ -663,9 +663,9 @@ function StatCard({ icon, title, value, subtitle, color, trend }) {
             }`}
           >
             {trend >= 0 ? (
-              <TrendingUp className="w-4 h-4 mr-1" />
+              <TrendingUp className="w-4 h-4 mx-1" />
             ) : (
-              <TrendingDown className="w-4 h-4 mr-1" />
+              <TrendingDown className="w-4 h-4 mx-1" />
             )}
             {trend >= 0 ? "+" : ""}
             {trend}%

@@ -56,7 +56,6 @@ export default function Users() {
 
         if (res.ok) {
           setUsers(data.users);
-          toast.success("Users loaded successfully!");
         } else {
           toast.error(data.error);
         }

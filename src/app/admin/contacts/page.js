@@ -64,7 +64,6 @@ export default function AdminContactsPage() {
         }
       });
       setResponses(initialResponses);
-      toast.success("Contact messages loaded successfully!");
     } catch (error) {
       toast.error("❌ Failed to load contact messages");
     } finally {

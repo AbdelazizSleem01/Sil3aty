@@ -52,7 +52,6 @@ export default function EditEmployee() {
           existingImage: data.image,
         });
 
-        toast.success("Team member loaded successfully!");
       } catch (err) {
         toast.error(`❌ ${err.message}`);
         setTimeout(() => {

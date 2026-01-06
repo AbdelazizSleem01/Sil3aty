@@ -6,7 +6,7 @@ export async function DELETE(req, { params }) {
   try {
     await dbConnect();
 
-    const { id } = await params;
+    const { id } = params;
     if (!id) {
       return NextResponse.json(
         { error: "Feedback ID is required" },
@@ -22,12 +22,8 @@ export async function DELETE(req, { params }) {
       );
     }
 
-    if (feedback.imageUrl) {
-      try {
-        await del(feedback.imageUrl);
-      } catch (err) {}
-    }
-
+    // Note: We do not attempt to delete remote images here to avoid
+    // requiring extraction of Cloudinary public IDs.
     await Feedback.findByIdAndDelete(id);
 
     return NextResponse.json(

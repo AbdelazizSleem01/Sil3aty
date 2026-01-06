@@ -50,7 +50,6 @@ export default function OurTeams() {
         if (!response.ok) throw new Error("Failed to fetch team members");
         const data = await response.json();
         setTeamMembers(data);
-        toast.success("Team members loaded successfully!");
       } catch (err) {
         toast.error(`❌ ${err.message}`);
       } finally {

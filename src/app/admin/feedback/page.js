@@ -48,7 +48,6 @@ export default function AdminFeedbackPage() {
         if (!response.ok) throw new Error("Failed to fetch feedback");
         const data = await response.json();
         setFeedbacks(data);
-        toast.success("Feedback loaded successfully!");
       } catch (err) {
         toast.error(`❌ ${err.message}`);
       } finally {

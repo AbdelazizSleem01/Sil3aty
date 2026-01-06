@@ -2,9 +2,8 @@
 import { useEffect, useState, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { useSession } from "next-auth/react";
+import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation, Pagination } from "swiper/modules";
 import {
   Package,
   Tag,
@@ -28,8 +27,9 @@ import {
 } from "lucide-react";
 import SimpleEditor from "./SimpleEditor";
 
-export default function AdminProductForm({ product, onSuccess }) {
+export default function AdminProductForm({ product, onSuccess, onCancel }) {
   const { data: session, status } = useSession();
+  const { t, i18n } = useTranslation();
   const [categories, setCategories] = useState([]);
   const [brands, setBrands] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -37,6 +37,7 @@ export default function AdminProductForm({ product, onSuccess }) {
   const [images, setImages] = useState(product?.images || []);
   const [mainImage, setMainImage] = useState(product?.mainImage || null);
   const fileInputRef = useRef(null);
+  const isRTL = i18n.language === "ar";
 
   const {
     register,
@@ -321,18 +322,29 @@ export default function AdminProductForm({ product, onSuccess }) {
     >
       {/* Header */}
       <div className="bg-gradient-to-r from-emerald-600 to-green-600 p-6 text-white">
-        <div className="flex items-center gap-3">
-          <Package className="w-8 h-8" />
-          <div>
-            <h2 className="text-2xl font-bold">
-              {product ? "Edit Product" : "Create New Product"}
-            </h2>
-            <p className="text-emerald-100">
-              {product
-                ? "Update product information"
-                : "Add a new product to your store"}
-            </p>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Package className="w-8 h-8" />
+            <div>
+              <h2 className="text-2xl font-bold">
+                {product ? (isRTL ? t("editProduct_ar") || t("editProduct") : t("editProduct")) || "Edit Product" : (isRTL ? t("createNewProduct_ar") || t("createNewProduct") : t("createNewProduct")) || "Create New Product"}
+              </h2>
+              <p className="text-emerald-100">
+                {product
+                  ? (isRTL ? t("updateProductInformation_ar") || t("updateProductInformation") : t("updateProductInformation")) || "Update product information"
+                  : (isRTL ? t("addNewProductToStore_ar") || t("addNewProductToStore") : t("addNewProductToStore")) || "Add a new product to your store"}
+              </p>
+            </div>
           </div>
+          {onCancel && (
+            <button
+              onClick={onCancel}
+              className="btn btn-ghost btn-sm text-white hover:bg-white/20 rounded-full p-2"
+              title={isRTL ? t("close_ar") || t("close") : t("close")}
+            >
+              <X className="w-5 h-5" />
+            </button>
+          )}
         </div>
       </div>
 
@@ -347,7 +359,7 @@ export default function AdminProductForm({ product, onSuccess }) {
                   <Package className="w-5 h-5 text-emerald-600" />
                 </div>
                 <h3 className="text-lg font-semibold text-gray-800">
-                  Product Basics
+                  {isRTL ? t("productBasics_ar") || t("productBasics") : t("productBasics")}
                 </h3>
               </div>
 
@@ -356,15 +368,15 @@ export default function AdminProductForm({ product, onSuccess }) {
                   <label className="label">
                     <span className="label-text font-medium text-gray-700 flex items-center gap-2">
                       <Tag className="w-4 h-4" />
-                      Product Name *
+                      {isRTL ? t("productName_ar") || t("productName") : t("productName")} *
                     </span>
                   </label>
                   <input
                     {...register("name", {
-                      required: "Product name is required",
+                      required: isRTL ? t("productNameRequired_ar") || t("productNameRequired") : t("productNameRequired"),
                     })}
                     className="input input-bordered w-full focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all"
-                    placeholder="Enter product name"
+                    placeholder={isRTL ? t("enterProductName_ar") || t("enterProductName") : t("enterProductName")}
                   />
                   {errors.name && (
                     <span className="text-error text-sm flex items-center gap-1 mt-1">
@@ -383,7 +395,7 @@ export default function AdminProductForm({ product, onSuccess }) {
                   </label>
                   <input
                     {...register("slug", {
-                      required: "Slug is required",
+                      required: isRTL ? t("slugRequired_ar") || t("slugRequired") : t("slugRequired"),
                       pattern: {
                         value: /^[a-z0-9-]+$/,
                         message:
@@ -391,7 +403,7 @@ export default function AdminProductForm({ product, onSuccess }) {
                       },
                     })}
                     className="input input-bordered w-full focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200"
-                    placeholder="product-slug-name"
+                    placeholder={isRTL ? t("enterSlug_ar") || t("enterSlug") : t("enterSlug")}
                   />
                   {errors.slug && (
                     <span className="text-error text-sm flex items-center gap-1 mt-1">
@@ -405,16 +417,16 @@ export default function AdminProductForm({ product, onSuccess }) {
                   <div className="form-control">
                     <label className="label">
                       <span className="label-text font-medium text-gray-700">
-                        Category *
+                        {isRTL ? t("category_ar") || t("category") : t("category")} *
                       </span>
                     </label>
                     <select
                       {...register("category", {
-                        required: "Category is required",
+                        required: isRTL ? t("categoryRequired_ar") || t("categoryRequired") : t("categoryRequired"),
                       })}
                       className="select select-bordered w-full focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200"
                     >
-                      <option value="">Select category</option>
+                      <option value="">{isRTL ? t("selectCategory_ar") || t("selectCategory") : t("selectCategory")}</option>
                       {categories.map((category) => (
                         <option key={category._id} value={category._id}>
                           {category.name}
@@ -431,14 +443,14 @@ export default function AdminProductForm({ product, onSuccess }) {
                   <div className="form-control">
                     <label className="label">
                       <span className="label-text font-medium text-gray-700">
-                        Brand *
+                        {isRTL ? t("brand_ar") || t("brand") : t("brand")} *
                       </span>
                     </label>
                     <select
-                      {...register("brand", { required: "Brand is required" })}
+                      {...register("brand", { required: isRTL ? t("brandRequired_ar") || t("brandRequired") : t("brandRequired") })}
                       className="select select-bordered w-full focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200"
                     >
-                      <option value="">Select brand</option>
+                      <option value="">{isRTL ? t("selectBrand_ar") || t("selectBrand") : t("selectBrand")}</option>
                       {brands.map((brand) => (
                         <option key={brand._id} value={brand._id}>
                           {brand.name}
@@ -462,7 +474,7 @@ export default function AdminProductForm({ product, onSuccess }) {
                   <DollarSign className="w-5 h-5 text-green-600" />
                 </div>
                 <h3 className="text-lg font-semibold text-gray-800">
-                  Pricing & Stock
+                  {isRTL ? t("pricingStock_ar") || t("pricingStock") : t("pricingStock")}
                 </h3>
               </div>
 
@@ -470,7 +482,7 @@ export default function AdminProductForm({ product, onSuccess }) {
                 <div className="form-control">
                   <label className="label">
                     <span className="label-text font-medium text-gray-700">
-                      Regular Price *
+                      {isRTL ? t("regularPrice_ar") || t("regularPrice") : t("regularPrice")} *
                     </span>
                   </label>
                   <div className="relative">
@@ -499,7 +511,7 @@ export default function AdminProductForm({ product, onSuccess }) {
                 <div className="form-control">
                   <label className="label">
                     <span className="label-text font-medium text-gray-700">
-                      Sale Price
+                      {isRTL ? t("salePrice_ar") || t("salePrice") : t("salePrice")}
                     </span>
                   </label>
                   <div className="flex gap-2">
@@ -541,7 +553,7 @@ export default function AdminProductForm({ product, onSuccess }) {
                 <div className="form-control">
                   <label className="label">
                     <span className="label-text font-medium text-gray-700">
-                      Discount Percentage
+                      {isRTL ? t("discountPercentage_ar") || t("discountPercentage") : t("discountPercentage")}
                     </span>
                   </label>
                   <div className="relative">
@@ -574,7 +586,7 @@ export default function AdminProductForm({ product, onSuccess }) {
                   <div className="form-control">
                     <label className="label">
                       <span className="label-text font-medium text-gray-700">
-                        Discount Start Date (Optional)
+                        {isRTL ? t("discountStartDateOptional_ar") || t("discountStartDateOptional") : t("discountStartDateOptional")}
                       </span>
                     </label>
                     <input
@@ -587,7 +599,7 @@ export default function AdminProductForm({ product, onSuccess }) {
                   <div className="form-control">
                     <label className="label">
                       <span className="label-text font-medium text-gray-700">
-                        Discount End Date (Optional)
+                        {isRTL ? t("discountEndDateOptional_ar") || t("discountEndDateOptional") : t("discountEndDateOptional")}
                       </span>
                     </label>
                     <input
@@ -601,7 +613,7 @@ export default function AdminProductForm({ product, onSuccess }) {
                 <div className="form-control">
                   <label className="label">
                     <span className="label-text font-medium text-gray-700">
-                      Stock Quantity *
+                      {isRTL ? t("stockQuantity_ar") || t("stockQuantity") : t("stockQuantity")} *
                     </span>
                   </label>
                   <input
@@ -631,7 +643,7 @@ export default function AdminProductForm({ product, onSuccess }) {
                   <Palette className="w-5 h-5 text-green-600" />
                 </div>
                 <h3 className="text-lg font-semibold text-gray-800">
-                  Product Attributes
+                  {isRTL ? t("productAttributes_ar") || t("productAttributes") : t("productAttributes")}
                 </h3>
               </div>
 
@@ -640,13 +652,13 @@ export default function AdminProductForm({ product, onSuccess }) {
                   <label className="label">
                     <span className="label-text font-medium text-gray-700 flex items-center gap-2">
                       <Ruler className="w-4 h-4" />
-                      Sizes
+                      {isRTL ? t("sizes_ar") || t("sizes") : t("sizes")}
                     </span>
                   </label>
                   <input
                     {...register("sizes")}
                     className="input input-bordered w-full focus:border-green-500 focus:ring-2 focus:ring-green-200"
-                    placeholder="S, M, L, XL (comma separated)"
+                    placeholder={isRTL ? t("sizePlaceholder_ar") || t("sizePlaceholder") : t("sizePlaceholder")}
                   />
                 </div>
 
@@ -654,13 +666,13 @@ export default function AdminProductForm({ product, onSuccess }) {
                   <label className="label">
                     <span className="label-text font-medium text-gray-700 flex items-center gap-2">
                       <Palette className="w-4 h-4" />
-                      Colors
+                      {isRTL ? t("colors_ar") || t("colors") : t("colors")}
                     </span>
                   </label>
                   <input
                     {...register("colors")}
                     className="input input-bordered w-full focus:border-green-500 focus:ring-2 focus:ring-green-200"
-                    placeholder="Red, emerald, Green (comma separated)"
+                    placeholder={isRTL ? t("colorPlaceholder_ar") || t("colorPlaceholder") : t("colorPlaceholder")}
                   />
                 </div>
 
@@ -674,7 +686,7 @@ export default function AdminProductForm({ product, onSuccess }) {
                       />
                       <span className="label-text font-medium text-gray-700 flex items-center gap-2">
                         <Star className="w-4 h-4" />
-                        Featured
+                        {isRTL ? t("featured_ar") || t("featured") : t("featured")}
                       </span>
                     </label>
                   </div>
@@ -688,7 +700,7 @@ export default function AdminProductForm({ product, onSuccess }) {
                       />
                       <span className="label-text font-medium text-gray-700 flex items-center gap-2">
                         <Zap className="w-4 h-4" />
-                        On Sale
+                        {isRTL ? t("onSale_ar") || t("onSale") : t("onSale")}
                       </span>
                     </label>
                   </div>
@@ -703,7 +715,7 @@ export default function AdminProductForm({ product, onSuccess }) {
                   <Image className="w-5 h-5 text-emerald-600" />
                 </div>
                 <h3 className="text-lg font-semibold text-gray-800">
-                  Product Images
+                  {isRTL ? t("productImages_ar") || t("productImages") : t("productImages")}
                 </h3>
               </div>
 
@@ -726,10 +738,10 @@ export default function AdminProductForm({ product, onSuccess }) {
                     <div className="flex flex-col items-center gap-2 py-4">
                       <Upload className="w-8 h-8 text-gray-400" />
                       <span className="font-medium text-gray-600">
-                        Click to upload images
+                        {isRTL ? t("clickToUploadImages_ar") || t("clickToUploadImages") : t("clickToUploadImages")}
                       </span>
                       <span className="text-sm text-gray-500">
-                        or drag and drop
+                        {isRTL ? t("orDragAndDrop_ar") || t("orDragAndDrop") : t("orDragAndDrop")}
                       </span>
                     </div>
                   </button>
@@ -739,7 +751,7 @@ export default function AdminProductForm({ product, onSuccess }) {
                   <div className="flex justify-between items-center mb-4">
                     <label className="label p-0">
                       <span className="label-text font-medium text-gray-700">
-                        Image Preview
+                        {isRTL ? t("imagePreview_ar") || t("imagePreview") : t("imagePreview")}
                       </span>
                     </label>
                     <button
@@ -748,7 +760,7 @@ export default function AdminProductForm({ product, onSuccess }) {
                       className="btn btn-sm btn-outline btn-primary flex items-center gap-2"
                     >
                       <Plus className="w-4 h-4" />
-                      Add More Images
+                      {isRTL ? t("addMoreImages_ar") || t("addMoreImages") : t("addMoreImages")}
                     </button>
                   </div>
 
@@ -844,7 +856,7 @@ export default function AdminProductForm({ product, onSuccess }) {
 
                   <div className="flex justify-between items-center mt-4">
                     <p className="text-sm text-gray-500">
-                      {images.length} image(s) selected
+                      {images.length} {isRTL ? t("imagesSelected_ar") || t("imagesSelected") : t("imagesSelected")}
                     </p>
                     {images.length > 0 && (
                       <button
@@ -852,7 +864,7 @@ export default function AdminProductForm({ product, onSuccess }) {
                         onClick={() => setImages([])}
                         className="btn btn-sm btn-ghost text-error hover:bg-error hover:text-error-content"
                       >
-                        Remove All
+                        {isRTL ? t("removeAll_ar") || t("removeAll") : t("removeAll")}
                       </button>
                     )}
                   </div>
@@ -866,7 +878,7 @@ export default function AdminProductForm({ product, onSuccess }) {
                   <FileText className="w-5 h-5 text-emerald-600" />
                 </div>
                 <h3 className="text-lg font-semibold text-gray-800">
-                  Description
+                  {isRTL ? t("description_ar") || t("description") : t("description")}
                 </h3>
               </div>
 
@@ -896,12 +908,12 @@ export default function AdminProductForm({ product, onSuccess }) {
             {isSubmitting ? (
               <>
                 <span className="loading loading-spinner loading-sm"></span>
-                {product ? "Updating Product..." : "Creating Product..."}
+                {product ? (isRTL ? t("updatingProduct_ar") || t("updatingProduct") : t("updatingProduct")) : (isRTL ? t("creatingProduct_ar") || t("creatingProduct") : t("creatingProduct"))}
               </>
             ) : (
               <>
                 <Save className="w-5 h-5" />
-                {product ? "Update Product" : "Create Product"}
+                {product ? (isRTL ? t("updateProduct_ar") || t("updateProduct") : t("updateProduct")) : (isRTL ? t("createProduct_ar") || t("createProduct") : t("createProduct"))}
               </>
             )}
           </button>

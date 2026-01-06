@@ -1,9 +1,9 @@
 "use client";
 import { useState, Fragment } from "react";
 import Link from "next/link";
-import { toast } from "react-toastify";
+import { useTranslation } from "react-i18next";
 import Image from "next/image";
-import Swal from "sweetalert2";
+
 import { 
   FaEdit, 
   FaTrash, 
@@ -22,10 +22,12 @@ import {
 } from "react-icons/fa";
 
 export default function ProductTable({ products = [], onEdit, onDelete }) {
+  const { t, i18n } = useTranslation();
   const [currentPage, setCurrentPage] = useState(1);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
   const [expandedProduct, setExpandedProduct] = useState(null);
   const productsPerPage = 8;
+  const isRTL = i18n.language === "ar";
 
   const handleSort = (key) => {
     let direction = "asc";
@@ -120,52 +122,52 @@ export default function ProductTable({ products = [], onEdit, onDelete }) {
           <thead className="bg-base-200">
             <tr>
               <th className="py-4 px-6 text-left font-semibold text-gray-700">
-                <button 
+                <button
                   onClick={() => handleSort('name')}
                   className="flex items-center gap-2 hover:text-primary transition-colors"
                 >
-                  Product
+                  {t("product") || "Product"}
                   <FaSort className="text-sm" />
                 </button>
               </th>
               <th className="py-4 px-6 text-left font-semibold text-gray-700">
-                <button 
+                <button
                   onClick={() => handleSort('category')}
                   className="flex items-center gap-2 hover:text-primary transition-colors"
                 >
-                  Category
+                  {t("category") || "Category"}
                   <FaSort className="text-sm" />
                 </button>
               </th>
               <th className="py-4 px-6 text-left font-semibold text-gray-700">
-                <button 
+                <button
                   onClick={() => handleSort('brand')}
                   className="flex items-center gap-2 hover:text-primary transition-colors"
                 >
-                  Brand
+                  {t("brand") || "Brand"}
                   <FaSort className="text-sm" />
                 </button>
               </th>
               <th className="py-4 px-6 text-left font-semibold text-gray-700">
-                <button 
+                <button
                   onClick={() => handleSort('price')}
                   className="flex items-center gap-2 hover:text-primary transition-colors"
                 >
-                  Pricing
+                  {t("pricing") || "Pricing"}
                   <FaSort className="text-sm" />
                 </button>
               </th>
               <th className="py-4 px-6 text-left font-semibold text-gray-700">
-                <button 
+                <button
                   onClick={() => handleSort('countInStock')}
                   className="flex items-center gap-2 hover:text-primary transition-colors"
                 >
-                  Stock
+                  {t("stock") || "Stock"}
                   <FaSort className="text-sm" />
                 </button>
               </th>
-              <th className="py-4 px-6 text-left font-semibold text-gray-700">Status</th>
-              <th className="py-4 px-6 text-left font-semibold text-gray-700">Actions</th>
+              <th className="py-4 px-6 text-left font-semibold text-gray-700">{t("status") || "Status"}</th>
+              <th className="py-4 px-6 text-left font-semibold text-gray-700">{t("actions") || "Actions"}</th>
             </tr>
           </thead>
           
@@ -212,11 +214,11 @@ export default function ProductTable({ products = [], onEdit, onDelete }) {
                             >
                               {product.name}
                             </Link>
-                            <button
-                              onClick={() => toggleProductDetails(product._id)}
-                              className="btn btn-ghost btn-xs text-gray-400 hover:text-primary transition-all"
-                              title={isExpanded ? "Hide details" : "View details"}
-                            >
+                              <button
+                                onClick={() => toggleProductDetails(product._id)}
+                                className="btn btn-ghost btn-xs text-gray-400 hover:text-primary transition-all"
+                                title={isExpanded ? (isRTL ? t("hideDetails_ar") || t("hideDetails") : t("hideDetails")) : (isRTL ? t("viewDetails_ar") || t("viewDetails") : t("viewDetails"))}
+                              >
                               {isExpanded ? <FaChevronUp /> : <FaChevronDown />}
                             </button>
                           </div>
@@ -276,7 +278,7 @@ export default function ProductTable({ products = [], onEdit, onDelete }) {
                           ? 'badge-warning'
                           : 'badge-error'
                       }`}>
-                        <FaShoppingCart className="mr-1" />
+                        <FaShoppingCart className="mx-1" />
                         {product.countInStock}
                       </span>
                     </td>
@@ -286,14 +288,14 @@ export default function ProductTable({ products = [], onEdit, onDelete }) {
                       <div className="flex flex-col gap-1">
                         {product.isFeatured && (
                           <span className="badge badge-sm badge-primary">
-                            <FaStar className="mr-1" />
-                            Featured
+                            <FaStar className="mx-1" />
+                            {isRTL ? t("featured_ar") || t("featured") : t("featured")}
                           </span>
                         )}
                         {product.isOnSale && (
-                          <span className="badge badge-sm badge-warning">
-                            <FaTag className="mr-1" />
-                            On Sale
+                          <span className="badge badge-sm badge-warning whitespace-nowrap">
+                            <FaTag className="mx-1" />
+                            {isRTL ? t("onSale_ar") || t("onSale") : t("onSale")}
                           </span>
                         )}
                       </div>
@@ -307,14 +309,14 @@ export default function ProductTable({ products = [], onEdit, onDelete }) {
                           className="btn btn-warning btn-sm flex items-center gap-2 px-4 rounded-lg transition-all duration-200 hover:scale-105"
                         >
                           <FaEdit className="text-sm" />
-                          Edit
+                          {isRTL ? t("edit_ar") || t("edit") : t("edit")}
                         </button>
                         <button
                           onClick={() => onDelete(product._id, product.name)}
                           className="btn btn-error btn-sm flex items-center gap-2 px-4 rounded-lg transition-all duration-200 hover:scale-105"
                         >
                           <FaTrash className="text-sm" />
-                          Delete
+                          {isRTL ? t("delete_ar") || t("delete") : t("delete")}
                         </button>
                       </div>
                     </td>
@@ -329,7 +331,7 @@ export default function ProductTable({ products = [], onEdit, onDelete }) {
                           <div className="space-y-4">
                             <h4 className="font-bold text-lg text-gray-800 flex items-center gap-2">
                               <FaBox />
-                              Product Details
+                              {isRTL ? t("productDetails_ar") || t("productDetails") : t("productDetails")}
                             </h4>
                             <div className="grid grid-cols-2 gap-4 text-sm">
                               <div>
@@ -398,13 +400,13 @@ export default function ProductTable({ products = [], onEdit, onDelete }) {
                           <div className="space-y-4">
                             <h4 className="font-bold text-lg text-gray-800 flex items-center gap-2">
                               <FaEye />
-                              Description
+                              {isRTL ? t("description_ar") || t("description") : t("description")}
                             </h4>
-                            <div 
+                            <div
                               className="text-sm text-gray-700 prose prose-sm max-w-none bg-base-100 p-4 rounded-lg border border-base-300"
-                              dangerouslySetInnerHTML={{ 
-                                __html: product.description || 
-                                '<p class="text-gray-500 italic">No description available</p>' 
+                              dangerouslySetInnerHTML={{
+                                __html: product.description ||
+                                `<p class="text-gray-500 italic">${isRTL ? t("noDescriptionAvailable_ar") || t("noDescriptionAvailable") : t("noDescriptionAvailable")}</p>`
                               }}
                             />
                           </div>
@@ -415,7 +417,7 @@ export default function ProductTable({ products = [], onEdit, onDelete }) {
                           <div className="mt-6">
                             <h4 className="font-bold text-lg text-gray-800 mb-4 flex items-center gap-2">
                               <FaBox />
-                              Product Images ({product.images.length})
+                              {isRTL ? t("productImages_ar") || t("productImages") : t("productImages")} ({product.images.length})
                             </h4>
                             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
                               {product.images.map((image, index) => (
@@ -511,7 +513,7 @@ export default function ProductTable({ products = [], onEdit, onDelete }) {
       {paginatedProducts.length === 0 && (
         <div className="text-center py-12">
           <FaBox className="text-4xl text-gray-300 mx-auto mb-4" />
-          <p className="text-gray-500">No products found</p>
+          <p className="text-gray-500">{isRTL ? t("noProductsFound_ar") || t("noProductsFound") : t("noProductsFound")}</p>
         </div>
       )}
     </div>

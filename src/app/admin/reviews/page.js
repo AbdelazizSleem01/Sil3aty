@@ -43,7 +43,6 @@ export default function AdminReviewsPage() {
       setLoading(true);
       const { data } = await axios.get("/api/reviews");
       setReviews(data);
-      toast.success("Reviews loaded successfully!");
     } catch (error) {
       toast.error("❌ Failed to load reviews");
     } finally {

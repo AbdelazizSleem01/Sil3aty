@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useTranslation } from "react-i18next";
 import {
   Eye,
   EyeOff,
@@ -16,23 +17,28 @@ import {
 import { toast } from "react-toastify";
 
 export default function LoginPage() {
+  const { t, i18n } = useTranslation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
+  const isRTL = i18n.language === "ar";
 
   useEffect(() => {
-    document.title = "Sil3aty | Login";
+    document.title = isRTL ? "Sil3aty | دخول" : "Sil3aty | Login";
+    document.documentElement.dir = isRTL ? "rtl" : "ltr";
     const metaDesc = document.querySelector('meta[name="description"]');
     if (metaDesc) {
       metaDesc.setAttribute(
         "content",
-        "Login to your Sil3aty account. Enter your email and password to access your dashboard."
+        isRTL
+          ? "قم بتسجيل الدخول إلى حسابك في Sil3aty. أدخل بريدك الإلكتروني وكلمة المرور للوصول إلى لوحة التحكم."
+          : "Login to your Sil3aty account. Enter your email and password to access your dashboard."
       );
     }
-  }, []);
+  }, [isRTL, i18n.language]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -52,17 +58,17 @@ export default function LoginPage() {
       }
 
       setLoading(false);
-      toast.success("Login Successfully");
+      toast.success(t("loginSuccess") || "Login Successfully");
       router.push("/");
     } catch (error) {
       setError(error.message);
-      toast.error("Email not exist or password not true");
+      toast.error(t("invalidCredentials") || "Email not exist or password not true");
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-emerald-50 to-green-50 flex items-center justify-center p-12">
+    <div className={`min-h-screen bg-gradient-to-br from-emerald-50 via-emerald-50 to-green-50 flex items-center justify-center p-12 ${isRTL ? 'font-arabic' : ''}`}>
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-emerald-200 to-green-200 rounded-full opacity-20 animate-pulse"></div>
@@ -76,9 +82,9 @@ export default function LoginPage() {
             <Sparkles className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-4xl font-bold bg-gradient-to-r from-emerald-600 to-green-600 bg-clip-text text-transparent mb-2">
-            Welcome Back
+            {t("welcomeBack")}
           </h1>
-          <p className="text-gray-600">Sign in to your Sil3aty account</p>
+          <p className="text-gray-600">{t("signInToYourAccount")}</p>
         </div>
 
         {/* Main Card */}
@@ -107,9 +113,9 @@ export default function LoginPage() {
               {/* Email Field */}
               <div className="form-control group">
                 <label className="label mb-2" htmlFor="email">
-                  <span className="label-text font-semibold text-gray-700 flex items-center gap-2">
+                  <span className={`label-text font-semibold text-gray-700 flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
                     <Mail className="w-4 h-4 text-emerald-500" />
-                    Email Address
+                    {t("emailAddress")}
                   </span>
                 </label>
                 <div className="relative">
@@ -118,20 +124,20 @@ export default function LoginPage() {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="input input-bordered w-full pl-12 pr-4 py-3 border-2 border-gray-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all duration-300 rounded-xl bg-gray-50 focus:bg-white"
-                    placeholder="Enter your email"
+                    className={`input input-bordered w-full ${isRTL ? 'pr-12 pl-4' : 'pl-12 pr-4'} py-3 border-2 border-gray-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all duration-300 rounded-xl bg-gray-50 focus:bg-white`}
+                    placeholder={t("enterYourEmail")}
                     required
                   />
-                  <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-emerald-500 transition-colors duration-300" />
+                  <Mail className={`absolute ${isRTL ? 'right-4' : 'left-4'} top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-emerald-500 transition-colors duration-300`} />
                 </div>
               </div>
 
               {/* Password Field */}
               <div className="form-control group">
                 <label className="label mb-2" htmlFor="pass">
-                  <span className="label-text font-semibold text-gray-700 flex items-center gap-2">
+                  <span className={`label-text font-semibold text-gray-700 flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
                     <Lock className="w-4 h-4 text-emerald-500" />
-                    Password
+                    {t("password")}
                   </span>
                 </label>
                 <div className="relative">
@@ -140,17 +146,17 @@ export default function LoginPage() {
                     type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="input input-bordered w-full pl-12 pr-12 py-3 border-2 border-gray-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all duration-300 rounded-xl bg-gray-50 focus:bg-white"
-                    placeholder="Enter your password"
+                    className={`input input-bordered w-full ${isRTL ? 'pr-12 pl-12' : 'pl-12 pr-12'} py-3 border-2 border-gray-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all duration-300 rounded-xl bg-gray-50 focus:bg-white`}
+                    placeholder={t("enterYourPassword")}
                     required
                   />
-                  <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-emerald-500 transition-colors duration-300" />
+                  <Lock className={`absolute ${isRTL ? 'right-4' : 'left-4'} top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-emerald-500 transition-colors duration-300`} />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 transform -translate-y-1/2 btn btn-ghost btn-sm p-0 h-auto hover:bg-transparent"
+                    className={`absolute ${isRTL ? 'left-4' : 'right-4'} top-1/2 transform -translate-y-1/2 btn btn-ghost btn-sm p-0 h-auto hover:bg-transparent`}
                     aria-label={
-                      showPassword ? "Hide password" : "Show password"
+                      showPassword ? t("hidePassword") : t("showPassword")
                     }
                   >
                     {showPassword ? (
@@ -174,21 +180,21 @@ export default function LoginPage() {
                   ) : (
                     <LogIn className="w-5 h-5 mr-2 group-hover:animate-bounce" />
                   )}
-                  {loading ? <p className="text-gray-100"> Signing In...</p> : "Sign In"}
+                  {loading ? t("signingIn") : t("signIn")}
                 </button>
               </div>
             </form>
 
-            <div className="divider my-6 text-gray-400">New to Sil3aty?</div>
+            <div className="divider my-6 text-gray-400">{t("newToSil3aty")}</div>
 
-            <div className="text-center flex items-center justify-center gap-2">
-              <span className="text-gray-600">Don't have an account? </span>
+            <div className={`text-center flex items-center justify-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+              <span className="text-gray-600">{t("dontHaveAccount")} </span>
               <Link
                 href="/register"
                 className="inline-flex items-center gap-2 font-semibold text-emerald-600 hover:text-green-600 transition-colors duration-300 group"
               >
                 <UserPlus className="w-4 h-4 group-hover:animate-pulse" />
-                Create Account
+                {t("createAccount")}
               </Link>
             </div>
           </div>
@@ -202,7 +208,7 @@ export default function LoginPage() {
             <div className="text-left">
               <p className="text-sm font-semibold text-gray-700">Sil3aty</p>
               <p className="text-xs text-gray-500">
-                © 2025 All rights reserved
+                © 2025 {t("allRightsReserved")}
               </p>
             </div>
           </div>

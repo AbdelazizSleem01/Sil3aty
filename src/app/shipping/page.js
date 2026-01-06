@@ -424,7 +424,7 @@ export default function Shipping() {
                           </p>
                           {item.location && (
                             <p className="text-sm opacity-75">
-                              <MapPin className="inline w-3 h-3 mr-1" />
+                              <MapPin className="inline w-3 h-3 mx-1" />
                               {item.location}
                             </p>
                           )}

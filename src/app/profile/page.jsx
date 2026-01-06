@@ -617,7 +617,7 @@ export default function ProfilePage() {
                           />
                           <div className="absolute top-3 right-3">
                             <span className="badge badge-primary">
-                              <FaBookmark className="w-3 h-3 mr-1" />
+                              <FaBookmark className="w-3 h-3 mx-1" />
                               {t("saved")}
                             </span>
                           </div>

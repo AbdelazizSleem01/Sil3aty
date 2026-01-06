@@ -74,7 +74,6 @@ export default function AdminUserOrders() {
         const data = await response.json();
         setUsersWithOrders(data.users);
         setHasFetched(true);
-        toast.success("✅ Users and orders loaded successfully!");
       } catch (error) {
         toast.error(`❌ ${error.message}`);
       } finally {

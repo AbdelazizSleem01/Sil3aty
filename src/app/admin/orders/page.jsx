@@ -381,7 +381,6 @@ export default function AdminOrdersPage() {
       .substring(18)
       .toUpperCase()}.pdf`;
     doc.save(fileName);
-    toast.success("📄 Invoice downloaded successfully!");
   };
 
   const generateCompactInvoice = (order) => {

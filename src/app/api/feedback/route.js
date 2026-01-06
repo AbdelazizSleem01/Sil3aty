@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import dbConnect from "../../../../lib/dbConnect";
 import Feedback from "../../../../models/Feedback";
+import { uploadImages } from "../../../../lib/cloudinary";
 
 export async function POST(req) {
   try {
@@ -52,16 +53,14 @@ export async function POST(req) {
           );
         }
 
-        const bytes = await userImage.arrayBuffer();
-        const buffer = Buffer.from(bytes);
-        const base64Image = `data:${userImage.type};base64,${buffer.toString(
-          "base64"
-        )}`;
-        imageUrl = base64Image;
+        // Upload the image to Cloudinary and store the secure URL instead of a base64 string
+        const [secureUrl] = await uploadImages(userImage);
+        if (secureUrl) {
+          imageUrl = secureUrl;
+        }
       } catch (imageError) {
         throw new Error(`Image processing failed: ${imageError.message}`);
       }
-    } else if (userImage) {
     }
 
     const newFeedback = await Feedback.create({
@@ -89,11 +88,15 @@ export async function GET(req) {
   try {
     await dbConnect();
 
-    const feedbacks = await Feedback.find({});
-
+    // Return feedbacks but avoid sending large base64 payloads.
+    // If a stored `userImage` is not a remote URL, replace with default avatar.
+    const feedbacks = await Feedback.find({}).lean();
     const updatedFeedbacks = feedbacks.map((feedback) => ({
-      ...feedback.toObject(),
-      userImage: feedback.userImage || "/images/default-avatar.png",
+      ...feedback,
+      userImage:
+        feedback.userImage && typeof feedback.userImage === "string" && feedback.userImage.startsWith("http")
+          ? feedback.userImage
+          : "/images/default-avatar.png",
     }));
 
     return NextResponse.json(updatedFeedbacks);

@@ -3,7 +3,7 @@ User-agent: *
 Allow: /
 
 # Host
-Host: https://sil3aty.vercel.app
+Host: https://sil3aty.vercel.app/
 
 # Sitemaps
 Sitemap: https://sil3aty.vercel.app/sitemap.xml

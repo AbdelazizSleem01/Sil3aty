@@ -35,7 +35,6 @@ export default function BrandDetailPage({ params }) {
       }
       const data = await response.json();
       setBrand(data);
-      toast.success("Brand loaded successfully!");
     } catch (error) {
       toast.error(`❌ ${error.message}`);
     } finally {

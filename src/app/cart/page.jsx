@@ -56,7 +56,6 @@ export default function CartPage() {
           item._id === itemId ? { ...item, ...updates } : item
         )
       );
-      toast.success(t("cartUpdated"));
     } catch (error) {
       toast.error(t("failedToUpdateCart"));
     }

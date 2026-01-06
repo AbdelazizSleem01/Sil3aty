@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useTranslation } from "react-i18next";
 import {
   Eye,
   EyeOff,
@@ -15,6 +16,7 @@ import {
 import { toast } from "react-toastify";
 
 export default function RegisterPage() {
+  const { t, i18n } = useTranslation();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -24,17 +26,21 @@ export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
+  const isRTL = i18n.language === "ar";
 
   useEffect(() => {
-    document.title = "Sil3aty - Register Page";
+    document.title = isRTL ? "Sil3aty - صفحة التسجيل" : "Sil3aty - Register Page";
+    document.documentElement.dir = isRTL ? "rtl" : "ltr";
     const metaDesc = document.querySelector('meta[name="description"]');
     if (metaDesc) {
       metaDesc.setAttribute(
         "content",
-        "Register for Sil3aty and start selling your unique and valuable products.Learn more about our mission and why we believe in creating a community of creators."
+        isRTL
+          ? "قم بالتسجيل في Sil3aty وابدأ رحلتك. تعرف على مزيدٍ حول مهمتنا وسبب اعتقادنا بخلق مجتمع من المبدعين."
+          : "Register for Sil3aty and start selling your unique and valuable products.Learn more about our mission and why we believe in creating a community of creators."
       );
     }
-  }, []);
+  }, [isRTL, i18n.language]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -42,19 +48,19 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     if (!name || !email || !password || !confirmPassword) {
-      setError("All fields are required");
+      setError(t("allFieldsRequired") || "All fields are required");
       setIsLoading(false);
       return;
     }
 
     if (password !== confirmPassword) {
-      setError("Passwords do not match");
+      setError(t("passwordsDoNotMatch") || "Passwords do not match");
       setIsLoading(false);
       return;
     }
 
     if (password.length < 6) {
-      setError("Password must be at least 6 characters long");
+      setError(t("passwordMinLength") || "Password must be at least 6 characters long");
       setIsLoading(false);
       return;
     }
@@ -76,10 +82,10 @@ export default function RegisterPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Registration failed");
+        throw new Error(data.error || (t("registrationFailed") || "Registration failed"));
       }
 
-      toast.success("Registration doing successfully");
+      toast.success(t("registrationSuccess") || "Registration doing successfully");
 
       router.push("/login");
     } catch (error) {
@@ -90,7 +96,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-emerald-50 flex items-center justify-center p-12">
+    <div className={`min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-emerald-50 flex items-center justify-center p-12 ${isRTL ? 'font-arabic' : ''}`}>
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-green-200 to-emerald-200 rounded-full opacity-20 animate-pulse"></div>
@@ -104,10 +110,10 @@ export default function RegisterPage() {
             <Sparkles className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-4xl font-bold bg-gradient-to-r from-green-600 to-primary bg-clip-text text-transparent mb-2">
-            Join Sil3aty
+            {t("joinSil3aty")}
           </h1>
           <p className="text-gray-600">
-            Create your account and start your journey
+            {t("createAccountAndStart")}
           </p>
         </div>
 
@@ -137,9 +143,9 @@ export default function RegisterPage() {
               {/* Full Name Field */}
               <div className="form-control group">
                 <label className="label mb-2" htmlFor="name">
-                  <span className="label-text font-semibold text-gray-700 flex items-center gap-2">
+                  <span className={`label-text font-semibold text-gray-700 flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
                     <User className="w-4 h-4 text-green-500" />
-                    Full Name
+                    {t("fullName")}
                   </span>
                 </label>
                 <div className="relative">
@@ -148,20 +154,20 @@ export default function RegisterPage() {
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="input input-bordered w-full pl-12 pr-4 py-3 border-2 border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-300 rounded-xl bg-gray-50 focus:bg-white"
-                    placeholder="Enter your full name"
+                    className={`input input-bordered w-full ${isRTL ? 'pr-12 pl-4' : 'pl-12 pr-4'} py-3 border-2 border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-300 rounded-xl bg-gray-50 focus:bg-white`}
+                    placeholder={t("enterYourFullName")}
                     required
                   />
-                  <User className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-green-500 transition-colors duration-300" />
+                  <User className={`absolute ${isRTL ? 'right-4' : 'left-4'} top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-green-500 transition-colors duration-300`} />
                 </div>
               </div>
 
               {/* Email Field */}
               <div className="form-control group">
                 <label className="label mb-2" htmlFor="email">
-                  <span className="label-text font-semibold text-gray-700 flex items-center gap-2">
+                  <span className={`label-text font-semibold text-gray-700 flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
                     <Mail className="w-4 h-4 text-green-500" />
-                    Email Address
+                    {t("emailAddress")}
                   </span>
                 </label>
                 <div className="relative">
@@ -170,20 +176,20 @@ export default function RegisterPage() {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="input input-bordered w-full pl-12 pr-4 py-3 border-2 border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-300 rounded-xl bg-gray-50 focus:bg-white"
-                    placeholder="Enter your email"
+                    className={`input input-bordered w-full ${isRTL ? 'pr-12 pl-4' : 'pl-12 pr-4'} py-3 border-2 border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-300 rounded-xl bg-gray-50 focus:bg-white`}
+                    placeholder={t("enterYourEmail")}
                     required
                   />
-                  <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-green-500 transition-colors duration-300" />
+                  <Mail className={`absolute ${isRTL ? 'right-4' : 'left-4'} top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-green-500 transition-colors duration-300`} />
                 </div>
               </div>
 
               {/* Password Field */}
               <div className="form-control group">
                 <label className="label mb-2" htmlFor="password">
-                  <span className="label-text font-semibold text-gray-700 flex items-center gap-2">
+                  <span className={`label-text font-semibold text-gray-700 flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
                     <Lock className="w-4 h-4 text-green-500" />
-                    Password
+                    {t("password")}
                   </span>
                 </label>
                 <div className="relative">
@@ -192,18 +198,18 @@ export default function RegisterPage() {
                     type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="input input-bordered w-full pl-12 pr-12 py-3 border-2 border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-300 rounded-xl bg-gray-50 focus:bg-white"
-                    placeholder="Create a password"
+                    className={`input input-bordered w-full ${isRTL ? 'pr-12 pl-12' : 'pl-12 pr-12'} py-3 border-2 border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-300 rounded-xl bg-gray-50 focus:bg-white`}
+                    placeholder={t("createPassword")}
                     required
                     minLength={6}
                   />
-                  <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-green-500 transition-colors duration-300" />
+                  <Lock className={`absolute ${isRTL ? 'right-4' : 'left-4'} top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-green-500 transition-colors duration-300`} />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 transform -translate-y-1/2 btn btn-ghost btn-sm p-0 h-auto hover:bg-transparent"
+                    className={`absolute ${isRTL ? 'left-4' : 'right-4'} top-1/2 transform -translate-y-1/2 btn btn-ghost btn-sm p-0 h-auto hover:bg-transparent`}
                     aria-label={
-                      showPassword ? "Hide password" : "Show password"
+                      showPassword ? t("hidePassword") : t("showPassword")
                     }
                   >
                     {showPassword ? (
@@ -218,9 +224,9 @@ export default function RegisterPage() {
               {/* Confirm Password Field */}
               <div className="form-control group">
                 <label className="label mb-2" htmlFor="confirmPassword">
-                  <span className="label-text font-semibold text-gray-700 flex items-center gap-2">
+                  <span className={`label-text font-semibold text-gray-700 flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
                     <Lock className="w-4 h-4 text-green-500" />
-                    Confirm Password
+                    {t("confirmPassword")}
                   </span>
                 </label>
                 <div className="relative">
@@ -229,12 +235,12 @@ export default function RegisterPage() {
                     type={showPassword ? "text" : "password"}
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="input input-bordered w-full pl-12 pr-4 py-3 border-2 border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-300 rounded-xl bg-gray-50 focus:bg-white"
-                    placeholder="Confirm your password"
+                    className={`input input-bordered w-full ${isRTL ? 'pr-12 pl-4' : 'pl-12 pr-4'} py-3 border-2 border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-300 rounded-xl bg-gray-50 focus:bg-white`}
+                    placeholder={t("confirmYourPassword")}
                     required
                     minLength={6}
                   />
-                  <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-green-500 transition-colors duration-300" />
+                  <Lock className={`absolute ${isRTL ? 'right-4' : 'left-4'} top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-green-500 transition-colors duration-300`} />
                 </div>
               </div>
 
@@ -264,9 +270,9 @@ export default function RegisterPage() {
                   </div>
                   <div className="text-center">
                     <p className="text-sm font-semibold text-gray-700 mb-1">
-                      Profile Picture
+                      {t("profilePicture")}
                     </p>
-                    <p className="text-xs text-gray-500">Optional</p>
+                    <p className="text-xs text-gray-500">{t("optional")}</p>
                   </div>
                 </div>
               </div>
@@ -281,12 +287,12 @@ export default function RegisterPage() {
                   {isLoading ? (
                     <>
                       <span className="loading loading-spinner mr-2"></span>
-                      Creating Account...
+                      {t("creatingAccount")}
                     </>
                   ) : (
                     <>
                       <UserPlus className="w-5 h-5 mr-2 group-hover:animate-bounce" />
-                      Create Account
+                      {t("createAccount")}
                     </>
                   )}
                 </button>
@@ -295,17 +301,17 @@ export default function RegisterPage() {
 
             {/* Divider */}
             <div className="divider my-6 text-gray-400">
-              Already have an account?
+              {t("alreadyHaveAccount")}
             </div>
 
             {/* Login Link */}
-            <div className="text-center">
-              <span className="text-gray-600">Already have an account? </span>
+            <div className={`text-center flex items-center justify-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+              <span className="text-gray-600">{t("alreadyHaveAnAccount")} </span>
               <Link
                 href="/login"
                 className="inline-flex items-center gap-2 font-semibold text-green-600 hover:text-primary transition-colors duration-300 group"
               >
-                Sign In Here
+                {t("signInHere")}
               </Link>
             </div>
           </div>
@@ -320,7 +326,7 @@ export default function RegisterPage() {
             <div className="text-left">
               <p className="text-sm font-semibold text-gray-700">Sil3aty</p>
               <p className="text-xs text-gray-500">
-                © 2025 All rights reserved
+                © 2025 {t("allRightsReserved")}
               </p>
             </div>
           </div>
