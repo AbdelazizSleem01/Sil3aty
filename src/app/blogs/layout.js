@@ -1,9 +1,9 @@
 export const metadata = {
-  title: "مدونة سيلعتي - مقالات ونصائح",
-  description: "اكتشف مقالات ونصائح في مدونة سيلعتي.",
+  title: "Sil3aty Blog - Articles & Tips",
+  description: "Discover articles and tips in Sil3aty's blog.",
   openGraph: {
-    title: "مدونة سيلعتي - مقالات ونصائح",
-    description: "اكتشف مقالات ونصائح في مدونة سيلعتي.",
+    title: "Sil3aty Blog - Articles & Tips",
+    description: "Discover articles and tips in Sil3aty's blog.",
     url: "https://sil3aty.com/blog",
     type: "website",
   },

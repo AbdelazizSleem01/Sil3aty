@@ -2,7 +2,9 @@
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
+import "../i18n";
 import { 
   FaPlus, 
   FaSpinner, 
@@ -17,6 +19,7 @@ import {
 } from "react-icons/fa";
 
 export default function CreateCategories() {
+  const { t, i18n } = useTranslation();
   const { data: session, status } = useSession();
   const router = useRouter();
   const [name, setName] = useState("");
@@ -24,18 +27,19 @@ export default function CreateCategories() {
   const [image, setImage] = useState("");
   const [loading, setLoading] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const isRTL = i18n.language === "ar";
 
   useEffect(() => {
     if (status === "loading") return;
 
     if (status === "unauthenticated") {
-      toast.error("Please login to access this page");
+      toast.error(t("pleaseLoginToAccess") || "Please login to access this page");
       router.push("/login");
       return;
     }
 
     if (status === "authenticated" && !session?.user?.isAdmin) {
-      toast.error("Unauthorized access - Admin privileges required");
+      toast.error(t("unauthorizedAccess") || "Unauthorized access - Admin privileges required");
       router.push("/unauthorized");
       return;
     }
@@ -67,7 +71,7 @@ export default function CreateCategories() {
     e.preventDefault();
     
     if (!name.trim() || !slug.trim()) {
-      toast.error("Please fill in all required fields");
+      toast.error(t("fillRequiredFields"));
       return;
     }
 
@@ -90,7 +94,7 @@ export default function CreateCategories() {
         throw new Error(data.error || "Failed to create category");
       }
 
-      toast.success("🎉 Category created successfully!");
+      toast.success(t("categoryCreated"));
       
       setTimeout(() => {
         router.push("/admin/categories");
@@ -105,7 +109,7 @@ export default function CreateCategories() {
 
   const handleCancel = () => {
     if (name || slug || image) {
-      if (confirm("Are you sure you want to cancel? All unsaved changes will be lost.")) {
+      if (confirm(t("confirmCancel") || "Are you sure you want to cancel? All unsaved changes will be lost.")) {
         router.back();
       }
     } else {
@@ -118,7 +122,7 @@ export default function CreateCategories() {
       <div className="min-h-screen bg-gradient-to-br from-base-100 to-base-200 flex items-center justify-center">
         <div className="text-center">
           <FaSpinner className="text-6xl text-primary animate-spin mx-auto mb-4" />
-          <p className="text-xl text-gray-700">Checking permissions...</p>
+          <p className="text-xl text-gray-700">{t("common.loading")}...</p>
         </div>
       </div>
     );
@@ -129,8 +133,8 @@ export default function CreateCategories() {
       <div className="min-h-screen bg-gradient-to-br from-base-100 to-base-200 flex items-center justify-center">
         <div className="text-center">
           <FaShieldVirus className="text-8xl text-error mx-auto mb-6" />
-          <h2 className="text-3xl font-bold text-error mb-4">Access Denied</h2>
-          <p className="text-gray-600 text-lg">Redirecting to authorized page...</p>
+          <h2 className="text-3xl font-bold text-error mb-4">{t("accessDenied") || "Access Denied"}</h2>
+          <p className="text-gray-600 text-lg">{t("redirecting") || "Redirecting to authorized page..."}</p>
         </div>
       </div>
     );
@@ -152,8 +156,8 @@ export default function CreateCategories() {
               <FaLayerGroup className="text-3xl text-white" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-gray-800">Create New Category</h1>
-              <p className="text-gray-600 mt-1">Add a new product category to your store</p>
+              <h1 className="text-3xl font-bold text-gray-800">{t("createNewCategory")}</h1>
+              <p className="text-gray-600 mt-1">{t("addNewCategoryDescription") || "Add a new product category to your store"}</p>
             </div>
           </div>
         </div>
@@ -165,15 +169,15 @@ export default function CreateCategories() {
             <div className="form-control">
               <label className="label flex items-center gap-2 mb-3">
                 <FaTag className="text-primary text-lg" />
-                <span className="label-text text-lg font-semibold text-gray-700">Category Name</span>
+                <span className="label-text text-lg font-semibold text-gray-700">{t("categoryName")}</span>
                 <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
-                placeholder="e.g., Electronics, Clothing, Home Decor"
+                placeholder={t("enterCategoryName")}
                 value={name}
                 onChange={handleNameChange}
-                className="input input-bordered input-primary w-full text-md py-3"
+                className={`input input-bordered input-primary w-full text-md py-3 ${isRTL ? 'text-right' : 'text-left'}`}
                 required
                 maxLength={100}
               />
@@ -186,20 +190,20 @@ export default function CreateCategories() {
             <div className="form-control">
               <label className="label flex items-center gap-2 mb-3">
                 <FaLink className="text-primary text-lg" />
-                <span className="label-text text-lg font-semibold text-gray-700">Slug</span>
+                <span className="label-text text-lg font-semibold text-gray-700">{t("categorySlug")}</span>
                 <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
-                placeholder="e.g., electronics, clothing, home-decor"
+                placeholder={t("enterSlug")}
                 value={slug}
                 onChange={(e) => setSlug(generateSlug(e.target.value))}
-                className="input input-bordered input-primary w-full text-md py-3 font-mono"
+                className={`input input-bordered input-primary w-full text-md py-3 font-mono ${isRTL ? 'text-right' : 'text-left'}`}
                 required
                 maxLength={100}
               />
               <div className="flex justify-between text-sm text-gray-500 mt-1">
-                <span>URL-friendly identifier</span>
+                <span>{t("slugAutoGenerated")}</span>
                 <span>{slug.length}/100</span>
               </div>
             </div>
@@ -208,15 +212,15 @@ export default function CreateCategories() {
             <div className="form-control">
               <label className="label flex items-center gap-2 mb-3">
                 <FaImage className="text-primary text-lg" />
-                <span className="label-text text-lg font-semibold text-gray-700">Image URL</span>
-                <span className="text-gray-400">(Optional)</span>
+                <span className="label-text text-lg font-semibold text-gray-700">{t("categoryImage")}</span>
+                <span className="text-gray-400">({t("optional") || "Optional"})</span>
               </label>
               <input
                 type="url"
-                placeholder="https://example.com/image.jpg"
+                placeholder={t("enterImageUrl")}
                 value={image}
                 onChange={(e) => setImage(e.target.value)}
-                className="input input-bordered input-primary w-full text-md py-3"
+                className={`input input-bordered input-primary w-full text-md py-3 ${isRTL ? 'text-right' : 'text-left'}`}
               />
               
               {/* Image Preview */}
@@ -224,7 +228,7 @@ export default function CreateCategories() {
                 <div className="mt-4 p-4 border-2 border-dashed border-info rounded-lg bg-info/10">
                   <p className="font-semibold text-info mb-2 flex items-center gap-2">
                     <FaImage />
-                    Image Preview
+                    {t("imagePreview")}
                   </p>
                   <div className="flex items-center gap-4">
                     <img
@@ -258,7 +262,7 @@ export default function CreateCategories() {
                 className="btn flex-1 text-md py-3"
                 disabled={loading}
               >
-                Cancel
+                {t("common.cancel")}
               </button>
               
               <button
@@ -269,12 +273,12 @@ export default function CreateCategories() {
                 {loading ? (
                   <>
                     <FaSpinner className="animate-spin" />
-                    Creating...
+                    {t("common.submitting")}...
                   </>
                 ) : (
                   <>
                     <FaSave />
-                    Create Category
+                    {t("createCategory")}
                   </>
                 )}
               </button>
@@ -285,13 +289,13 @@ export default function CreateCategories() {
           <div className="mt-8 p-4 bg-info/10 rounded-lg border border-info/20">
             <h3 className="font-semibold text-info mb-2 flex items-center gap-2">
               <FaPlus />
-              Quick Tips
+              {t("quickTips") || "Quick Tips"}
             </h3>
             <ul className="text-sm text-gray-600 space-y-1">
-              <li>• Category names should be clear and descriptive</li>
-              <li>• Slugs are auto-generated but can be customized</li>
-              <li>• Use high-quality images for better presentation</li>
-              <li>• Keep slugs short and URL-friendly</li>
+              <li>• {t("categoryNameTip") || "Category names should be clear and descriptive"}</li>
+              <li>• {t("slugTip") || "Slugs are auto-generated but can be customized"}</li>
+              <li>• {t("imageTip") || "Use high-quality images for better presentation"}</li>
+              <li>• {t("slugShortTip") || "Keep slugs short and URL-friendly"}</li>
             </ul>
           </div>
         </div>

@@ -2,7 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { toast } from "react-toastify";
+import { useTranslation } from "react-i18next";
+import Swal from "sweetalert2";
+import Image from "next/image";
+import "../i18n";
 import { 
   FaEdit, 
   FaSpinner, 
@@ -18,6 +21,7 @@ import {
 } from "react-icons/fa";
 
 export default function EditCategory() {
+  const { t, i18n } = useTranslation();
   const { id } = useParams();
   const router = useRouter();
   const [name, setName] = useState("");
@@ -26,6 +30,7 @@ export default function EditCategory() {
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
   const [originalData, setOriginalData] = useState(null);
+  const isRTL = i18n.language === "ar";
 
   useEffect(() => {
     const fetchCategory = async () => {
@@ -43,7 +48,12 @@ export default function EditCategory() {
         setOriginalData(data);
         
       } catch (err) {
-        toast.error(`❌ ${err.message}`);
+        Swal.fire({
+          title: t("common.error"),
+          text: err.message,
+          icon: "error",
+          confirmButtonColor: "#ef4444",
+        });
         setTimeout(() => {
           router.push("/admin/categories");
         }, 2000);
@@ -68,7 +78,6 @@ export default function EditCategory() {
     const newName = e.target.value;
     setName(newName);
     
-    // Auto-generate slug from name if slug is empty or matches the original name
     if (newName && (!slug || slug === generateSlug(originalData?.name))) {
       setSlug(generateSlug(newName));
     }
@@ -78,7 +87,12 @@ export default function EditCategory() {
     e.preventDefault();
     
     if (!name.trim() || !slug.trim()) {
-      toast.error("Please fill in all required fields");
+      Swal.fire({
+        title: t("common.error"),
+        text: t("fillRequiredFields"),
+        icon: "error",
+        confirmButtonColor: "#ef4444",
+      });
       return;
     }
 
@@ -101,27 +115,48 @@ export default function EditCategory() {
         throw new Error(data.error || "Failed to update category");
       }
 
-      toast.success("🎉 Category updated successfully!");
-      
+      Swal.fire({
+        title: t("categoryUpdated"),
+        icon: "success",
+        confirmButtonColor: "#10b981",
+        timer: 1500,
+      });
+
       setTimeout(() => {
         router.push("/admin/categories");
       }, 1500);
 
     } catch (err) {
-      toast.error(`❌ ${err.message}`);
+      Swal.fire({
+        title: t("common.error"),
+        text: err.message,
+        icon: "error",
+        confirmButtonColor: "#ef4444",
+      });
     } finally {
       setLoading(false);
     }
   };
 
-  const handleCancel = () => {
-    const hasChanges = 
-      name !== originalData?.name || 
-      slug !== originalData?.slug || 
+  const handleCancel = async () => {
+    const hasChanges =
+      name !== originalData?.name ||
+      slug !== originalData?.slug ||
       image !== (originalData?.image || "");
 
     if (hasChanges) {
-      if (confirm("Are you sure you want to cancel? All unsaved changes will be lost.")) {
+      const result = await Swal.fire({
+        title: t("confirmCancel"),
+        text: t("confirmCancel") ,
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#6b7280",
+        cancelButtonColor: "#10b981",
+        confirmButtonText: t("common.cancel"),
+        cancelButtonText: t("common.save") || "Save Changes",
+      });
+
+      if (result.isConfirmed) {
         router.back();
       }
     } else {
@@ -130,7 +165,18 @@ export default function EditCategory() {
   };
 
   const handleDelete = async () => {
-    if (!confirm("Are you sure you want to delete this category? This action cannot be undone.")) {
+    const result = await Swal.fire({
+      title: t("confirmDelete"),
+      text: t("confirmDelete") ,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: t("yesDeleteIt") || "Yes, Delete It!",
+      cancelButtonText: t("common.cancel"),
+    });
+
+    if (!result.isConfirmed) {
       return;
     }
 
@@ -143,14 +189,24 @@ export default function EditCategory() {
         throw new Error("Failed to delete category");
       }
 
-      toast.success("🗑️ Category deleted successfully!");
-      
+      Swal.fire({
+        title: t("categoryDeleted"),
+        icon: "success",
+        confirmButtonColor: "#10b981",
+        timer: 1000,
+      });
+
       setTimeout(() => {
         router.push("/admin/categories");
       }, 1000);
 
     } catch (error) {
-      toast.error(`❌ ${error.message}`);
+      Swal.fire({
+        title: t("common.error"),
+        text: error.message,
+        icon: "error",
+        confirmButtonColor: "#ef4444",
+      });
     }
   };
 
@@ -166,9 +222,9 @@ export default function EditCategory() {
           <FaSpinner className="text-8xl text-primary animate-spin mx-auto mb-6" />
           <div className="flex items-center gap-3 text-2xl font-semibold text-gray-700">
             <FaLayerGroup className="text-primary" />
-            <span>Loading Category...</span>
+            <span>...{t("common.loading")}</span>
           </div>
-          <p className="text-gray-500 mt-2">Please wait while we fetch category details</p>
+          <p className="text-gray-500 mt-2">{t("pleaseWait") || "Please wait while we fetch category details"}</p>
         </div>
       </div>
     );
@@ -191,8 +247,8 @@ export default function EditCategory() {
                 <FaEdit className="text-3xl text-white" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-gray-800">Edit Category</h1>
-                <p className="text-gray-600 mt-1">Update your product category information</p>
+                <h1 className="text-3xl font-bold text-gray-800">{t("editCategory")}</h1>
+                <p className="text-gray-600 mt-1">{t("updateCategoryInfo") || "Update your product category information"}</p>
               </div>
             </div>
           </div>
@@ -202,7 +258,7 @@ export default function EditCategory() {
             className="btn btn-error btn-outline flex items-center gap-2"
           >
             <FaTrash />
-            Delete
+            {t("common.delete")}
           </button>
         </div>
 
@@ -213,15 +269,15 @@ export default function EditCategory() {
             <div className="form-control">
               <label className="label flex items-center gap-2 mb-3">
                 <FaTag className="text-primary text-lg" />
-                <span className="label-text text-lg font-semibold text-gray-700">Category Name</span>
+                <span className="label-text text-lg font-semibold text-gray-700">{t("categoryName")}</span>
                 <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
-                placeholder="e.g., Electronics, Clothing, Home Decor"
+                placeholder={t("enterCategoryName")}
                 value={name}
                 onChange={handleNameChange}
-                className="input input-bordered input-primary w-full text-lg py-3"
+                className={`input input-bordered rounded-lg input-primary w-full text-lg py-3 ${isRTL ? 'text-right' : 'text-left'}`}
                 required
                 maxLength={100}
               />
@@ -234,30 +290,30 @@ export default function EditCategory() {
             <div className="form-control">
               <label className="label flex items-center gap-2 mb-3">
                 <FaLink className="text-primary text-lg" />
-                <span className="label-text text-lg font-semibold text-gray-700">Slug</span>
+                <span className="label-text text-lg font-semibold text-gray-700">{t("categorySlug")}</span>
                 <span className="text-red-500">*</span>
               </label>
               <div className="flex gap-2">
                 <input
                   type="text"
-                  placeholder="e.g., electronics, clothing, home-decor"
+                  placeholder={t("enterSlug")}
                   value={slug}
                   onChange={(e) => setSlug(generateSlug(e.target.value))}
-                  className="input input-bordered input-primary w-full text-lg py-3 font-mono"
+                  className={`input input-bordered rounded-lg input-primary w-full text-lg py-3 font-mono ${isRTL ? 'text-right' : 'text-left'}`}
                   required
                   maxLength={100}
                 />
                 <button
                   type="button"
                   onClick={() => setSlug(generateSlug(name))}
-                  className="btn btn-ghost tooltip"
-                  data-tip="Regenerate from name"
+                  className="btn rounded-lg btn-outline btn-primary tooltip"
+                  data-tip={t("regenerateFromName") || "Regenerate from name"}
                 >
                   <FaSync className="text-lg" />
                 </button>
               </div>
               <div className="flex justify-between text-sm text-gray-500 mt-1">
-                <span>URL-friendly identifier</span>
+                <span>{t("slugAutoGenerated")}</span>
                 <span>{slug.length}/100</span>
               </div>
             </div>
@@ -266,42 +322,61 @@ export default function EditCategory() {
             <div className="form-control">
               <label className="label flex items-center gap-2 mb-3">
                 <FaImage className="text-primary text-lg" />
-                <span className="label-text text-lg font-semibold text-gray-700">Image URL</span>
-                <span className="text-gray-400">(Optional)</span>
+                <span className="label-text text-lg font-semibold text-gray-700">{t("categoryImage")}</span>
+                <span className="text-gray-400">({t("optional")})</span>
               </label>
               <input
                 type="url"
-                placeholder="https://example.com/image.jpg"
+                placeholder={t("enterImageUrl")}
                 value={image}
                 onChange={(e) => setImage(e.target.value)}
-                className="input input-bordered input-primary w-full text-lg py-3"
+                className={`input input-bordered rounded-lg input-primary w-full text-md py-3 ${isRTL ? 'text-right' : 'text-left'}`}
               />
               
               {/* Image Preview */}
               {image && (
-                <div className="mt-4 p-4 border-2 border-dashed border-info rounded-lg bg-info/10">
-                  <p className="font-semibold text-info mb-2 flex items-center gap-2">
-                    <FaEye />
-                    Image Preview
-                  </p>
-                  <div className="flex items-center gap-4">
-                    <img
-                      src={image}
-                      alt="Category preview"
-                      className="w-20 h-20 object-cover rounded-lg bg-white shadow-md"
-                      onError={(e) => {
-                        e.target.style.display = 'none';
-                        e.target.nextSibling.style.display = 'block';
-                      }}
-                    />
-                    <div 
-                      className="w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center text-gray-400 hidden"
-                    >
-                      <FaImage className="text-2xl" />
+                <div className="mt-6 p-6 border-2 border-dashed border-info/50 rounded-xl bg-gradient-to-br from-info/5 to-info/10 hover:border-info/70 transition-all duration-300">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="p-2 bg-info/20 rounded-full">
+                      <FaEye className="text-info text-lg" />
                     </div>
-                    <div className="flex-1">
-                      <p className="text-sm break-all">{image}</p>
-                      <p className="text-xs text-gray-500 mt-1">Live preview - URL must be accessible</p>
+                    <h4 className="font-bold text-info text-lg">{t("imagePreview")}</h4>
+                  </div>
+
+                  <div className="flex flex-col lg:flex-row items-start gap-6">
+                    {/* Image Display */}
+                    <div className="flex-shrink-0">
+                      <div className="relative group">
+                        <Image
+                          src={image}
+                          alt={t("imagePreview")}
+                          width={120}
+                          height={120}
+                          className="w-32 h-32 object-cover rounded-xl bg-white shadow-lg border-2 border-white group-hover:scale-105 transition-transform duration-300"
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                            e.target.nextSibling.style.display = 'block';
+                          }}
+                        />
+                        
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 rounded-xl transition-colors duration-300"></div>
+                      </div>
+                    </div>
+
+                    {/* Image Details */}
+                    <div className="flex-1 min-w-0">
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium text-gray-600">{t("imageUrl")}:</span>
+                        </div>
+                        <div className="p-3 bg-white/50 rounded-lg border border-gray-200">
+                          <p className="text-sm font-mono break-all text-gray-800 leading-relaxed">{image}</p>
+                        </div>
+                        <div className="flex items-center gap-2 text-xs text-gray-500">
+                          <div className="w-2 h-2 bg-success rounded-full"></div>
+                          <span>{t("livePreview")}</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -313,10 +388,10 @@ export default function EditCategory() {
               <button
                 type="button"
                 onClick={handleCancel}
-                className="btn btn-ghost flex-1 text-lg py-3"
+                className="btn flex-1 text-lg py-3"
                 disabled={loading}
               >
-                Cancel
+                {t("common.cancel")}
               </button>
               
               <button
@@ -327,12 +402,12 @@ export default function EditCategory() {
                 {loading ? (
                   <>
                     <FaSpinner className="animate-spin" />
-                    Updating...
+                    {t("common.submitting")}...
                   </>
                 ) : (
                   <>
                     <FaSave />
-                    Update Category
+                    {t("updateCategory")}
                   </>
                 )}
               </button>
@@ -343,34 +418,34 @@ export default function EditCategory() {
               <div className="mt-4 p-3 bg-warning/10 border border-warning/20 rounded-lg">
                 <p className="text-warning text-sm font-semibold flex items-center gap-2">
                   <FaEdit />
-                  You have unsaved changes
+                  {t("unsavedChanges") || "You have unsaved changes"}
                 </p>
               </div>
             )}
           </form>
 
-          {/* Category Info */}
+          {/* Category Information */}
           {originalData && (
             <div className="mt-8 p-4 bg-base-200 rounded-lg border border-base-300">
               <h3 className="font-semibold text-gray-700 mb-3 flex items-center gap-2">
                 <FaLayerGroup className="text-primary" />
-                Category Information
+                {t("categoryInfo")}
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                 <div>
-                  <span className="font-semibold text-gray-600">Created:</span>
+                  <span className="font-semibold text-gray-600">{t("created")}:</span>
                   <p className="text-gray-500">
-                    {new Date(originalData.createdAt).toLocaleDateString()}
+                    {new Date(originalData.createdAt).toLocaleDateString(i18n.language === "ar" ? "ar-EG" : "en-US")}
                   </p>
                 </div>
                 <div>
-                  <span className="font-semibold text-gray-600">Last Updated:</span>
+                  <span className="font-semibold text-gray-600">{t("lastUpdated")}:</span>
                   <p className="text-gray-500">
-                    {new Date(originalData.updatedAt).toLocaleDateString()}
+                    {new Date(originalData.updatedAt).toLocaleDateString(i18n.language === "ar" ? "ar-EG" : "en-US")}
                   </p>
                 </div>
                 <div className="md:col-span-2">
-                  <span className="font-semibold text-gray-600">Category ID:</span>
+                  <span className="font-semibold text-gray-600">{t("categoryId")}:</span>
                   <p className="text-gray-500 font-mono text-xs">{id}</p>
                 </div>
               </div>

@@ -126,13 +126,13 @@ function AllProductsPageContent() {
 
       if (!response.ok) throw new Error("Failed to add product to cart");
 
-      toast.success("Product added to cart!");
+      toast.success(t("productAddedToCart"));
       setAnimatingProductId(productId);
       setTimeout(() => setAnimatingProductId(null), 500);
 
       await updateCartCount();
     } catch (error) {
-      toast.error("Failed to add product to cart");
+      toast.error(t("failedToAddToCart"));
     }
   };
 
@@ -258,8 +258,8 @@ function AllProductsPageContent() {
       <div className="flex justify-center items-center min-h-screen backdrop-blur-sm">
         <div className="text-center space-y-4">
           <span className="loading loading-infinity loading-lg text-primary"></span>
-          <p className="text-lg font-medium text-gray-800">
-            Loading Products...
+          <p className="text-lg font-medium text-gray-800" suppressHydrationWarning>
+            {t("loadingProducts")}
           </p>
         </div>
       </div>
@@ -327,9 +327,9 @@ function AllProductsPageContent() {
                 onChange={(e) => handleFilterChange("sortBy", e.target.value)}
                 className="select select-bordered select-sm"
               >
-                <option value="name">Sort by Name</option>
-                <option value="price">Sort by Price</option>
-                <option value="rating">Sort by Rating</option>
+                <option value="name">{t("sortByName")}</option>
+                <option value="price">{t("sortByPrice")}</option>
+                <option value="rating">{t("sortByRating")}</option>
               </select>
 
               <select
@@ -339,8 +339,8 @@ function AllProductsPageContent() {
                 }
                 className="select select-bordered select-sm"
               >
-                <option value="asc">Ascending</option>
-                <option value="desc">Descending</option>
+                <option value="asc">{t("ascending")}</option>
+                <option value="desc">{t("descending")}</option>
               </select>
             </div>
           </div>
@@ -351,7 +351,7 @@ function AllProductsPageContent() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div className="space-y-3">
                   <label className="font-semibold text-gray-700">
-                    Price Range
+                    {t("priceRange")}
                   </label>
                   <div className="space-y-2">
                     <input
@@ -376,7 +376,7 @@ function AllProductsPageContent() {
 
                 <div className="space-y-3">
                   <label className="font-semibold text-gray-700">
-                    Minimum Rating
+                    {t("minimumRating")}
                   </label>
                   <select
                     value={filters.minRating}
@@ -385,17 +385,17 @@ function AllProductsPageContent() {
                     }
                     className="select select-bordered select-sm w-full"
                   >
-                    <option value={0}>Any Rating</option>
-                    <option value={4}>4+ Stars</option>
-                    <option value={3}>3+ Stars</option>
-                    <option value={2}>2+ Stars</option>
-                    <option value={1}>1+ Stars</option>
+                    <option value={0}>{t("anyRating")}</option>
+                    <option value={4}>{t("stars4Plus")}</option>
+                    <option value={3}>{t("stars3Plus")}</option>
+                    <option value={2}>{t("stars2Plus")}</option>
+                    <option value={1}>{t("stars1Plus")}</option>
                   </select>
                 </div>
 
                 <div className="space-y-3">
                   <label className="font-semibold text-gray-700">
-                    Quick Filters
+                    {t("quickFilters")}
                   </label>
                   <div className="space-y-2">
                     <label className="flex items-center gap-2 cursor-pointer">
@@ -407,7 +407,7 @@ function AllProductsPageContent() {
                         }
                         className="checkbox checkbox-primary checkbox-sm"
                       />
-                      <span className="text-sm">In Stock Only</span>
+                      <span className="text-sm">{t("inStockOnly")}</span>
                     </label>
                     <label className="flex items-center gap-2 cursor-pointer">
                       <input
@@ -418,7 +418,7 @@ function AllProductsPageContent() {
                         }
                         className="checkbox checkbox-primary checkbox-sm"
                       />
-                      <span className="text-sm">On Sale</span>
+                      <span className="text-sm">{t("onSale")}</span>
                     </label>
                     <label className="flex items-center gap-2 cursor-pointer">
                       <input
@@ -429,13 +429,13 @@ function AllProductsPageContent() {
                         }
                         className="checkbox checkbox-primary checkbox-sm"
                       />
-                      <span className="text-sm">Featured</span>
+                      <span className="text-sm">{t("featured")}</span>
                     </label>
                   </div>
                 </div>
 
                 <div className="space-y-3">
-                  <label className="font-semibold text-gray-700">Brand</label>
+                  <label className="font-semibold text-gray-700">{t("brand")}</label>
                   <select
                     value={filters.brand || ""}
                     onChange={(e) =>
@@ -443,7 +443,7 @@ function AllProductsPageContent() {
                     }
                     className="select select-bordered select-sm w-full"
                   >
-                    <option value="">All Brands</option>
+                    <option value="">{t("allBrands")}</option>
                     {brands.map((brand) => (
                       <option key={brand._id} value={brand._id}>
                         {brand.name}
@@ -454,7 +454,7 @@ function AllProductsPageContent() {
 
                 <div className="space-y-3">
                   <label className="font-semibold text-gray-700">
-                    Category
+                    {t("category")}
                   </label>
                   <select
                     value={filters.category || ""}
@@ -463,7 +463,7 @@ function AllProductsPageContent() {
                     }
                     className="select select-bordered select-sm w-full"
                   >
-                    <option value="">All Categories</option>
+                    <option value="">{t("allCategories")}</option>
                     {categories.map((category) => (
                       <option key={category._id} value={category.slug}>
                         {category.name}
@@ -504,7 +504,7 @@ function AllProductsPageContent() {
               )}
               {filters.inStock && (
                 <span className="badge badge-success badge-lg gap-2">
-                  In Stock
+                  {t("inStock")}
                   <button onClick={() => handleFilterChange("inStock", false)}>
                     ×
                   </button>
@@ -512,7 +512,7 @@ function AllProductsPageContent() {
               )}
               {filters.onSale && (
                 <span className="badge badge-warning badge-lg gap-2">
-                  On Sale
+                  {t("onSale")}
                   <button onClick={() => handleFilterChange("onSale", false)}>
                     ×
                   </button>
@@ -520,7 +520,7 @@ function AllProductsPageContent() {
               )}
               {filters.featured && (
                 <span className="badge badge-info badge-lg gap-2">
-                  Featured
+                  {t("featured")}
                   <button onClick={() => handleFilterChange("featured", false)}>
                     ×
                   </button>
@@ -550,12 +550,12 @@ function AllProductsPageContent() {
 
         <div className="mb-6 flex justify-between items-center">
           <p className="text-gray-600">
-            Showing <span className="font-bold">{filteredProducts.length}</span>{" "}
-            products
-            {filters.search && ` for "${filters.search}"`}
+            {t("showing")} <span className="font-bold">{filteredProducts.length}</span>{" "}
+            {t("products")}
+            {filters.search && ` ${t("for")} "${filters.search}"`}
           </p>
           <p className="text-sm text-gray-500">
-            Page {currentPage} of{" "}
+            {t("page")} {currentPage} {t("of")}{" "}
             {Math.ceil(filteredProducts.length / productsPerPage)}
           </p>
         </div>
@@ -601,7 +601,7 @@ function AllProductsPageContent() {
                             <div className="w-12 h-12 mx-auto mb-2 bg-gray-200 rounded-full flex items-center justify-center">
                               <span className="text-gray-500 text-2xl">📷</span>
                             </div>
-                            <p className="text-sm text-gray-500">No Image</p>
+                            <p className="text-sm text-gray-500">{t("noImage")}</p>
                           </div>
                         </div>
                       )}
@@ -630,7 +630,7 @@ function AllProductsPageContent() {
                       <div className="bg-gradient-to-r from-emerald-500 to-green-500 text-white px-2 py-1 rounded-full text-xs font-bold shadow-lg">
                         <div className="flex items-center gap-1">
                           <BadgeCheck size={12} />
-                          FEATURED
+                          {t("featured").toUpperCase()}
                         </div>
                       </div>
                     </div>
@@ -699,7 +699,7 @@ function AllProductsPageContent() {
                       href={`/product/${product._id}`}
                       className="btn btn-outline btn-sm flex-1 hover:btn-primary transition-colors"
                     >
-                      Details
+                      {t("details")}
                       <ArrowRightIcon size={16} className="ml-1" />
                     </Link>
 
@@ -722,8 +722,8 @@ function AllProductsPageContent() {
                   {product.countInStock > 0 && product.countInStock < 10 && (
                     <div className="mt-3">
                       <div className="flex justify-between text-xs text-gray-500 mb-1">
-                        <span>Only {product.countInStock} left</span>
-                        <span>Limited Stock</span>
+                        <span>{t("onlyLeft", { count: product.countInStock })}</span>
+                        <span>{t("limitedStock")}</span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-1.5">
                         <div
@@ -745,26 +745,26 @@ function AllProductsPageContent() {
         {filteredProducts.length > productsPerPage && (
           <div className="flex items-center justify-between mt-12 p-6 bg-white rounded-2xl shadow-lg border border-gray-100">
             <div className="text-sm text-gray-600">
-              Showing{" "}
+              {t("showing")}{" "}
               <span className="font-bold">
                 {(currentPage - 1) * productsPerPage + 1}
               </span>{" "}
-              to{" "}
+              {t("to")}{" "}
               <span className="font-bold">
                 {Math.min(
                   currentPage * productsPerPage,
                   filteredProducts.length
                 )}
               </span>{" "}
-              of <span className="font-bold">{filteredProducts.length}</span>{" "}
-              products
+              {t("of")} <span className="font-bold">{filteredProducts.length}</span>{" "}
+              {t("products")}
             </div>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setCurrentPage(1)}
                 disabled={currentPage === 1}
                 className="btn btn-sm btn-ghost disabled:opacity-50"
-                title="First Page"
+                title={t("firstPage")}
               >
                 «
               </button>
@@ -828,7 +828,7 @@ function AllProductsPageContent() {
                   Math.ceil(filteredProducts.length / productsPerPage)
                 }
                 className="btn btn-sm btn-ghost disabled:opacity-50"
-                title="Last Page"
+                title={t("lastPage")}
               >
                 »
               </button>
@@ -843,17 +843,16 @@ function AllProductsPageContent() {
                 <TriangleAlert className="w-10 h-10 text-gray-400" />
               </div>
               <h3 className="text-xl font-semibold text-gray-700 mb-2">
-                No Products Found
+                {t("noProductsFound")}
               </h3>
               <p className="text-gray-500 mb-6">
-                Try adjusting your search or filters to find what you're looking
-                for.
+                {t("tryAdjustingSearch")}
               </p>
               <button
                 onClick={clearAllFilters}
                 className="btn btn-primary btn-lg w-full"
               >
-                Clear All Filters
+                {t("clearAllFilters")}
               </button>
             </div>
           </div>

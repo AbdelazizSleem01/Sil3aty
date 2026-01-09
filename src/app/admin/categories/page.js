@@ -4,7 +4,9 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { useTranslation } from "react-i18next";
 import Swal from "sweetalert2";
+import "../../../../i18n";
 import {
   FaPlus,
   FaEdit,
@@ -20,11 +22,13 @@ import {
 } from "react-icons/fa";
 
 export default function CategoriesPage() {
+  const { t, i18n } = useTranslation();
   const { data: session, status } = useSession();
   const router = useRouter();
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const isRTL = i18n.language === "ar";
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -48,7 +52,7 @@ export default function CategoriesPage() {
         setCategories(data);
       } catch (err) {
         Swal.fire({
-          title: "Error!",
+          title: t("common.error"),
           text: err.message,
           icon: "error",
           confirmButtonColor: "#ef4444",
@@ -61,25 +65,25 @@ export default function CategoriesPage() {
     if (session?.user?.isAdmin) {
       fetchCategories();
     }
-  }, [session]);
+  }, [session, t]);
 
   const handleDelete = async (id, categoryName) => {
     const result = await Swal.fire({
-      title: "Delete Category?",
+      title: t("deleteCategory"),
       html: `
         <div class="text-center">
           <div class="text-6xl text-red-500 mb-4">🗑️</div>
-          <p class="text-lg font-semibold mb-2">You are about to delete:</p>
+          <p class="text-lg font-semibold mb-2">${t("confirmDelete")}</p>
           <p class="text-xl text-primary font-bold">${categoryName}</p>
-          <p class="text-gray-600 mt-2">This action cannot be undone!</p>
+          <p class="text-gray-600 mt-2">${t("common.cannotUndo") || "This action cannot be undone!"}</p>
         </div>
       `,
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#ef4444",
       cancelButtonColor: "#6b7280",
-      confirmButtonText: "Yes, Delete It!",
-      cancelButtonText: "Cancel",
+      confirmButtonText: t("yesDeleteIt") || "Yes, Delete It!",
+      cancelButtonText: t("common.cancel"),
 
       customClass: {
         popup: "rounded-2xl",
@@ -99,8 +103,8 @@ export default function CategoriesPage() {
         }
 
         await Swal.fire({
-          title: "Deleted!",
-          text: `${categoryName} has been deleted successfully.`,
+          title: t("categoryDeleted"),
+          text: `${categoryName} ${t("categoryDeleted").toLowerCase()}`,
           icon: "success",
           confirmButtonColor: "#10b981",
 
@@ -112,7 +116,7 @@ export default function CategoriesPage() {
         setCategories(categories.filter((category) => category._id !== id));
       } catch (err) {
         Swal.fire({
-          title: "Error!",
+          title: t("common.error"),
           text: err.message,
           icon: "error",
           confirmButtonColor: "#ef4444",
@@ -137,7 +141,7 @@ export default function CategoriesPage() {
         <div className="text-center">
           <FaSpinner className="text-8xl text-primary animate-spin mx-auto mb-6" />
           <p className="text-2xl font-semibold text-gray-700">
-            Checking permissions...
+            {t("common.loading")}
           </p>
         </div>
       </div>
@@ -149,9 +153,9 @@ export default function CategoriesPage() {
       <div className="min-h-screen bg-gradient-to-br from-base-100 to-base-200 flex items-center justify-center">
         <div className="text-center">
           <FaShieldAlt className="text-8xl text-error mx-auto mb-6" />
-          <h2 className="text-3xl font-bold text-error mb-4">Access Denied</h2>
+          <h2 className="text-3xl font-bold text-error mb-4">{t("accessDenied") || "Access Denied"}</h2>
           <p className="text-gray-600 text-lg">
-            Redirecting to authorized page...
+            {t("redirecting") || "Redirecting to authorized page..."}
           </p>
         </div>
       </div>
@@ -165,10 +169,10 @@ export default function CategoriesPage() {
           <FaSpinner className="text-8xl text-primary animate-spin mx-auto mb-6" />
           <div className="flex items-center gap-3 text-2xl font-semibold text-gray-700">
             <FaLayerGroup className="text-primary" />
-            <span>Loading Categories...</span>
+            <span>{t("common.loading")}...</span>
           </div>
           <p className="text-gray-500 mt-2">
-            Please wait while we fetch your categories
+            {t("pleaseWait") || "Please wait while we fetch your categories"}
           </p>
         </div>
       </div>
@@ -186,11 +190,11 @@ export default function CategoriesPage() {
               </div>
               <div>
                 <h1 className="text-4xl font-bold text-gray-800">
-                  Category Management
+                  {t("categoryManagement")}
                 </h1>
                 <p className="text-gray-600 mt-2 flex items-center gap-2">
                   <FaBox className="text-primary" />
-                  Manage your product categories and organization
+                  {t("managingCategories")}
                 </p>
               </div>
             </div>
@@ -200,7 +204,7 @@ export default function CategoriesPage() {
               className="btn btn-primary btn-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 flex items-center gap-3 px-8 rounded-xl"
             >
               <FaPlus className="text-lg" />
-              Create Category
+              {t("createCategory")}
             </Link>
           </div>
 
@@ -211,10 +215,10 @@ export default function CategoriesPage() {
                   <FaSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-lg" />
                   <input
                     type="text"
-                    placeholder="Search categories by name or slug..."
+                    placeholder={t("searchCategories")}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="input input-bordered input-lg w-full pl-12 pr-4 rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20"
+                    className={`input input-bordered input-lg w-full pl-12 pr-4 rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20 ${isRTL ? 'text-right' : 'text-left'}`}
                   />
                 </div>
               </div>
@@ -222,8 +226,7 @@ export default function CategoriesPage() {
                 <FaLayerGroup className="text-primary" />
                 <span>
                   {filteredCategories.length}{" "}
-                  {filteredCategories.length === 1 ? "category" : "categories"}{" "}
-                  found
+                  {t("totalCategories").toLowerCase()}
                 </span>
               </div>
             </div>
@@ -235,12 +238,12 @@ export default function CategoriesPage() {
             <div className="text-center py-16">
               <FaExclamationCircle className="text-6xl text-gray-300 mx-auto mb-4" />
               <h3 className="text-2xl font-semibold text-gray-600 mb-2">
-                {searchTerm ? "No categories found" : "No categories available"}
+                {searchTerm ? t("noCategories") : t("noCategoriesAvailable")}
               </h3>
               <p className="text-gray-500 max-w-md mx-auto mb-6">
                 {searchTerm
-                  ? "Try adjusting your search terms to find what you're looking for."
-                  : "Get started by creating your first category to organize products."}
+                  ? t("adjustSearchTerms") || "Try adjusting your search terms to find what you're looking for."
+                  : t("getStartedByCreating") || "Get started by creating your first category to organize products."}
               </p>
               {!searchTerm && (
                 <Link
@@ -248,7 +251,7 @@ export default function CategoriesPage() {
                   className="btn btn-primary btn-lg flex items-center gap-2 mx-auto"
                 >
                   <FaPlus />
-                  Create Your First Category
+                  {t("createNewCategory")}
                 </Link>
               )}
             </div>
@@ -257,17 +260,17 @@ export default function CategoriesPage() {
               <table className="table w-full">
                 <thead className="bg-base-200">
                   <tr>
-                    <th className="py-4 px-6 text-left font-semibold text-gray-700">
-                      Name
+                    <th className="py-4 px-6  font-semibold text-gray-700">
+                      {t("categoryName")}
                     </th>
-                    <th className="py-4 px-6 text-left font-semibold text-gray-700">
-                      Slug
+                    <th className="py-4 px-6  font-semibold text-gray-700">
+                      {t("categorySlug")}
                     </th>
-                    <th className="py-4 px-6 text-left font-semibold text-gray-700">
-                      Image
+                    <th className="py-4 px-6  font-semibold text-gray-700">
+                      {t("categoryImage")}
                     </th>
-                    <th className="py-4 px-6 text-left font-semibold text-gray-700">
-                      Actions
+                    <th className="py-4 px-6  font-semibold text-gray-700">
+                      {t("actions")}
                     </th>
                   </tr>
                 </thead>
@@ -285,9 +288,7 @@ export default function CategoriesPage() {
                           <h3 className="font-bold text-lg text-gray-800">
                             {category.name}
                           </h3>
-                          <p className="text-sm text-gray-500">
-                            ID: {category._id}
-                          </p>
+                          
                         </div>
                       </td>
 
@@ -323,7 +324,7 @@ export default function CategoriesPage() {
                             className="btn btn-warning btn-sm flex items-center gap-2 px-4 rounded-lg transition-all duration-200 hover:scale-105"
                           >
                             <FaEdit className="text-sm" />
-                            Edit
+                            {t("edit")}
                           </Link>
                           <button
                             onClick={() =>
@@ -332,7 +333,7 @@ export default function CategoriesPage() {
                             className="btn btn-error btn-sm flex items-center gap-2 px-4 rounded-lg transition-all duration-200 hover:scale-105"
                           >
                             <FaTrash className="text-sm" />
-                            Delete
+                            {t("common.delete")}
                           </button>
                         </div>
                       </td>
@@ -355,7 +356,7 @@ export default function CategoriesPage() {
                   <p className="text-2xl font-bold text-gray-800">
                     {categories.length}
                   </p>
-                  <p className="text-sm text-gray-600">Total Categories</p>
+                  <p className="text-sm text-gray-600">{t("totalCategories")}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
@@ -366,7 +367,7 @@ export default function CategoriesPage() {
                   <p className="text-2xl font-bold text-gray-800">
                     {filteredCategories.length}
                   </p>
-                  <p className="text-sm text-gray-600">Displayed Categories</p>
+                  <p className="text-sm text-gray-600">{t("displayedCategories") || "Displayed Categories"}</p>
                 </div>
               </div>
             </div>

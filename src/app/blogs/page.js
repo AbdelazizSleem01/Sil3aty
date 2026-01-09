@@ -93,7 +93,7 @@ export default function BlogsPage() {
         setBlogs(data);
         calculateStats(data);
       } catch (err) {
-        setError(err.message);
+        setError(t("failedToFetchBlogs"));
       } finally {
         setLoading(false);
       }
@@ -242,7 +242,7 @@ export default function BlogsPage() {
             <HiOutlineSparkles className="w-8 h-8 text-emerald-500 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 animate-pulse" />
           </div>
           <h2 className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-green-600 bg-clip-text text-transparent mb-2">
-            {t("loadingBlogs")}
+            {t("loading_blogs")}
           </h2>
           <p className="text-gray-600">{t("latest")}</p>
         </div>
@@ -261,7 +261,7 @@ export default function BlogsPage() {
               </div>
             </div>
             <h2 className="card-title justify-center text-2xl font-bold text-rose-600 mb-2">
-              {t("error")}
+              {t("common.error")}
             </h2>
             <p className="text-gray-600 mb-6">{error}</p>
             <div className="card-actions justify-center">
@@ -270,7 +270,7 @@ export default function BlogsPage() {
                 className="btn btn-primary gap-2 shadow-lg hover:shadow-xl transition-all duration-300"
               >
                 <FaRocket className="w-4 h-4" />
-                {t("retry")}
+                {t("common.retry")}
               </button>
             </div>
           </div>
@@ -302,7 +302,7 @@ export default function BlogsPage() {
             </div>
           </div>
           <h1 className="text-5xl md:text-6xl font-bold mb-10">
-            {t("blogTitle")}
+            {t("blogs")}
           </h1>
 
           {/* Search Bar */}
@@ -317,7 +317,7 @@ export default function BlogsPage() {
               </div>
               <input
                 type="text"
-                placeholder={t("searchBlogs")}
+                placeholder={t("searchForAnything")}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className={`input input-bordered w-full ${
@@ -344,7 +344,7 @@ export default function BlogsPage() {
                 {stats.totalViews}
               </h3>
               <p className="text-gray-600 text-sm">
-                {t("totalViews") || "إجمالي المشاهدات"}
+                {t("common.views")}
               </p>
             </div>
 
@@ -358,7 +358,7 @@ export default function BlogsPage() {
                 {stats.totalLikes}
               </h3>
               <p className="text-gray-600 text-sm">
-                {t("blogLiked") || "إجمالي الإعجابات"}
+                {t("common.likes")}
               </p>
             </div>
 
@@ -372,7 +372,7 @@ export default function BlogsPage() {
                 {stats.totalComments}
               </h3>
               <p className="text-gray-600 text-sm">
-                {t("blogComments") || "إجمالي التعليقات"}
+                {t("common.comments")}
               </p>
             </div>
 
@@ -386,7 +386,7 @@ export default function BlogsPage() {
                 {blogs.length}
               </h3>
               <p className="text-gray-600 text-sm">
-                {t("totalBlogs") || "إجمالي المقالات"}
+                {t("total_blogs")}
               </p>
             </div>
           </div>
@@ -396,14 +396,14 @@ export default function BlogsPage() {
           <div>
             <h2 className="text-4xl font-bold text-gray-800 mb-3 flex items-center gap-3">
               <HiOutlineSparkles className="text-yellow-500 w-8 h-8" />
-              {t("latestArticles")}
+              {t("latest_articles")}
               <span className="badge badge-primary badge-lg text-white shadow-lg">
                 {filteredBlogs.length}{" "}
                 {filteredBlogs.length === 1 ? t("article") : t("articles")}
               </span>
             </h2>
             <p className="text-gray-600 text-lg">
-              {t("exploreDiverseCollection")}
+              {t("explore_diverse_collection")}
             </p>
           </div>
 
@@ -413,7 +413,7 @@ export default function BlogsPage() {
               className="btn btn-primary gap-3 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 rounded-2xl px-6 py-3 text-lg font-medium"
             >
               <BiPlus className="w-5 h-5" />
-              {t("createNewArticle")}
+              {t("create_new_article")}
             </Link>
           )}
         </div>
@@ -449,7 +449,7 @@ export default function BlogsPage() {
             className="btn btn-outline btn-primary gap-3 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl"
           >
             <FiFilter className="w-5 h-5" />
-            {t("advancedFilters") || "مرشحات متقدمة"}
+            {t("advanced_filters")}
             {showAdvancedFilters ? (
               <FiChevronUp className="w-4 h-4" />
             ) : (
@@ -465,7 +465,7 @@ export default function BlogsPage() {
                 <label className="label">
                   <span className="label-text flex items-center gap-2 font-medium">
                     <MdSort className="w-4 h-4 text-blue-500" />
-                    {t("sortBy") || "ترتيب حسب"}
+                    {t("sort_by")}
                   </span>
                 </label>
                 <select
@@ -473,16 +473,16 @@ export default function BlogsPage() {
                   onChange={(e) => setSortBy(e.target.value)}
                   className="select select-bordered bg-white/50 focus:bg-white transition-all duration-300"
                 >
-                  <option value="newest">{t("newest") || "الأحدث"}</option>
-                  <option value="oldest">{t("oldest") || "الأقدم"}</option>
+                  <option value="newest">{t("newest")}</option>
+                  <option value="oldest">{t("oldest")}</option>
                   <option value="most-viewed">
-                    {t("mostViewed") || "الأكثر مشاهدة"}
+                    {t("most_viewed")}
                   </option>
                   <option value="most-liked">
-                    {t("mostLiked") || "الأكثر إعجاباً"}
+                    {t("most_liked")}
                   </option>
                   <option value="most-commented">
-                    {t("mostCommented") || "الأكثر تعليقاً"}
+                    {t("most_commented")}
                   </option>
                 </select>
               </div>
@@ -491,7 +491,7 @@ export default function BlogsPage() {
                 <label className="label">
                   <span className="label-text flex items-center gap-2 font-medium">
                     <MdPerson className="w-4 h-4 text-green-500" />
-                    {t("author") || "الكاتب"}
+                    {t("author")}
                   </span>
                 </label>
                 <select
@@ -500,7 +500,7 @@ export default function BlogsPage() {
                   className="select select-bordered bg-white/50 focus:bg-white transition-all duration-300"
                 >
                   <option value="all">
-                    {t("allAuthors") || "جميع الكتاب"}
+                    {t("all_authors")}
                   </option>
                   {allAuthors
                     .filter((author) => author !== "all")
@@ -516,7 +516,7 @@ export default function BlogsPage() {
                 <label className="label">
                   <span className="label-text flex items-center gap-2 font-medium">
                     <MdDateRange className="w-4 h-4 text-purple-500" />
-                    {t("dateRange") || "الفترة الزمنية"}
+                    {t("date_range")}
                   </span>
                 </label>
                 <select
@@ -524,11 +524,11 @@ export default function BlogsPage() {
                   onChange={(e) => setDateRange(e.target.value)}
                   className="select select-bordered bg-white/50 focus:bg-white transition-all duration-300"
                 >
-                  <option value="all">{t("allTime") || "كل الوقت"}</option>
-                  <option value="today">{t("today") || "اليوم"}</option>
-                  <option value="week">{t("thisWeek") || "هذا الأسبوع"}</option>
-                  <option value="month">{t("thisMonth") || "هذا الشهر"}</option>
-                  <option value="year">{t("thisYear") || "هذا العام"}</option>
+                  <option value="all">{t("all_time")}</option>
+                  <option value="today">{t("today")}</option>
+                  <option value="week">{t("this_week")}</option>
+                  <option value="month">{t("this_month")}</option>
+                  <option value="year">{t("this_year")}</option>
                 </select>
               </div>
 
@@ -536,7 +536,7 @@ export default function BlogsPage() {
                 <label className="label">
                   <span className="label-text flex items-center gap-2 font-medium">
                     <TbEye className="w-4 h-4 text-blue-500" />
-                    {t("minViews") || "الحد الأدنى للمشاهدات"}
+                    {t("min_views")}
                   </span>
                 </label>
                 <input
@@ -553,7 +553,7 @@ export default function BlogsPage() {
                 <label className="label">
                   <span className="label-text flex items-center gap-2 font-medium">
                     <RiFireLine className="w-4 h-4 text-red-500" />
-                    {t("minLikes") || "الحد الأدنى للإعجابات"}
+                    {t("min_likes")}
                   </span>
                 </label>
                 <input
@@ -577,7 +577,7 @@ export default function BlogsPage() {
                   className="btn btn-error btn-outline gap-2 hover:bg-red-500 hover:text-white transition-all duration-300"
                 >
                   <FiX className="w-4 h-4" />
-                  {t("clearFilters") || "مسح المرشحات"}
+                  {t("clear_filters")}
                 </button>
               </div>
             </div>
@@ -586,8 +586,8 @@ export default function BlogsPage() {
               <label className="label">
                 <span className="label-text flex items-center gap-2 font-medium">
                   <HiTag className="w-4 h-4 text-emerald-500" />
-                  {t("selectMultipleTags") || "اختر علامات متعددة"} (
-                  {selectedTags.length} {t("selected") || "محدد"})
+                  {t("select_multiple_tags")} (
+                  {selectedTags.length} {t("selected")})
                 </span>
               </label>
               <div className="flex flex-wrap gap-2 mt-2">
@@ -619,11 +619,11 @@ export default function BlogsPage() {
             <div className="card-body items-center text-center py-20">
               <BiSearch className="w-24 h-24 text-gray-400 mb-6" />
               <h2 className="card-title text-3xl text-gray-500 mb-4">
-                {t("noArticlesFound")}
+                {t("no_articles_found")}
               </h2>
               <p className="text-gray-500 text-lg mb-8 max-w-md">
                 {searchTerm || selectedTag !== "all"
-                  ? t("tryAdjustingSearch")
+                  ? t("try_adjusting_search")
                   : t("beFirstToShare")}
               </p>
               {session && (
@@ -632,7 +632,7 @@ export default function BlogsPage() {
                   className="btn btn-primary gap-3 text-lg px-8 py-4 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300"
                 >
                   <FaPenFancy className="w-5 h-5" />
-                  {t("writeYourFirstArticle")}
+                  {t("write_your_first_article")}
                 </Link>
               )}
             </div>
@@ -736,7 +736,7 @@ export default function BlogsPage() {
                       href={`/blogs/${blog.slug}`}
                       className="btn btn-primary gap-2 rounded-xl group-hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
                     >
-                      {t("readMore")}
+                      {t("read_more")}
                       <FaArrowRight
                         className={`w-3 h-3 group-hover:${
                           isRTL ? "translate-x-[-4px]" : "translate-x-1"
@@ -764,26 +764,26 @@ export default function BlogsPage() {
 
               <FaLightbulb className="w-16 h-16 mx-auto mb-6 text-yellow-300 relative z-10" />
               <h2 className="card-title justify-center text-4xl mb-6 relative z-10">
-                {t("doYouHaveSomethingToShare")}
+                {t("do_you_have_something_to_share")}
               </h2>
               <p className="text-white/90 text-xl mb-8 max-w-2xl mx-auto leading-relaxed relative z-10">
-                {t("joinOurWriterCommunity")}
+                {t("join_our_writer_community")}
               </p>
               {session ? (
                 <Link
                   href="/blogs/create"
-                  className="btn btn-lg glass text-white border-white hover:bg-white/20 gap-3 rounded-2xl px-8 relative z-10 transition-all duration-300 transform hover:scale-105"
+                  className="btn btn-lg glass text-white border-white hover:bg-white/20 gap-3 rounded-2xl px-8 relative z-10 transition-all duration-300 transform "
                 >
                   <FaPenFancy className="w-5 h-5" />
-                  {t("startWritingNow")}
+                  {t("start_writing_now")}
                 </Link>
               ) : (
                 <Link
                   href="/auth/signin"
-                  className="btn btn-lg glass text-white border-white hover:bg-white/20 gap-3 rounded-2xl px-8 relative z-10 transition-all duration-300 transform hover:scale-105"
+                  className="btn btn-lg glass text-white border-white hover:bg-white/20 gap-3 rounded-2xl px-8 relative z-10 transition-all duration-300 transform "
                 >
                   <BiUser className="w-5 h-5" />
-                  {t("signInToWrite")}
+                  {t("login")}
                 </Link>
               )}
             </div>

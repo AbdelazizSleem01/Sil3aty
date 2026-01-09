@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { useTranslation } from "react-i18next";
 import dynamic from "next/dynamic";
 import {
   FaSave,
@@ -45,6 +46,7 @@ const MDEditor = dynamic(() => import("@uiw/react-md-editor"), {
 });
 
 export default function EditBlog() {
+  const { t } = useTranslation();
   const { slug } = useParams();
   const { data: session } = useSession();
   const router = useRouter();
@@ -190,9 +192,9 @@ export default function EditBlog() {
             <HiOutlineSparkles className=" w-10 h-10 text-green-500 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" />
           </div>
           <h2 className="text-3xl font-bold text-gray-800 mb-3">
-            Loading Blog Post
+            {t("loadingBlogPost")}
           </h2>
-          <p className="text-gray-600 text-lg">Preparing the editor...</p>
+          <p className="text-gray-600 text-lg">{t("preparingEditor")}</p>
         </div>
       </div>
     );
