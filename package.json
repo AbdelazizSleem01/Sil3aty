@@ -9,12 +9,6 @@
     "lint": "next lint",
     "postbuild": "next-sitemap"
   },
-  "browserslist": [
-    "> 0.5%",
-    "last 2 versions",
-    "not dead",
-    "not ie 11"
-  ],
   "dependencies": {
     "@heroicons/react": "^2.2.0",
     "@stripe/react-stripe-js": "^3.3.0",
