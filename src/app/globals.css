@@ -1,5 +1,6 @@
 @import "tailwindcss";
-@plugin "daisyui";
+@plugin "daisyui" {
+}
 @import "swiper/css";
 @import "swiper/css/pagination";
 @import "swiper/css/navigation";
@@ -22,7 +23,14 @@
 
   --color-neutral: #1f2937;
   --color-base-100: #ffffff;
+  --color-base-200: #f4f4f5;
+  --color-base-300: #e4e4e7;
   --color-base-content: #1f2937;
+
+  --radius-box: 1rem;
+  --radius-field: 0.5rem;
+  --radius-selector: 9999px;
+  --border: 1px;
 }
 
 html,

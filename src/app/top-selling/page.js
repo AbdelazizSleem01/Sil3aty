@@ -13,38 +13,18 @@ import {
 } from "lucide-react";
 import { useCart } from "../../../components/CartContext";
 import { useTranslation } from "react-i18next";
-
-async function getTopSellingProducts() {
-  try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/products/top-selling`,
-      {
-        next: { revalidate: 3600 },
-      }
-    );
-    if (!res.ok) throw new Error("Failed to fetch top selling products");
-    return await res.json();
-  } catch (error) {
-    return [];
-  }
-}
+import useSWR from "swr";
 
 export default function TopSellingProductsPage() {
   const { t, i18n } = useTranslation();
   const isRTL = i18n.language === "ar";
   const { updateCartCount } = useCart();
-  const [topSellingProducts, setTopSellingProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [animatingProductId, setAnimatingProductId] = useState(null);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const products = await getTopSellingProducts();
-      setTopSellingProducts(products);
-      setLoading(false);
-    };
-    fetchData();
-  }, []);
+  const { data: topSellingProductsData, error: productsError } = useSWR("/api/products/top-selling");
+
+  const topSellingProducts = topSellingProductsData || [];
+  const loading = !topSellingProductsData && !productsError;
 
   const handleAddToCart = async (productId) => {
     try {

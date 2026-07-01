@@ -249,9 +249,8 @@ export default function BrandsPage() {
                   {filteredBrands.map((brand, index) => (
                     <tr
                       key={brand._id}
-                      className={`border-b border-base-300 transition-all duration-200 hover:bg-base-200/50 ${
-                        index % 2 === 0 ? "bg-base-100" : "bg-base-50"
-                      }`}
+                      className={`border-b border-base-300 transition-all duration-200 hover:bg-base-200/50 ${index % 2 === 0 ? "bg-base-100" : "bg-base-50"
+                        }`}
                     >
                       {/* Brand Logo */}
                       <td className="py-4 px-6">
@@ -278,9 +277,7 @@ export default function BrandsPage() {
                           <h3 className="font-bold text-lg text-gray-800">
                             {brand.name}
                           </h3>
-                          <p className="text-sm text-gray-500">
-                            ID: {brand._id}
-                          </p>
+
                         </div>
                       </td>
 

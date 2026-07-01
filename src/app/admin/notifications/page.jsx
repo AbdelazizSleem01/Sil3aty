@@ -168,13 +168,7 @@ export default function NotificationsTable() {
               </div>
             </div>
 
-            <button
-              onClick={handleRefresh}
-              className="btn btn-primary btn-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 flex items-center gap-3 px-8 rounded-xl"
-            >
-              <FaSync className="text-lg" />
-              Refresh
-            </button>
+            {/* Removed Refresh Button */}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">

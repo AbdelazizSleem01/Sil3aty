@@ -6,51 +6,20 @@ import { toast } from "react-toastify";
 import { ShoppingCart, Star, Zap, Clock, Tag } from "lucide-react";
 import { useCart } from "../../../components/CartContext";
 import { useTranslation } from "react-i18next";
-
-async function getFeaturedProducts() {
-  try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/products/featured`,
-      { next: { revalidate: 3600 } }
-    );
-    if (!res.ok) throw new Error("Failed to fetch products");
-    return await res.json();
-  } catch (error) {
-    return [];
-  }
-}
-
-async function getCategories() {
-  try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/category`, {
-      next: { revalidate: 3600 },
-    });
-    if (!res.ok) throw new Error("Failed to fetch categories");
-    return await res.json();
-  } catch (error) {
-    return [];
-  }
-}
+import useSWR from "swr";
 
 export default function FeaturedProductsPage() {
   const { t, i18n } = useTranslation();
   const isRTL = i18n.language === "ar";
   const { updateCartCount } = useCart();
-  const [featuredProducts, setFeaturedProducts] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [animatingProductId, setAnimatingProductId] = useState(null);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const products = await getFeaturedProducts();
-      const categories = await getCategories();
-      setFeaturedProducts(products);
-      setCategories(categories);
-      setLoading(false);
-    };
-    fetchData();
-  }, []);
+  const { data: featuredProductsData, error: productsError } = useSWR("/api/products/featured");
+  const { data: categoriesData } = useSWR("/api/category");
+
+  const featuredProducts = featuredProductsData || [];
+  const categories = categoriesData || [];
+  const loading = !featuredProductsData && !productsError;
 
   const handleAddToCart = async (productId) => {
     try {

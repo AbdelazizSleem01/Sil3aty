@@ -440,23 +440,6 @@ export default function EditEmployee() {
             )}
           </form>
 
-          {/* Quick Tips */}
-          <div className="mt-8 p-4 bg-info/10 rounded-lg border border-info/20">
-            <h3 className="font-semibold text-info mb-2 flex items-center gap-2">
-              <FaUsers />
-              Quick Tips
-            </h3>
-            <ul className="text-sm text-gray-600 space-y-1">
-              <li>• Update social links to keep team information current</li>
-              <li>
-                • Use high-quality professional headshots for best results
-              </li>
-              <li>• Keep bios concise and engaging (2-3 sentences)</li>
-              <li>
-                • Ensure role titles accurately reflect current responsibilities
-              </li>
-            </ul>
-          </div>
         </div>
       </div>
     </div>

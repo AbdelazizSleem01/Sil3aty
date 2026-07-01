@@ -14,28 +14,16 @@ import {
 } from "react-icons/fa";
 import { IoSparkles, IoPeopleCircle, IoRocket } from "react-icons/io5";
 
+import useSWR from "swr";
+
 export default function OurTeam() {
   const { t } = useTranslation();
-  const [teamMembers, setTeamMembers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
 
-  useEffect(() => {
-    const fetchTeamMembers = async () => {
-      try {
-        const response = await fetch("/api/admin/team");
-        if (!response.ok) throw new Error("Failed to fetch team members");
-        const data = await response.json();
-        setTeamMembers(data);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const { data: teamMembersData, error: teamError } = useSWR("/api/admin/team");
 
-    fetchTeamMembers();
-  }, []);
+  const teamMembers = teamMembersData || [];
+  const loading = !teamMembersData && !teamError;
+  const error = teamError ? teamError.message : "";
 
   if (loading)
     return (

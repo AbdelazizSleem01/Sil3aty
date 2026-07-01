@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import Image from "next/image";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { toast } from "react-toastify";
 import {
   ShoppingCart,
@@ -15,52 +15,31 @@ import {
 } from "lucide-react";
 import { useCart } from "../../../components/CartContext";
 import { useTranslation } from "react-i18next";
-
-async function getDiscountedProducts() {
-  try {
-    // Fetch all products instead of just discounted ones
-    const res = await fetch(`/api/products`, {
-      next: { revalidate: 3600 },
-    });
-    if (!res.ok) throw new Error("Failed to fetch products");
-
-    const allProducts = await res.json();
-    // Filter products that have active discounts (discountPrice < price)
-    // regardless of time limits
-    const discountedProducts = allProducts.filter(
-      (product) =>
-        product.discountPrice &&
-        product.discountPrice > 0 &&
-        product.discountPrice < product.price
-    );
-
-    return discountedProducts;
-  } catch (error) {
-    return [];
-  }
-}
+import useSWR from "swr";
 
 export default function DiscountedProductsPage() {
   const { t, i18n } = useTranslation();
   const isRTL = i18n.language === "ar";
   const { updateCartCount } = useCart();
-  const [discountedProducts, setDiscountedProducts] = useState([]);
-  const [filteredProducts, setFilteredProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [animatingProductId, setAnimatingProductId] = useState(null);
   const [sortBy, setSortBy] = useState("discountPercentage");
   const [filterBy, setFilterBy] = useState("");
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const products = await getDiscountedProducts();
-      setDiscountedProducts(products);
-      setLoading(false);
-    };
-    fetchData();
-  }, []);
+  const { data: allProducts, error: productsError } = useSWR("/api/products");
 
-  useEffect(() => {
+  const discountedProducts = useMemo(() => {
+    if (!allProducts) return [];
+    return allProducts.filter(
+      (product) =>
+        product.discountPrice &&
+        product.discountPrice > 0 &&
+        product.discountPrice < product.price
+    );
+  }, [allProducts]);
+
+  const loading = !allProducts && !productsError;
+
+  const filteredProducts = useMemo(() => {
     let products = [...discountedProducts];
 
     if (sortBy === "discountPercentage") {
@@ -97,7 +76,7 @@ export default function DiscountedProductsPage() {
       });
     }
 
-    setFilteredProducts(products);
+    return products;
   }, [discountedProducts, sortBy, filterBy]);
 
   const handleAddToCart = async (productId) => {

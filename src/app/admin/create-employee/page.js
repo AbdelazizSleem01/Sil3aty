@@ -357,20 +357,6 @@ export default function CreateEmployee() {
             </div>
           </form>
 
-          <div className="mt-8 p-4 bg-info/10 rounded-lg border border-info/20">
-            <h3 className="font-semibold text-info mb-2 flex items-center gap-2">
-              <FaUsers />
-              Quick Tips
-            </h3>
-            <ul className="text-sm text-gray-600 space-y-1">
-              <li>
-                • Use high-quality professional headshots for profile images
-              </li>
-              <li>• Keep bios concise and engaging (2-3 sentences)</li>
-              <li>• Include relevant social media links for networking</li>
-              <li>• Ensure role titles are clear and descriptive</li>
-            </ul>
-          </div>
         </div>
       </div>
     </div>

@@ -2,36 +2,23 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
+import useSWR from "swr";
 
 const CartContext = createContext();
 
 export function CartProvider({ children }) {
   const { data: session } = useSession();
-  const [cartItemsCount, setCartItemsCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
 
-  const fetchCartCount = async () => {
-    if (!session) {
-      setCartItemsCount(0);
-      return;
-    }
+  const { data: cartCountData, mutate: mutateCartCount } = useSWR(
+    session ? "/api/cart/count" : null
+  );
 
-    try {
-      const res = await fetch("/api/cart/count");
-      if (res.ok) {
-        const data = await res.json();
-        setCartItemsCount(data.count || 0);
-      }
-    } catch (error) {}
-  };
+  const cartItemsCount = cartCountData?.count || 0;
 
   const updateCartCount = async () => {
-    await fetchCartCount();
+    await mutateCartCount();
   };
-
-  useEffect(() => {
-    fetchCartCount();
-  }, [session]);
 
   const value = {
     cartItemsCount,

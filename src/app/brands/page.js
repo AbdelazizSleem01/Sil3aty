@@ -12,28 +12,17 @@ import {
 } from "react-icons/fa";
 import Image from "next/image";
 
+import useSWR from "swr";
+
 export default function BrandsPage() {
   const { t } = useTranslation();
-  const [brands, setBrands] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const router = useRouter();
 
-  useEffect(() => {
-    const fetchBrands = async () => {
-      try {
-        const response = await fetch("/api/brands");
-        if (!response.ok) throw new Error("Failed to fetch brands");
-        const data = await response.json();
-        setBrands(data);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchBrands();
-  }, []);
+  const { data: brandsData, error: brandsError } = useSWR("/api/brands");
+
+  const brands = brandsData || [];
+  const loading = !brandsData && !brandsError;
+  const error = brandsError ? brandsError.message : "";
 
   if (error) {
     return (

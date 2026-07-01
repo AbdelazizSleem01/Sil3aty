@@ -181,18 +181,7 @@ export default function AdminUserOrders() {
               </div>
             </div>
 
-            <div className="flex gap-3">
-              <button
-                onClick={handleRefresh}
-                className="btn btn-primary btn-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 flex items-center gap-3 px-6 rounded-xl"
-                title="Force Refresh Data"
-              >
-                <FaSync
-                  className={`text-lg ${loading ? "animate-spin" : ""}`}
-                />
-                {loading ? "Refreshing..." : "Refresh Data"}
-              </button>
-            </div>
+            {/* Removed Refresh Button */}
           </div>
 
           {/* باقي المكونات نفس الشيء... */}

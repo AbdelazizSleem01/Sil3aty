@@ -13,28 +13,21 @@ import {
   FaSearch,
   FaLayerGroup,
 } from "react-icons/fa";
+import useSWR from "swr";
 
 export default function CategoriesPage() {
   const { t } = useTranslation();
-  const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
+
+  const { data: categoriesData, error: categoriesError } = useSWR("/api/category");
+
+  const categories = categoriesData || [];
+  const loading = !categoriesData && !categoriesError;
 
   useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const response = await fetch("/api/category");
-        if (!response.ok) throw new Error("Failed to fetch categories");
-        const data = await response.json();
-        setCategories(data);
-      } catch (error) {
-        toast.error(`Error: ${error.message}`);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCategories();
-  }, []);
+    if (categoriesError) {
+      toast.error(`Error: ${categoriesError.message}`);
+    }
+  }, [categoriesError]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-base-100 to-base-200 py-20">

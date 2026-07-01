@@ -13,12 +13,14 @@ import {
   FaTag,
   FaFileAlt
 } from "react-icons/fa";
+import { compressImage } from "../../../../lib/imageCompressor";
 
 export default function NewBrandPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [brand, setBrand] = useState({ name: "", description: "", logo: "" });
   const [logoFile, setLogoFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -35,20 +37,35 @@ export default function NewBrandPage() {
     }
   }, [session, status, router]);
 
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
+  const handleFileChange = async (e) => {
+    const file = e.target.files?.[0];
     if (file) {
       if (!file.type.startsWith('image/')) {
         toast.error("Please select a valid image file");
         return;
       }
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error("Image size should be less than 5MB");
+      if (file.size > 10 * 1024 * 1024) {
+        toast.error("Image size should be less than 10MB");
         return;
       }
-      setLogoFile(file);
-      toast.info("Logo selected successfully");
+      
+      try {
+        toast.info("Optimizing logo image...");
+        const compressed = await compressImage(file, 400, 400, 0.7);
+        setLogoFile(compressed);
+        setPreviewUrl(URL.createObjectURL(compressed));
+        toast.success("Logo optimized successfully");
+      } catch (err) {
+        setLogoFile(file);
+        setPreviewUrl(URL.createObjectURL(file));
+      }
     }
+  };
+
+  const removeLogo = (e) => {
+    e.stopPropagation();
+    setLogoFile(null);
+    setPreviewUrl("");
   };
 
   const handleSubmit = async (e) => {
@@ -173,49 +190,49 @@ export default function NewBrandPage() {
           {/* Logo Upload Field */}
           <div className="mb-6">
             <label className="label flex items-center gap-2 mb-3">
-              <FaImage className="text-primary" />
+              <FaImage className="text-primary text-lg" />
               <span className="text-lg font-semibold text-gray-700">Brand Logo</span>
               <span className="text-red-500">*</span>
             </label>
-            
-            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-              <label className="btn btn-primary btn-outline cursor-pointer flex items-center gap-2">
-                <FaUpload />
-                Choose Logo
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFileChange}
-                  className="hidden"
-                  required
-                />
-              </label>
-              
-              <span className="text-sm text-gray-500">
-                PNG, JPG, WEBP up to 5MB
-              </span>
-            </div>
 
-            {/* Image Preview */}
-            {logoFile && (
-              <div className="mt-4 p-4 border-2 border-dashed border-success rounded-lg bg-success/10">
-                <div className="flex items-center gap-4">
+            <div className="flex flex-col items-center justify-center border-2 border-dashed border-base-300 rounded-2xl p-6 bg-base-50 hover:bg-base-100 transition-colors relative group min-h-[200px]">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                required={!logoFile}
+              />
+              
+              {previewUrl ? (
+                <div className="relative w-full flex flex-col items-center z-20">
                   <img
-                    loading="lazy"
-                    src={URL.createObjectURL(logoFile)}
-                    alt="Logo preview"
-                    className="w-20 h-20 object-contain bg-white rounded-lg p-2 shadow-md"
+                    src={previewUrl}
+                    alt="Brand logo preview"
+                    className="w-full max-w-[200px] h-32 object-contain rounded-xl bg-white p-3 shadow-md border border-base-200"
                   />
-                  <div>
-                    <p className="font-semibold text-success">Logo Selected</p>
-                    <p className="text-sm text-gray-600">{logoFile.name}</p>
-                    <p className="text-xs text-gray-500">
-                      {(logoFile.size / 1024 / 1024).toFixed(2)} MB
-                    </p>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={removeLogo}
+                    className="mt-3 btn btn-sm btn-error btn-outline"
+                  >
+                    Remove Logo
+                  </button>
                 </div>
-              </div>
-            )}
+              ) : (
+                <div className="flex flex-col items-center text-center gap-2 py-4">
+                  <div className="p-4 bg-primary/10 rounded-full text-primary group-hover:scale-110 transition-transform">
+                    <FaImage className="text-3xl" />
+                  </div>
+                  <span className="font-semibold text-gray-700">
+                    Click or drag to upload brand logo
+                  </span>
+                  <span className="text-sm text-gray-400">
+                    PNG, JPG, WEBP (Max 5MB)
+                  </span>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Action Buttons */}

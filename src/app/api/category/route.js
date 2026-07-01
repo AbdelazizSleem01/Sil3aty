@@ -3,6 +3,7 @@ import dbConnect from "../../../../lib/dbConnect";
 import Category from "../../../../models/Category";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../../../lib/authOptions";
+import { uploadImages } from "../../../../lib/cloudinary";
 
 
 export async function GET(req) {
@@ -28,7 +29,31 @@ export async function POST(req) {
   try {
     await dbConnect();
 
-    const { name, slug, parent, properties, image } = await req.json();
+    let name, slug, parent, properties, image;
+
+    const contentType = req.headers.get("content-type") || "";
+    if (contentType.includes("multipart/form-data")) {
+      const formData = await req.formData();
+      name = formData.get("name");
+      slug = formData.get("slug");
+      parent = formData.get("parent") || undefined;
+      properties = formData.get("properties") ? JSON.parse(formData.get("properties")) : undefined;
+
+      const imageFile = formData.get("image");
+      if (imageFile && imageFile instanceof File && imageFile.size > 0) {
+        const uploaded = await uploadImages([imageFile]);
+        image = uploaded[0];
+      } else {
+        image = formData.get("image") || "";
+      }
+    } else {
+      const body = await req.json();
+      name = body.name;
+      slug = body.slug;
+      parent = body.parent;
+      properties = body.properties;
+      image = body.image;
+    }
 
     if (!name || !slug) {
       return NextResponse.json({ error: "Name and slug are required" }, { status: 400 });

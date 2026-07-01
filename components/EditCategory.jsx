@@ -19,14 +19,18 @@ import {
   FaEye,
   FaSync
 } from "react-icons/fa";
+import { compressImage } from "../lib/imageCompressor";
 
 export default function EditCategory() {
   const { t, i18n } = useTranslation();
   const { id } = useParams();
   const router = useRouter();
+
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [image, setImage] = useState("");
+  const [imageFile, setImageFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
   const [originalData, setOriginalData] = useState(null);
@@ -36,27 +40,21 @@ export default function EditCategory() {
     const fetchCategory = async () => {
       try {
         const response = await fetch(`/api/category/${id}`);
+        if (!response.ok) throw new Error();
         const data = await response.json();
-        
-        if (!response.ok) {
-          throw new Error(data.error || "Failed to fetch category");
-        }
-        
         setName(data.name);
         setSlug(data.slug);
-        setImage(data.image || "");
+        setImage(data.image);
+        setPreviewUrl(data.image || "");
         setOriginalData(data);
-        
-      } catch (err) {
+      } catch {
         Swal.fire({
           title: t("common.error"),
-          text: err.message,
+          text: "Failed to load category details",
           icon: "error",
           confirmButtonColor: "#ef4444",
         });
-        setTimeout(() => {
-          router.push("/admin/categories");
-        }, 2000);
+        router.push("/admin/categories");
       } finally {
         setFetching(false);
       }
@@ -69,18 +67,48 @@ export default function EditCategory() {
     return name
       .toLowerCase()
       .trim()
-      .replace(/[^\w\s-]/g, '')
-      .replace(/[\s_-]+/g, '-')
-      .replace(/^-+|-+$/g, '');
+      .replace(/[\s_-]+/g, "-")
+      .replace(/[^\p{L}\p{N}-]/gu, "")
+      .replace(/^-+|-+$/g, "");
   };
 
   const handleNameChange = (e) => {
     const newName = e.target.value;
     setName(newName);
-    
-    if (newName && (!slug || slug === generateSlug(originalData?.name))) {
-      setSlug(generateSlug(newName));
+    setSlug(generateSlug(newName));
+  };
+
+  const handleImageChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (!file.type.startsWith('image/')) {
+        Swal.fire({
+          title: t("common.error"),
+          text: "Please select a valid image file",
+          icon: "error",
+          confirmButtonColor: "#ef4444",
+        });
+        return;
+      }
+      try {
+        Swal.showLoading();
+        const compressed = await compressImage(file, 400, 400, 0.7);
+        Swal.close();
+        setImageFile(compressed);
+        setPreviewUrl(URL.createObjectURL(compressed));
+      } catch (err) {
+        Swal.close();
+        setImageFile(file);
+        setPreviewUrl(URL.createObjectURL(file));
+      }
     }
+  };
+
+  const removeImage = (e) => {
+    e.stopPropagation();
+    setImageFile(null);
+    setPreviewUrl("");
+    setImage("");
   };
 
   const handleSubmit = async (e) => {
@@ -99,14 +127,18 @@ export default function EditCategory() {
     setLoading(true);
 
     try {
+      const formData = new FormData();
+      formData.append("name", name.trim());
+      formData.append("slug", slug.trim());
+      if (imageFile) {
+        formData.append("image", imageFile);
+      } else {
+        formData.append("image", image);
+      }
+
       const response = await fetch(`/api/category/${id}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          name: name.trim(), 
-          slug: slug.trim(), 
-          image: image.trim() 
-        }),
+        body: formData,
       });
 
       const data = await response.json();
@@ -142,7 +174,8 @@ export default function EditCategory() {
     const hasChanges =
       name !== originalData?.name ||
       slug !== originalData?.slug ||
-      image !== (originalData?.image || "");
+      image !== (originalData?.image || "") ||
+      imageFile !== null;
 
     if (hasChanges) {
       const result = await Swal.fire({
@@ -213,7 +246,8 @@ export default function EditCategory() {
   const hasChanges = 
     name !== originalData?.name || 
     slug !== originalData?.slug || 
-    image !== (originalData?.image || "");
+    image !== (originalData?.image || "") ||
+    imageFile !== null;
 
   if (fetching) {
     return (
@@ -318,69 +352,51 @@ export default function EditCategory() {
               </div>
             </div>
 
-            {/* Image URL */}
+            {/* Category Image Upload */}
             <div className="form-control">
               <label className="label flex items-center gap-2 mb-3">
                 <FaImage className="text-primary text-lg" />
                 <span className="label-text text-lg font-semibold text-gray-700">{t("categoryImage")}</span>
-                <span className="text-gray-400">({t("optional")})</span>
+                <span className="text-gray-400">({t("optional") || "Optional"})</span>
               </label>
-              <input
-                type="url"
-                placeholder={t("enterImageUrl")}
-                value={image}
-                onChange={(e) => setImage(e.target.value)}
-                className={`input input-bordered rounded-lg input-primary w-full text-md py-3 ${isRTL ? 'text-right' : 'text-left'}`}
-              />
-              
-              {/* Image Preview */}
-              {image && (
-                <div className="mt-6 p-6 border-2 border-dashed border-info/50 rounded-xl bg-gradient-to-br from-info/5 to-info/10 hover:border-info/70 transition-all duration-300">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="p-2 bg-info/20 rounded-full">
-                      <FaEye className="text-info text-lg" />
-                    </div>
-                    <h4 className="font-bold text-info text-lg">{t("imagePreview")}</h4>
-                  </div>
 
-                  <div className="flex flex-col lg:flex-row items-start gap-6">
-                    {/* Image Display */}
-                    <div className="flex-shrink-0">
-                      <div className="relative group">
-                        <Image
-                          src={image}
-                          alt={t("imagePreview")}
-                          width={120}
-                          height={120}
-                          className="w-32 h-32 object-cover rounded-xl bg-white shadow-lg border-2 border-white group-hover:scale-105 transition-transform duration-300"
-                          onError={(e) => {
-                            e.target.style.display = 'none';
-                            e.target.nextSibling.style.display = 'block';
-                          }}
-                        />
-                        
-                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 rounded-xl transition-colors duration-300"></div>
-                      </div>
-                    </div>
-
-                    {/* Image Details */}
-                    <div className="flex-1 min-w-0">
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium text-gray-600">{t("imageUrl")}:</span>
-                        </div>
-                        <div className="p-3 bg-white/50 rounded-lg border border-gray-200">
-                          <p className="text-sm font-mono break-all text-gray-800 leading-relaxed">{image}</p>
-                        </div>
-                        <div className="flex items-center gap-2 text-xs text-gray-500">
-                          <div className="w-2 h-2 bg-success rounded-full"></div>
-                          <span>{t("livePreview")}</span>
-                        </div>
-                      </div>
-                    </div>
+              <div className="flex flex-col items-center justify-center border-2 border-dashed border-base-300 rounded-2xl p-6 bg-base-50 hover:bg-base-100 transition-colors relative group min-h-[200px]">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                />
+                
+                {previewUrl ? (
+                  <div className="relative w-full flex flex-col items-center z-20">
+                    <img
+                      src={previewUrl}
+                      alt="Category preview"
+                      className="w-full max-w-[200px] h-48 object-cover rounded-xl shadow-md border border-base-200"
+                    />
+                    <button
+                      type="button"
+                      onClick={removeImage}
+                      className="mt-3 btn btn-sm btn-error btn-outline"
+                    >
+                      {t("removeImage") || "Remove Image"}
+                    </button>
                   </div>
-                </div>
-              )}
+                ) : (
+                  <div className="flex flex-col items-center text-center gap-2 py-4">
+                    <div className="p-4 bg-primary/10 rounded-full text-primary group-hover:scale-110 transition-transform">
+                      <FaImage className="text-3xl" />
+                    </div>
+                    <span className="font-semibold text-gray-700">
+                      {t("clickToUploadImage") || "Click or drag to upload category image"}
+                    </span>
+                    <span className="text-sm text-gray-400">
+                      PNG, JPG, WEBP (Max 5MB)
+                    </span>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Action Buttons */}

@@ -58,9 +58,9 @@ export async function PUT(request, { params }) {
   }
 }
 // DELETE a brand
-export async function DELETE(request) {
+export async function DELETE(request, { params }) {
   try {
-    const { id } = await request.json();
+    const { id } = await params;
 
     if (!id) {
       return NextResponse.json({ error: "ID is required" }, { status: 400 });

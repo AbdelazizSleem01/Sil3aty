@@ -50,6 +50,7 @@ export async function POST(request) {
 
     return NextResponse.json(newBrand, { status: 201 });
   } catch (error) {
+    console.error("❌ Error in POST /api/brands:", error);
     return NextResponse.json(
       { message: "Error creating brand", error: error.message },
       { status: 500 }

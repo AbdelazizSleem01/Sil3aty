@@ -14,18 +14,22 @@ import {
   Ruler,
   Star,
   Zap,
-  Image,
+  Image as ImageIcon,
   FileText,
   Save,
   Plus,
   X,
   Upload,
-  Camera,
   ChevronUp,
   ChevronDown,
   Crown,
+  Eye,
+  Sliders,
+  Calendar,
+  Layers
 } from "lucide-react";
 import SimpleEditor from "./SimpleEditor";
+import axios from "axios";
 
 export default function AdminProductForm({ product, onSuccess, onCancel }) {
   const { data: session, status } = useSession();
@@ -38,6 +42,7 @@ export default function AdminProductForm({ product, onSuccess, onCancel }) {
   const [mainImage, setMainImage] = useState(product?.mainImage || null);
   const fileInputRef = useRef(null);
   const isRTL = i18n.language === "ar";
+  const [uploadProgress, setUploadProgress] = useState(null);
 
   const {
     register,
@@ -217,19 +222,19 @@ export default function AdminProductForm({ product, onSuccess, onCancel }) {
         formData.append("mainImage", mainImage);
       }
 
-      const response = await fetch(url, {
+      setUploadProgress(0);
+
+      const response = await axios({
+        url,
         method,
-        body: formData,
+        data: formData,
+        onUploadProgress: (progressEvent) => {
+          const percentCompleted = Math.round(
+            (progressEvent.loaded * 100) / progressEvent.total
+          );
+          setUploadProgress(percentCompleted);
+        },
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(
-          errorData.message || `Failed to save product: ${response.status}`
-        );
-      }
-
-      const result = await response.json();
 
       toast.success(`Product ${product ? "updated" : "created"} successfully`);
       onSuccess();
@@ -242,11 +247,13 @@ export default function AdminProductForm({ product, onSuccess, onCancel }) {
         }
       }
     } catch (error) {
-      toast.error(error.message);
+      toast.error(error.message || "Failed to save product");
     } finally {
       setIsSubmitting(false);
+      setUploadProgress(null);
     }
   };
+
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
     if (files.length > 0) {
@@ -315,31 +322,45 @@ export default function AdminProductForm({ product, onSuccess, onCancel }) {
     }
   }, [images, mainImage]);
 
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center p-12 bg-base-100 rounded-3xl border border-base-300">
+        <span className="loading loading-spinner text-primary w-12 h-12"></span>
+        <p className="mt-4 text-gray-500 font-semibold">{isRTL ? "جاري تحميل بيانات المنتج..." : "Loading product details..."}</p>
+      </div>
+    );
+  }
+
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="mb-8 bg-gradient-to-br from-white to-emerald-50 rounded-2xl shadow-2xl border border-emerald-100 overflow-hidden"
+      className="mb-8 bg-base-100 rounded-3xl border border-base-300 shadow-xl overflow-hidden animate-fade-in"
     >
-      {/* Header */}
-      <div className="bg-gradient-to-r from-emerald-600 to-green-600 p-6 text-white">
+      {/* Premium Form Header */}
+      <div className="bg-gradient-to-r from-primary to-primary-focus p-6 text-white relative">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Package className="w-8 h-8" />
+          <div className="flex items-center gap-3.5">
+            <div className="p-3 bg-white/10 rounded-2xl">
+              <Package className="w-7 h-7" />
+            </div>
             <div>
-              <h2 className="text-2xl font-bold">
-                {product ? (isRTL ? t("editProduct_ar") || t("editProduct") : t("editProduct")) || "Edit Product" : (isRTL ? t("createNewProduct_ar") || t("createNewProduct") : t("createNewProduct")) || "Create New Product"}
+              <h2 className="text-2xl font-black">
+                {product 
+                  ? (isRTL ? t("editProduct_ar") || t("editProduct") : t("editProduct")) 
+                  : (isRTL ? t("createNewProduct_ar") || t("createNewProduct") : t("createNewProduct"))}
               </h2>
-              <p className="text-emerald-100">
+              <p className="text-white/80 text-sm mt-1">
                 {product
-                  ? (isRTL ? t("updateProductInformation_ar") || t("updateProductInformation") : t("updateProductInformation")) || "Update product information"
-                  : (isRTL ? t("addNewProductToStore_ar") || t("addNewProductToStore") : t("addNewProductToStore")) || "Add a new product to your store"}
+                  ? (isRTL ? t("updateProductInformation_ar") || t("updateProductInformation") : t("updateProductInformation"))
+                  : (isRTL ? t("addNewProductToStore_ar") || t("addNewProductToStore") : t("addNewProductToStore"))}
               </p>
             </div>
           </div>
           {onCancel && (
             <button
+              type="button"
               onClick={onCancel}
-              className="btn btn-ghost btn-sm text-white hover:bg-white/20 rounded-full p-2"
+              className="btn btn-ghost btn-circle text-white hover:bg-white/20"
               title={isRTL ? t("close_ar") || t("close") : t("close")}
             >
               <X className="w-5 h-5" />
@@ -348,83 +369,80 @@ export default function AdminProductForm({ product, onSuccess, onCancel }) {
         </div>
       </div>
 
-      <div className="p-8">
+      <div className="p-6 md:p-8 space-y-8">
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-          {/* Left Column - Basic Information */}
-          <div className="space-y-6">
-            {/* Product Basics Card */}
-            <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="p-2 bg-emerald-100 rounded-lg">
-                  <Package className="w-5 h-5 text-emerald-600" />
-                </div>
-                <h3 className="text-lg font-semibold text-gray-800">
+          
+          {/* ==================== LEFT COLUMN ==================== */}
+          <div className="space-y-8">
+            
+            {/* Product Basics Section */}
+            <div className="bg-base-100 rounded-2xl border border-base-200 p-5 md:p-6 shadow-sm space-y-5">
+              <div className="flex items-center gap-2.5 pb-3.5 border-b border-base-200">
+                <Tag className="w-5 h-5 text-primary" />
+                <h3 className="text-lg font-bold text-gray-800">
                   {isRTL ? t("productBasics_ar") || t("productBasics") : t("productBasics")}
                 </h3>
               </div>
 
               <div className="space-y-4">
+                {/* Product Name */}
                 <div className="form-control">
-                  <label className="label">
-                    <span className="label-text font-medium text-gray-700 flex items-center gap-2">
-                      <Tag className="w-4 h-4" />
-                      {isRTL ? t("productName_ar") || t("productName") : t("productName")} *
-                    </span>
+                  <label className="label font-bold text-gray-700 text-sm">
+                    <span>{isRTL ? t("productName_ar") || t("productName") : t("productName")} *</span>
                   </label>
                   <input
                     {...register("name", {
                       required: isRTL ? t("productNameRequired_ar") || t("productNameRequired") : t("productNameRequired"),
                     })}
-                    className="input input-bordered w-full focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all"
+                    className="input input-bordered w-full rounded-xl focus:ring-primary focus:border-primary"
                     placeholder={isRTL ? t("enterProductName_ar") || t("enterProductName") : t("enterProductName")}
                   />
                   {errors.name && (
-                    <span className="text-error text-sm flex items-center gap-1 mt-1">
-                      <X className="w-3 h-3" />
+                    <span className="text-error text-xs flex items-center gap-1 mt-1 font-medium">
+                      <X className="w-3.5 h-3.5" />
                       {errors.name.message}
                     </span>
                   )}
                 </div>
 
+                {/* Slug */}
                 <div className="form-control">
-                  <label className="label">
-                    <span className="label-text font-medium text-gray-700 flex items-center gap-2">
-                      <Hash className="w-4 h-4" />
-                      Slug *
-                    </span>
+                  <label className="label font-bold text-gray-700 text-sm">
+                    <span>{isRTL ? "الرابط المختصر (Slug) *" : "Slug *"}</span>
                   </label>
-                  <input
-                    {...register("slug", {
-                      required: isRTL ? t("slugRequired_ar") || t("slugRequired") : t("slugRequired"),
-                      pattern: {
-                        value: /^[a-z0-9-]+$/,
-                        message:
-                          "Slug must be lowercase letters, numbers, and hyphens",
-                      },
-                    })}
-                    className="input input-bordered w-full focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200"
-                    placeholder={isRTL ? t("enterSlug_ar") || t("enterSlug") : t("enterSlug")}
-                  />
+                  <div className="relative">
+                    <input
+                      {...register("slug", {
+                        required: isRTL ? t("slugRequired_ar") || t("slugRequired") : t("slugRequired"),
+                        pattern: {
+                          value: /^[a-z0-9-]+$/,
+                          message: "Slug must be lowercase letters, numbers, and hyphens",
+                        },
+                      })}
+                      className="input input-bordered w-full rounded-xl pl-12 font-mono"
+                      placeholder={isRTL ? t("enterSlug_ar") || t("enterSlug") : t("enterSlug")}
+                    />
+                    <Hash className="w-5 h-5 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2" />
+                  </div>
                   {errors.slug && (
-                    <span className="text-error text-sm flex items-center gap-1 mt-1">
-                      <X className="w-3 h-3" />
+                    <span className="text-error text-xs flex items-center gap-1 mt-1 font-medium">
+                      <X className="w-3.5 h-3.5" />
                       {errors.slug.message}
                     </span>
                   )}
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                {/* Category & Brand dropdowns */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="form-control">
-                    <label className="label">
-                      <span className="label-text font-medium text-gray-700">
-                        {isRTL ? t("category_ar") || t("category") : t("category")} *
-                      </span>
+                    <label className="label font-bold text-gray-700 text-sm">
+                      <span>{isRTL ? t("category_ar") || t("category") : t("category")} *</span>
                     </label>
                     <select
                       {...register("category", {
                         required: isRTL ? t("categoryRequired_ar") || t("categoryRequired") : t("categoryRequired"),
                       })}
-                      className="select select-bordered w-full focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200"
+                      className="select select-bordered w-full rounded-xl"
                     >
                       <option value="">{isRTL ? t("selectCategory_ar") || t("selectCategory") : t("selectCategory")}</option>
                       {categories.map((category) => (
@@ -434,21 +452,19 @@ export default function AdminProductForm({ product, onSuccess, onCancel }) {
                       ))}
                     </select>
                     {errors.category && (
-                      <span className="text-error text-sm">
-                        {errors.category.message}
-                      </span>
+                      <span className="text-error text-xs mt-1 font-medium">{errors.category.message}</span>
                     )}
                   </div>
 
                   <div className="form-control">
-                    <label className="label">
-                      <span className="label-text font-medium text-gray-700">
-                        {isRTL ? t("brand_ar") || t("brand") : t("brand")} *
-                      </span>
+                    <label className="label font-bold text-gray-700 text-sm">
+                      <span>{isRTL ? t("brand_ar") || t("brand") : t("brand")} *</span>
                     </label>
                     <select
-                      {...register("brand", { required: isRTL ? t("brandRequired_ar") || t("brandRequired") : t("brandRequired") })}
-                      className="select select-bordered w-full focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200"
+                      {...register("brand", { 
+                        required: isRTL ? t("brandRequired_ar") || t("brandRequired") : t("brandRequired") 
+                      })}
+                      className="select select-bordered w-full rounded-xl"
                     >
                       <option value="">{isRTL ? t("selectBrand_ar") || t("selectBrand") : t("selectBrand")}</option>
                       {brands.map((brand) => (
@@ -458,263 +474,236 @@ export default function AdminProductForm({ product, onSuccess, onCancel }) {
                       ))}
                     </select>
                     {errors.brand && (
-                      <span className="text-error text-sm">
-                        {errors.brand.message}
-                      </span>
+                      <span className="text-error text-xs mt-1 font-medium">{errors.brand.message}</span>
                     )}
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Pricing Card */}
-            <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="p-2 bg-green-100 rounded-lg">
-                  <DollarSign className="w-5 h-5 text-green-600" />
-                </div>
-                <h3 className="text-lg font-semibold text-gray-800">
+            {/* Pricing & Stock Section */}
+            <div className="bg-base-100 rounded-2xl border border-base-200 p-5 md:p-6 shadow-sm space-y-5">
+              <div className="flex items-center gap-2.5 pb-3.5 border-b border-base-200">
+                <DollarSign className="w-5 h-5 text-primary" />
+                <h3 className="text-lg font-bold text-gray-800">
                   {isRTL ? t("pricingStock_ar") || t("pricingStock") : t("pricingStock")}
                 </h3>
               </div>
 
               <div className="space-y-4">
-                <div className="form-control">
-                  <label className="label">
-                    <span className="label-text font-medium text-gray-700">
-                      {isRTL ? t("regularPrice_ar") || t("regularPrice") : t("regularPrice")} *
-                    </span>
-                  </label>
-                  <div className="relative">
-                    <DollarSign className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
-                    <input
-                      type="number"
-                      step="0.01"
-                      {...register("price", {
-                        required: "Price is required",
-                        min: {
-                          value: 0.5,
-                          message: "Price must be at least 0.50",
-                        },
-                      })}
-                      className="input input-bordered w-full pl-4  focus:border-green-500 focus:ring-2 focus:ring-green-200"
-                      placeholder="0.00"
-                    />
-                  </div>
-                  {errors.price && (
-                    <span className="text-error text-sm">
-                      {errors.price.message}
-                    </span>
-                  )}
-                </div>
-
-                <div className="form-control">
-                  <label className="label">
-                    <span className="label-text font-medium text-gray-700">
-                      {isRTL ? t("salePrice_ar") || t("salePrice") : t("salePrice")}
-                    </span>
-                  </label>
-                  <div className="flex gap-2">
-                    <div className="relative flex-1">
-                      <DollarSign className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* Regular Price */}
+                  <div className="form-control">
+                    <label className="label font-bold text-gray-700 text-sm">
+                      <span>{isRTL ? t("regularPrice_ar") || t("regularPrice") : t("regularPrice")} *</span>
+                    </label>
+                    <div className="relative">
                       <input
                         type="number"
-                        step="0.01"
-                        {...register("discountPrice", {
+                        step="any"
+                        {...register("price", {
+                          required: "Price is required",
                           min: {
-                            value: 0,
-                            message: "Discount price cannot be negative",
+                            value: 0.5,
+                            message: "Price must be at least 0.50",
                           },
-                          validate: (value) =>
-                            !value ||
-                            value < watchPrice ||
-                            "Discount must be less than original price",
                         })}
-                        className="input input-bordered w-full pl-4  focus:border-orange-500 focus:ring-2 focus:ring-orange-200"
+                        className="input input-bordered w-full pl-12 rounded-xl"
                         placeholder="0.00"
                       />
+                      <DollarSign className="w-5 h-5 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2" />
                     </div>
-                    <button
-                      type="button"
-                      onClick={clearDiscount}
-                      className="btn btn-ghost btn-square text-gray-500 hover:text-error"
-                      title="Clear discount"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
+                    {errors.price && (
+                      <span className="text-error text-xs mt-1 font-medium">{errors.price.message}</span>
+                    )}
                   </div>
-                  {errors.discountPrice && (
-                    <span className="text-error text-sm">
-                      {errors.discountPrice.message}
-                    </span>
-                  )}
+
+                  {/* Sale Price */}
+                  <div className="form-control">
+                    <label className="label font-bold text-gray-700 text-sm">
+                      <span>{isRTL ? t("salePrice_ar") || t("salePrice") : t("salePrice")}</span>
+                    </label>
+                    <div className="flex gap-2">
+                      <div className="relative flex-1">
+                        <input
+                          type="number"
+                          step="any"
+                          {...register("discountPrice", {
+                            min: {
+                              value: 0,
+                              message: "Discount price cannot be negative",
+                            },
+                            validate: (value) =>
+                              !value ||
+                              parseFloat(value) < parseFloat(watchPrice) ||
+                              "Discount must be less than original price",
+                          })}
+                          className="input input-bordered w-full pl-12 rounded-xl"
+                          placeholder="0.00"
+                        />
+                        <DollarSign className="w-5 h-5 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2" />
+                      </div>
+                      {(watchDiscountPrice || watchDiscountPrice === 0) && (
+                        <button
+                          type="button"
+                          onClick={clearDiscount}
+                          className="btn btn-ghost btn-circle text-gray-400 hover:text-error"
+                          title="Clear discount"
+                        >
+                          <X className="w-5 h-5" />
+                        </button>
+                      )}
+                    </div>
+                    {errors.discountPrice && (
+                      <span className="text-error text-xs mt-1 font-medium">{errors.discountPrice.message}</span>
+                    )}
+                  </div>
                 </div>
 
-                <div className="form-control">
-                  <label className="label">
-                    <span className="label-text font-medium text-gray-700">
-                      {isRTL ? t("discountPercentage_ar") || t("discountPercentage") : t("discountPercentage")}
-                    </span>
-                  </label>
-                  <div className="relative">
-                    <Percent className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* Discount percentage */}
+                  <div className="form-control">
+                    <label className="label font-bold text-gray-700 text-sm">
+                      <span>{isRTL ? t("discountPercentage_ar") || t("discountPercentage") : t("discountPercentage")}</span>
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="number"
+                        {...register("discountPercentage", {
+                          min: { value: 0, message: "Percentage cannot be negative" },
+                          max: { value: 100, message: "Percentage cannot exceed 100%" },
+                        })}
+                        className="input input-bordered w-full pl-12 bg-base-200 rounded-xl"
+                        placeholder="0"
+                        readOnly
+                      />
+                      <Percent className="w-5 h-5 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2" />
+                    </div>
+                  </div>
+
+                  {/* Stock Quantity */}
+                  <div className="form-control">
+                    <label className="label font-bold text-gray-700 text-sm">
+                      <span>{isRTL ? t("stockQuantity_ar") || t("stockQuantity") : t("stockQuantity")} *</span>
+                    </label>
                     <input
                       type="number"
-                      {...register("discountPercentage", {
-                        min: {
-                          value: 0,
-                          message: "Percentage cannot be negative",
-                        },
-                        max: {
-                          value: 100,
-                          message: "Percentage cannot exceed 100%",
-                        },
+                      {...register("countInStock", {
+                        required: "Stock quantity is required",
+                        min: { value: 0, message: "Stock cannot be negative" },
                       })}
-                      className="input input-bordered w-full pl-4  bg-gray-50"
+                      className="input input-bordered w-full rounded-xl"
                       placeholder="0"
-                      readOnly
                     />
+                    {errors.countInStock && (
+                      <span className="text-error text-xs mt-1 font-medium">{errors.countInStock.message}</span>
+                    )}
                   </div>
-                  {errors.discountPercentage && (
-                    <span className="text-error text-sm">
-                      {errors.discountPercentage.message}
-                    </span>
-                  )}
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                {/* Discount Dates */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="form-control">
-                    <label className="label">
-                      <span className="label-text font-medium text-gray-700">
-                        {isRTL ? t("discountStartDateOptional_ar") || t("discountStartDateOptional") : t("discountStartDateOptional")}
-                      </span>
+                    <label className="label font-bold text-gray-700 text-sm">
+                      <span>{isRTL ? t("discountStartDateOptional_ar") || t("discountStartDateOptional") : t("discountStartDateOptional")}</span>
                     </label>
                     <input
                       type="datetime-local"
                       {...register("discountStartDate")}
-                      className="input input-bordered w-full focus:border-orange-500 focus:ring-2 focus:ring-orange-200"
+                      className="input input-bordered w-full rounded-xl"
                     />
                   </div>
 
                   <div className="form-control">
-                    <label className="label">
-                      <span className="label-text font-medium text-gray-700">
-                        {isRTL ? t("discountEndDateOptional_ar") || t("discountEndDateOptional") : t("discountEndDateOptional")}
-                      </span>
+                    <label className="label font-bold text-gray-700 text-sm">
+                      <span>{isRTL ? t("discountEndDateOptional_ar") || t("discountEndDateOptional") : t("discountEndDateOptional")}</span>
                     </label>
                     <input
                       type="datetime-local"
                       {...register("discountEndDate")}
-                      className="input input-bordered w-full focus:border-orange-500 focus:ring-2 focus:ring-orange-200"
+                      className="input input-bordered w-full rounded-xl"
                     />
                   </div>
-                </div>
-
-                <div className="form-control">
-                  <label className="label">
-                    <span className="label-text font-medium text-gray-700">
-                      {isRTL ? t("stockQuantity_ar") || t("stockQuantity") : t("stockQuantity")} *
-                    </span>
-                  </label>
-                  <input
-                    type="number"
-                    {...register("countInStock", {
-                      required: "Stock quantity is required",
-                      min: { value: 0, message: "Stock cannot be negative" },
-                    })}
-                    className="input input-bordered w-full focus:border-green-500 focus:ring-2 focus:ring-green-200"
-                    placeholder="0"
-                  />
-                  {errors.countInStock && (
-                    <span className="text-error text-sm">
-                      {errors.countInStock.message}
-                    </span>
-                  )}
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="space-y-6">
-            {/* Attributes Card */}
-            <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="p-2 bg-green-100 rounded-lg">
-                  <Palette className="w-5 h-5 text-green-600" />
-                </div>
-                <h3 className="text-lg font-semibold text-gray-800">
+          {/* ==================== RIGHT COLUMN ==================== */}
+          <div className="space-y-8">
+            
+            {/* Attributes & Features Section */}
+            <div className="bg-base-100 rounded-2xl border border-base-200 p-5 md:p-6 shadow-sm space-y-5">
+              <div className="flex items-center gap-2.5 pb-3.5 border-b border-base-200">
+                <Sliders className="w-5 h-5 text-primary" />
+                <h3 className="text-lg font-bold text-gray-800">
                   {isRTL ? t("productAttributes_ar") || t("productAttributes") : t("productAttributes")}
                 </h3>
               </div>
 
               <div className="space-y-4">
+                {/* Sizes Input */}
                 <div className="form-control">
-                  <label className="label">
-                    <span className="label-text font-medium text-gray-700 flex items-center gap-2">
-                      <Ruler className="w-4 h-4" />
-                      {isRTL ? t("sizes_ar") || t("sizes") : t("sizes")}
-                    </span>
+                  <label className="label font-bold text-gray-700 text-sm">
+                    <span>{isRTL ? t("sizes_ar") || t("sizes") : t("sizes")}</span>
                   </label>
                   <input
                     {...register("sizes")}
-                    className="input input-bordered w-full focus:border-green-500 focus:ring-2 focus:ring-green-200"
+                    className="input input-bordered w-full rounded-xl"
                     placeholder={isRTL ? t("sizePlaceholder_ar") || t("sizePlaceholder") : t("sizePlaceholder")}
                   />
                 </div>
 
+                {/* Colors Input */}
                 <div className="form-control">
-                  <label className="label">
-                    <span className="label-text font-medium text-gray-700 flex items-center gap-2">
-                      <Palette className="w-4 h-4" />
-                      {isRTL ? t("colors_ar") || t("colors") : t("colors")}
-                    </span>
+                  <label className="label font-bold text-gray-700 text-sm">
+                    <span>{isRTL ? t("colors_ar") || t("colors") : t("colors")}</span>
                   </label>
                   <input
                     {...register("colors")}
-                    className="input input-bordered w-full focus:border-green-500 focus:ring-2 focus:ring-green-200"
+                    className="input input-bordered w-full rounded-xl"
                     placeholder={isRTL ? t("colorPlaceholder_ar") || t("colorPlaceholder") : t("colorPlaceholder")}
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="form-control">
-                    <label className="label cursor-pointer justify-start gap-3 p-4 bg-emerald-50 rounded-lg hover:bg-emerald-100 transition-colors">
+                {/* Toggles */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                  <div className="form-control p-4 bg-primary/5 rounded-2xl border border-primary/10">
+                    <label className="label cursor-pointer flex items-center justify-between p-0">
+                      <span className="font-bold text-primary text-sm flex items-center gap-1.5">
+                        <Star className="w-4 h-4 fill-primary" />
+                        {isRTL ? t("featured_ar") || t("featured") : t("featured")}
+                      </span>
                       <input
                         type="checkbox"
                         {...register("isFeatured")}
-                        className="toggle toggle-primary"
+                        className="toggle toggle-primary toggle-sm"
                       />
-                      <span className="label-text font-medium text-gray-700 flex items-center gap-2">
-                        <Star className="w-4 h-4" />
-                        {isRTL ? t("featured_ar") || t("featured") : t("featured")}
-                      </span>
                     </label>
                   </div>
 
-                  <div className="form-control">
-                    <label className="label cursor-pointer justify-start gap-3 p-4 bg-orange-50 rounded-lg hover:bg-orange-100 transition-colors">
-                      <input
-                        type="checkbox"
-                        {...register("isOnSale")}
-                        className="toggle toggle-warning"
-                      />
-                      <span className="label-text font-medium text-gray-700 flex items-center gap-2">
+                  <div className="form-control p-4 bg-warning/5 rounded-2xl border border-warning/10">
+                    <label className="label cursor-pointer flex items-center justify-between p-0">
+                      <span className="font-bold text-warning-content text-sm flex items-center gap-1.5">
                         <Zap className="w-4 h-4" />
                         {isRTL ? t("onSale_ar") || t("onSale") : t("onSale")}
                       </span>
+                      <input
+                        type="checkbox"
+                        {...register("isOnSale")}
+                        className="toggle toggle-warning toggle-sm"
+                      />
                     </label>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Media Card */}
-            <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 ">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="p-2 bg-emerald-100 rounded-lg">
-                  <Image className="w-5 h-5 text-emerald-600" />
-                </div>
-                <h3 className="text-lg font-semibold text-gray-800">
+            {/* Media Upload Section */}
+            <div className="bg-base-100 rounded-2xl border border-base-200 p-5 md:p-6 shadow-sm space-y-5">
+              <div className="flex items-center gap-2.5 pb-3.5 border-b border-base-200">
+                <ImageIcon className="w-5 h-5 text-primary" />
+                <h3 className="text-lg font-bold text-gray-800">
                   {isRTL ? t("productImages_ar") || t("productImages") : t("productImages")}
                 </h3>
               </div>
@@ -729,195 +718,194 @@ export default function AdminProductForm({ product, onSuccess, onCancel }) {
               />
 
               {images.length === 0 ? (
-                <div className="form-control h-full">
-                  <button
-                    type="button"
-                    onClick={triggerFileInput}
-                    className="btn btn-outline btn-lg w-full h-full border-dashed border-2 border-gray-300 hover:border-emerald-400 hover:bg-emerald-50 transition-all"
-                  >
-                    <div className="flex flex-col items-center gap-2 py-4">
-                      <Upload className="w-8 h-8 text-gray-400" />
-                      <span className="font-medium text-gray-600">
-                        {isRTL ? t("clickToUploadImages_ar") || t("clickToUploadImages") : t("clickToUploadImages")}
-                      </span>
-                      <span className="text-sm text-gray-500">
-                        {isRTL ? t("orDragAndDrop_ar") || t("orDragAndDrop") : t("orDragAndDrop")}
-                      </span>
-                    </div>
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  onClick={triggerFileInput}
+                  className="w-full flex flex-col items-center justify-center py-10 px-4 border-2 border-dashed border-base-300 hover:border-primary hover:bg-primary/5 rounded-2xl transition-all"
+                >
+                  <Upload className="w-10 h-10 text-gray-400 mb-2 group-hover:text-primary" />
+                  <span className="font-bold text-gray-700 text-sm">
+                    {isRTL ? t("clickToUploadImages_ar") || t("clickToUploadImages") : t("clickToUploadImages")}
+                  </span>
+                  <span className="text-xs text-gray-400 mt-1">
+                    {isRTL ? t("orDragAndDrop_ar") || t("orDragAndDrop") : t("orDragAndDrop")}
+                  </span>
+                </button>
               ) : (
-                <div className="h-full flex flex-col ">
-                  <div className="flex justify-between items-center mb-4">
-                    <label className="label p-0">
-                      <span className="label-text font-medium text-gray-700">
-                        {isRTL ? t("imagePreview_ar") || t("imagePreview") : t("imagePreview")}
-                      </span>
-                    </label>
-                    <button
-                      type="button"
-                      onClick={triggerFileInput}
-                      className="btn btn-sm btn-outline btn-primary flex items-center gap-2"
-                    >
-                      <Plus className="w-4 h-4" />
-                      {isRTL ? t("addMoreImages_ar") || t("addMoreImages") : t("addMoreImages")}
-                    </button>
-                  </div>
-
-                  <div className="flex-1">
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-h-96 overflow-y-auto">
-                      {images.map((image, index) => (
-                        <div key={index} className="relative group">
-                          <div
-                            className={`relative bg-gray-50 h-56 rounded-lg overflow-hidden ${
-                              mainImage === image
-                                ? "ring-2 ring-primary ring-offset-2"
-                                : ""
-                            }`}
-                          >
-                            <img
-                              loading="lazy"
-                              src={
-                                typeof image === "string"
-                                  ? image
-                                  : URL.createObjectURL(image)
-                              }
-                              alt={`Product Image ${index + 1}`}
-                              className="w-full h-56 object-cover"
-                            />
-
-                            {mainImage === image && (
-                              <div className="absolute top-2 left-2 bg-primary text-white rounded-full p-1">
-                                <Crown className="w-3 h-3" />
-                              </div>
-                            )}
-
-                            <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                              <button
-                                type="button"
-                                onClick={() => setMainImageHandler(image)}
-                                className={`btn btn-circle btn-sm ${
-                                  mainImage === image
-                                    ? "btn-primary"
-                                    : "btn-secondary"
-                                }`}
-                                title="Set as main image"
-                              >
-                                <Crown className="w-3 h-3" />
-                              </button>
-
-                              <button
-                                type="button"
-                                onClick={() => moveImageUp(index)}
-                                disabled={index === 0}
-                                className="btn btn-circle btn-sm btn-secondary disabled:opacity-50"
-                                title="Move up"
-                              >
-                                <ChevronUp className="w-3 h-3" />
-                              </button>
-
-                              {/* Move down */}
-                              <button
-                                type="button"
-                                onClick={() => moveImageDown(index)}
-                                disabled={index === images.length - 1}
-                                className="btn btn-circle btn-sm btn-secondary disabled:opacity-50"
-                                title="Move down"
-                              >
-                                <ChevronDown className="w-3 h-3" />
-                              </button>
-
-                              {/* Delete */}
-                              <button
-                                type="button"
-                                onClick={() => removeImage(index)}
-                                className="btn btn-circle btn-sm btn-error"
-                                title="Delete image"
-                              >
-                                <X className="w-3 h-3" />
-                              </button>
-                            </div>
-                          </div>
-
-                          <div className="text-center mt-2">
-                            <p className="text-xs text-gray-500">
-                              Image {index + 1}
-                              {mainImage === image && (
-                                <span className="ml-1 text-primary font-semibold">
-                                  (Main)
-                                </span>
-                              )}
-                            </p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="flex justify-between items-center mt-4">
-                    <p className="text-sm text-gray-500">
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center bg-base-50 p-2.5 rounded-xl border border-base-300">
+                    <span className="text-xs font-semibold text-gray-500">
                       {images.length} {isRTL ? t("imagesSelected_ar") || t("imagesSelected") : t("imagesSelected")}
-                    </p>
-                    {images.length > 0 && (
+                    </span>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={triggerFileInput}
+                        className="btn btn-xs btn-outline btn-primary rounded-lg"
+                      >
+                        {isRTL ? "إضافة" : "Add More"}
+                      </button>
                       <button
                         type="button"
                         onClick={() => setImages([])}
-                        className="btn btn-sm btn-ghost text-error hover:bg-error hover:text-error-content"
+                        className="btn btn-xs btn-ghost text-error rounded-lg"
                       >
                         {isRTL ? t("removeAll_ar") || t("removeAll") : t("removeAll")}
                       </button>
-                    )}
+                    </div>
+                  </div>
+
+                  {/* Previews grid */}
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-[300px] overflow-y-auto p-1">
+                    {images.map((image, index) => {
+                      const isMain = mainImage === image;
+                      const imageUrl = typeof image === "string" ? image : URL.createObjectURL(image);
+
+                      return (
+                        <div key={index} className="relative aspect-square rounded-xl overflow-hidden border border-base-300 group shadow-sm bg-base-200">
+                          <img
+                            loading="lazy"
+                            src={imageUrl}
+                            alt={`Preview ${index + 1}`}
+                            className="w-full h-full object-cover"
+                          />
+
+                          {isMain && (
+                            <div className="absolute top-2.5 right-2.5 bg-primary text-white p-1 rounded-lg shadow" title="Main Image">
+                              <Crown className="w-3.5 h-3.5 fill-white" />
+                            </div>
+                          )}
+
+                          {/* Quick controls overlay */}
+                          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1.5 z-20">
+                            <button
+                              type="button"
+                              onClick={() => setMainImageHandler(image)}
+                              className={`btn btn-square btn-xs ${isMain ? "btn-primary" : "btn-neutral text-white"}`}
+                              title={isRTL ? "الأساسية" : "Set Main"}
+                            >
+                              <Crown className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => moveImageUp(index)}
+                              disabled={index === 0}
+                              className="btn btn-square btn-xs btn-neutral text-white disabled:opacity-40"
+                              title="Move Up"
+                            >
+                              <ChevronUp className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => moveImageDown(index)}
+                              disabled={index === images.length - 1}
+                              className="btn btn-square btn-xs btn-neutral text-white disabled:opacity-40"
+                              title="Move Down"
+                            >
+                              <ChevronDown className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => removeImage(index)}
+                              className="btn btn-square btn-xs btn-error text-white"
+                              title="Remove"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               )}
             </div>
-            {/* Description Card */}
-            <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="p-2 bg-emerald-100 rounded-lg">
-                  <FileText className="w-5 h-5 text-emerald-600" />
-                </div>
-                <h3 className="text-lg font-semibold text-gray-800">
-                  {isRTL ? t("description_ar") || t("description") : t("description")}
-                </h3>
-              </div>
-
-              <div className="form-control">
-                <SimpleEditor
-                  value={watch("description") ?? ""}
-                  onChange={(value) => setValue("description", value)}
-                />
-                {errors.description && (
-                  <span className="text-error text-sm flex items-center gap-1 mt-1">
-                    <X className="w-3 h-3" />
-                    {errors.description.message}
-                  </span>
-                )}
-              </div>
-            </div>
           </div>
         </div>
 
-        {/* Submit Button */}
-        <div className="form-control mt-8">
+        {/* Description Section */}
+        <div className="bg-base-100 rounded-2xl border border-base-200 p-5 md:p-6 shadow-sm space-y-5">
+          <div className="flex items-center gap-2.5 pb-3.5 border-b border-base-200">
+            <FileText className="w-5 h-5 text-primary" />
+            <h3 className="text-lg font-bold text-gray-800">
+              {isRTL ? t("description_ar") || t("description") : t("description")}
+            </h3>
+          </div>
+
+          <div className="form-control">
+            <SimpleEditor
+              value={watch("description") ?? ""}
+              onChange={(value) => setValue("description", value)}
+            />
+            {errors.description && (
+              <span className="text-error text-xs flex items-center gap-1 mt-1.5 font-medium">
+                <X className="w-3.5 h-3.5" />
+                {errors.description.message}
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Form Actions bar */}
+        <div className="flex gap-4 pt-4">
+          {onCancel && (
+            <button
+              type="button"
+              onClick={onCancel}
+              className="btn btn-lg btn-ghost flex-1 rounded-xl"
+            >
+              {t("cancel") || "Cancel"}
+            </button>
+          )}
           <button
             type="submit"
             disabled={isSubmitting}
-            className="btn btn-lg w-full bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 border-none text-white shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300"
+            className="btn btn-lg btn-primary flex-[2] shadow-lg hover:shadow-xl rounded-xl gap-2"
           >
             {isSubmitting ? (
               <>
-                <span className="loading loading-spinner loading-sm"></span>
-                {product ? (isRTL ? t("updatingProduct_ar") || t("updatingProduct") : t("updatingProduct")) : (isRTL ? t("creatingProduct_ar") || t("creatingProduct") : t("creatingProduct"))}
+                <span className="loading loading-spinner loading-md"></span>
+                <span>{product 
+                  ? (isRTL ? t("updatingProduct_ar") || t("updatingProduct") : t("updatingProduct")) 
+                  : (isRTL ? t("creatingProduct_ar") || t("creatingProduct") : t("creatingProduct"))}</span>
               </>
             ) : (
               <>
                 <Save className="w-5 h-5" />
-                {product ? (isRTL ? t("updateProduct_ar") || t("updateProduct") : t("updateProduct")) : (isRTL ? t("createProduct_ar") || t("createProduct") : t("createProduct"))}
+                <span>{product 
+                  ? (isRTL ? t("updateProduct_ar") || t("updateProduct") : t("updateProduct")) 
+                  : (isRTL ? t("createProduct_ar") || t("createProduct") : t("createProduct"))}</span>
               </>
             )}
           </button>
         </div>
+        {/* Upload Progress Overlay */}
+        {isSubmitting && uploadProgress !== null && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center z-50 p-4 animate-fade-in">
+            <div className="bg-base-100 border border-base-300 rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl space-y-4">
+              <span className="loading loading-spinner text-primary w-12 h-12"></span>
+              <div className="space-y-1.5">
+                <h3 className="font-bold text-gray-800 text-lg">
+                  {isRTL ? "جاري رفع المنتجات والصور..." : "Uploading Product & Images..."}
+                </h3>
+                <p className="text-sm text-gray-400">
+                  {isRTL ? "الرجاء عدم إغلاق هذه الصفحة" : "Please do not close this page"}
+                </p>
+              </div>
+              <div className="space-y-1">
+                <div className="flex justify-between text-xs text-gray-500 font-semibold">
+                  <span>{isRTL ? "تقدم الرفع" : "Upload Progress"}</span>
+                  <span>{uploadProgress}%</span>
+                </div>
+                <progress 
+                  className="progress progress-primary w-full h-2 rounded-full" 
+                  value={uploadProgress} 
+                  max="100" 
+                />
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </form>
   );

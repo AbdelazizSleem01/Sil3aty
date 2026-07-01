@@ -56,22 +56,16 @@ import { useTranslation } from "react-i18next";
 import { FiFilter, FiChevronDown, FiChevronUp, FiX } from "react-icons/fi";
 import { MdSort, MdDateRange, MdPerson, MdTrendingUp } from "react-icons/md";
 
+import useSWR from "swr";
+import { useMemo } from "react";
+
 export default function BlogsPage() {
   const { data: session } = useSession();
   const { t, i18n } = useTranslation();
   const isRTL = i18n.language === "ar";
 
-  const [blogs, setBlogs] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedTag, setSelectedTag] = useState("all");
-  const [stats, setStats] = useState({
-    totalViews: 0,
-    totalLikes: 0,
-    totalComments: 0,
-    monthlyViews: 0,
-  });
 
   // Advanced filtering states
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
@@ -82,27 +76,14 @@ export default function BlogsPage() {
   const [minLikes, setMinLikes] = useState("");
   const [selectedTags, setSelectedTags] = useState([]);
 
-  useEffect(() => {
-    const fetchBlogs = async () => {
-      try {
-        const response = await fetch("/api/blog");
-        if (!response.ok) {
-          throw new Error(t("failedToFetchBlogs"));
-        }
-        const data = await response.json();
-        setBlogs(data);
-        calculateStats(data);
-      } catch (err) {
-        setError(t("failedToFetchBlogs"));
-      } finally {
-        setLoading(false);
-      }
-    };
+  const { data: blogsData, error: blogsError } = useSWR("/api/blog");
 
-    fetchBlogs();
-  }, [t]);
+  const blogs = blogsData || [];
+  const loading = !blogsData && !blogsError;
+  const error = blogsError ? t("failedToFetchBlogs") : "";
 
-  const calculateStats = (blogsData) => {
+  const stats = useMemo(() => {
+    if (!blogsData) return { totalViews: 0, totalLikes: 0, totalComments: 0, monthlyViews: 0 };
     const totalViews = blogsData.reduce(
       (sum, blog) => sum + (blog.views || 0),
       0
@@ -117,8 +98,8 @@ export default function BlogsPage() {
     );
     const monthlyViews = Math.round(totalViews * 0.3);
 
-    setStats({ totalViews, totalLikes, totalComments, monthlyViews });
-  };
+    return { totalViews, totalLikes, totalComments, monthlyViews };
+  }, [blogsData]);
 
   const allTags = ["all", ...new Set(blogs.flatMap((blog) => blog.tags))];
   const allAuthors = [

@@ -48,7 +48,19 @@ export async function POST(request) {
       throw new Error("All fields are required");
     }
 
-    await mongooseSession.withTransaction(async () => {
+    // Check if replica set is enabled to support transactions
+    let isReplicaSet = false;
+    try {
+      const helloInfo = await mongoose.connection.db.command({ hello: 1 });
+      isReplicaSet = !!helloInfo.setName;
+    } catch (e) {
+      try {
+        const isMasterInfo = await mongoose.connection.db.command({ isMaster: 1 });
+        isReplicaSet = !!isMasterInfo.setName;
+      } catch (e2) {}
+    }
+
+    const executeContactActions = async (sessionToUse) => {
       const newContact = await Contact.create(
         [
           {
@@ -58,7 +70,7 @@ export async function POST(request) {
             message: message.trim(),
           },
         ],
-        { session: mongooseSession }
+        sessionToUse ? { session: sessionToUse } : undefined
       );
 
       await sendEmail({
@@ -573,17 +585,21 @@ export async function POST(request) {
           `,
         });
       }
-    });
+    };
 
-    await mongooseSession.commitTransaction();
+    if (isReplicaSet) {
+      await mongooseSession.withTransaction(async () => {
+        await executeContactActions(mongooseSession);
+      });
+    } else {
+      await executeContactActions(null);
+    }
+
     return NextResponse.json(
       { success: true, message: "Message sent successfully" },
       { status: 201 }
     );
   } catch (error) {
-    if (mongooseSession.inTransaction()) {
-      await mongooseSession.abortTransaction();
-    }
 
     return NextResponse.json(
       {

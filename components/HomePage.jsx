@@ -4,6 +4,7 @@ import Image from "next/image";
 import dynamic from "next/dynamic";
 import { useEffect, useState, Suspense } from "react";
 import { useTranslation } from "react-i18next";
+import useSWR from "swr";
 import {
   ArrowRight,
   Sparkles,
@@ -111,27 +112,14 @@ function CountdownTimer({ endDate, format = "hours" }) {
 
 function LimitedTimeOffersSection() {
   const { t } = useTranslation();
-  const [limitedOffers, setLimitedOffers] = useState([]);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchOffers = async () => {
-      try {
-        const res = await fetch("/api/products/discounted");
-        if (res.ok) {
-          const products = await res.json();
-          const offersWithEndDates = products.filter((p) => p.discountEndDate);
-          setLimitedOffers(offersWithEndDates.slice(0, 4));
-        }
-      } catch (error) {
-        console.error("Error fetching limited offers:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const { data: discountedData, error: discountedError } = useSWR("/api/products/discounted");
 
-    fetchOffers();
-  }, []);
+  const limitedOffers = discountedData
+    ? discountedData.filter((p) => p.discountEndDate).slice(0, 4)
+    : [];
+
+  const loading = !discountedData && !discountedError;
 
   if (loading) {
     return (

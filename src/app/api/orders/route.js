@@ -49,14 +49,26 @@ export async function POST(request) {
       );
     }
 
-    await mongooseSession.withTransaction(async () => {
+    // Check if replica set is enabled to support transactions
+    let isReplicaSet = false;
+    try {
+      const helloInfo = await mongoose.connection.db.command({ hello: 1 });
+      isReplicaSet = !!helloInfo.setName;
+    } catch (e) {
+      try {
+        const isMasterInfo = await mongoose.connection.db.command({ isMaster: 1 });
+        isReplicaSet = !!isMasterInfo.setName;
+      } catch (e2) {}
+    }
+
+    const executeOrderActions = async (sessionToUse) => {
       const subTotal = cartItems.reduce(
         (total, item) => total + item.product.price * item.quantity,
         0
       );
 
       const cart = await Cart.findOne({ user: session.user.id })
-        .session(mongooseSession);
+        .session(sessionToUse);
 
       let discountAmount = 0;
       let discountCode = null;
@@ -66,7 +78,7 @@ export async function POST(request) {
 
       if (cart?.coupon) {
         // Fetch the full coupon details
-        const coupon = await Coupon.findById(cart.coupon).session(mongooseSession);
+        const coupon = await Coupon.findById(cart.coupon).session(sessionToUse);
         console.log("Found coupon details:", coupon);
 
         if (coupon) {
@@ -97,7 +109,7 @@ export async function POST(request) {
 
       for (const item of cartItems) {
         const product = await Product.findById(item.product._id).session(
-          mongooseSession
+          sessionToUse
         );
         if (!product) throw new Error(`Product ${item.product._id} not found`);
         if (product.countInStock < item.quantity) {
@@ -109,7 +121,7 @@ export async function POST(request) {
         await Product.findByIdAndUpdate(
           item.product._id,
           { $inc: { countInStock: -item.quantity } },
-          { session: mongooseSession }
+          { session: sessionToUse }
         );
       }
 
@@ -142,16 +154,16 @@ export async function POST(request) {
         },
       });
 
-      savedOrder = await order.save({ session: mongooseSession });
+      savedOrder = await order.save({ session: sessionToUse });
 
       await Cart.findOneAndDelete(
         { user: session.user.id },
-        { session: mongooseSession }
+        { session: sessionToUse }
       );
 
       const admins = await User.find({ isAdmin: true })
         .select("_id")
-        .session(mongooseSession);
+        .session(sessionToUse);
       const notification = new Notification({
         message: `New order placed by ${session.user.name}`,
         link: `/admin/orders/${savedOrder._id}`,
@@ -159,8 +171,17 @@ export async function POST(request) {
         type: "order",
         relatedUser: session.user.id,
       });
-      await notification.save({ session: mongooseSession });
-    });
+      await notification.save({ session: sessionToUse });
+
+    };
+
+    if (isReplicaSet) {
+      await mongooseSession.withTransaction(async () => {
+        await executeOrderActions(mongooseSession);
+      });
+    } else {
+      await executeOrderActions(null);
+    }
 
     return NextResponse.json(savedOrder);
   } catch (error) {

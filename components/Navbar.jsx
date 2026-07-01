@@ -10,6 +10,7 @@ import Image from "next/image";
 import CartIcon from "./CartIcon";
 import SignOutButton from "./SignOutButton";
 import NotificationBell from "./NotificationBell";
+import useSWR from "swr";
 import { useCart } from "./CartContext";
 import {
   FiHome,
@@ -35,10 +36,18 @@ export default function Navbar() {
   const { cartItemsCount } = useCart();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
-  const [user, setUser] = useState({ name: "", email: "", profilePicture: "" });
-  const [categories, setCategories] = useState([]);
   const [isScrolled, setIsScrolled] = useState(false);
   const isRTL = i18n.language === "ar";
+
+  const { data: categoriesData } = useSWR("/api/category");
+  const { data: profileData } = useSWR(session?.user ? "/api/profile" : null);
+
+  const categories = categoriesData || [];
+  const user = {
+    name: profileData?.name || "",
+    email: profileData?.email || "",
+    profilePicture: profileData?.profilePicture || "",
+  };
 
   const changeLanguage = (lang) => {
     i18n.changeLanguage(lang);
@@ -57,7 +66,7 @@ export default function Navbar() {
     let ticking = false;
     const handleScroll = () => {
       if (!ticking) {
-        requestAnimationFrame(() => {
+        window.requestAnimationFrame(() => {
           setIsScrolled(window.scrollY > 20);
           ticking = false;
         });
@@ -66,37 +75,6 @@ export default function Navbar() {
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  useEffect(() => {
-    const fetchUserProfile = async () => {
-      if (!session?.user) return;
-      try {
-        const res = await fetch("/api/profile");
-        if (res.ok) {
-          const data = await res.json();
-          setUser({
-            name: data.name || "",
-            email: data.email || "",
-            profilePicture: data.profilePicture || "",
-          });
-        }
-      } catch (error) {}
-    };
-    fetchUserProfile();
-  }, [session]);
-
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const res = await fetch("/api/category");
-        if (res.ok) {
-          const data = await res.json();
-          setCategories(data || []);
-        }
-      } catch (error) {}
-    };
-    fetchCategories();
   }, []);
 
   const openMobileMenu = () => {

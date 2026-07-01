@@ -232,7 +232,7 @@ export default function AdminDashboard() {
             />
             <DashboardButton
               icon={<Bell className="w-5 h-5" />}
-              title={t("notifications")}
+              title={t("notifications.title")}
               href="/admin/notifications"
             />
             <DashboardButton

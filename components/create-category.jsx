@@ -14,9 +14,9 @@ import {
   FaImage,
   FaSave,
   FaLayerGroup,
-  Fash,
   FaShieldVirus
 } from "react-icons/fa";
+import { compressImage } from "../lib/imageCompressor";
 
 export default function CreateCategories() {
   const { t, i18n } = useTranslation();
@@ -25,6 +25,8 @@ export default function CreateCategories() {
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [image, setImage] = useState("");
+  const [imageFile, setImageFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const isRTL = i18n.language === "ar";
@@ -32,20 +34,17 @@ export default function CreateCategories() {
   useEffect(() => {
     if (status === "loading") return;
 
-    if (status === "unauthenticated") {
+    if (status === "unauthenticated" || !session) {
       toast.error(t("pleaseLoginToAccess") || "Please login to access this page");
       router.push("/login");
       return;
     }
 
-    if (status === "authenticated" && !session?.user?.isAdmin) {
-      toast.error(t("unauthorizedAccess") || "Unauthorized access - Admin privileges required");
-      router.push("/unauthorized");
-      return;
-    }
-
     if (session?.user?.isAdmin) {
       setIsAdmin(true);
+    } else {
+      toast.error(t("unauthorizedAccess") || "Unauthorized access - Admin privileges required");
+      router.push("/unauthorized");
     }
   }, [session, status, router]);
 
@@ -53,18 +52,41 @@ export default function CreateCategories() {
     return name
       .toLowerCase()
       .trim()
-      .replace(/[^\w\s-]/g, '')
-      .replace(/[\s_-]+/g, '-')
-      .replace(/^-+|-+$/g, '');
+      .replace(/[\s_-]+/g, "-")
+      .replace(/[^\p{L}\p{N}-]/gu, "")
+      .replace(/^-+|-+$/g, "");
   };
 
   const handleNameChange = (e) => {
     const newName = e.target.value;
     setName(newName);
-    
-    if (newName && !slug) {
-      setSlug(generateSlug(newName));
+    setSlug(generateSlug(newName));
+  };
+
+  const handleImageChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (!file.type.startsWith('image/')) {
+        toast.error("Please select a valid image file");
+        return;
+      }
+      try {
+        toast.info("Optimizing category image...");
+        const compressed = await compressImage(file, 400, 400, 0.7);
+        setImageFile(compressed);
+        setPreviewUrl(URL.createObjectURL(compressed));
+        toast.success("Image optimized successfully");
+      } catch (err) {
+        setImageFile(file);
+        setPreviewUrl(URL.createObjectURL(file));
+      }
     }
+  };
+
+  const removeImage = (e) => {
+    e.stopPropagation();
+    setImageFile(null);
+    setPreviewUrl("");
   };
 
   const handleSubmit = async (e) => {
@@ -78,14 +100,18 @@ export default function CreateCategories() {
     setLoading(true);
 
     try {
+      const formData = new FormData();
+      formData.append("name", name.trim());
+      formData.append("slug", slug.trim());
+      if (imageFile) {
+        formData.append("image", imageFile);
+      } else {
+        formData.append("image", image);
+      }
+
       const response = await fetch("/api/category", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          name: name.trim(), 
-          slug: slug.trim(), 
-          image: image.trim() 
-        }),
+        body: formData,
       });
 
       const data = await response.json();
@@ -108,7 +134,7 @@ export default function CreateCategories() {
   };
 
   const handleCancel = () => {
-    if (name || slug || image) {
+    if (name || slug || imageFile) {
       if (confirm(t("confirmCancel") || "Are you sure you want to cancel? All unsaved changes will be lost.")) {
         router.back();
       }
@@ -208,50 +234,51 @@ export default function CreateCategories() {
               </div>
             </div>
 
-            {/* Image URL */}
+            {/* Category Image Upload */}
             <div className="form-control">
               <label className="label flex items-center gap-2 mb-3">
                 <FaImage className="text-primary text-lg" />
                 <span className="label-text text-lg font-semibold text-gray-700">{t("categoryImage")}</span>
                 <span className="text-gray-400">({t("optional") || "Optional"})</span>
               </label>
-              <input
-                type="url"
-                placeholder={t("enterImageUrl")}
-                value={image}
-                onChange={(e) => setImage(e.target.value)}
-                className={`input input-bordered input-primary w-full text-md py-3 ${isRTL ? 'text-right' : 'text-left'}`}
-              />
-              
-              {/* Image Preview */}
-              {image && (
-                <div className="mt-4 p-4 border-2 border-dashed border-info rounded-lg bg-info/10">
-                  <p className="font-semibold text-info mb-2 flex items-center gap-2">
-                    <FaImage />
-                    {t("imagePreview")}
-                  </p>
-                  <div className="flex items-center gap-4">
+
+              <div className="flex flex-col items-center justify-center border-2 border-dashed border-base-300 rounded-2xl p-6 bg-base-50 hover:bg-base-100 transition-colors relative group min-h-[200px]">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                />
+                
+                {previewUrl ? (
+                  <div className="relative w-full flex flex-col items-center z-20">
                     <img
-                      src={image}
+                      src={previewUrl}
                       alt="Category preview"
-                      className="w-20 h-20 object-cover rounded-lg bg-white shadow-md"
-                      onError={(e) => {
-                        e.target.style.display = 'none';
-                        e.target.nextSibling.style.display = 'block';
-                      }}
+                      className="w-full max-w-[200px] h-48 object-cover rounded-xl shadow-md border border-base-200"
                     />
-                    <div 
-                      className="w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center text-gray-400 hidden"
+                    <button
+                      type="button"
+                      onClick={removeImage}
+                      className="mt-3 btn btn-sm btn-error btn-outline"
                     >
-                      <FaImage className="text-2xl" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-sm break-all">{image}</p>
-                      <p className="text-xs text-gray-500 mt-1">Live preview</p>
-                    </div>
+                      {t("removeImage") || "Remove Image"}
+                    </button>
                   </div>
-                </div>
-              )}
+                ) : (
+                  <div className="flex flex-col items-center text-center gap-2 py-4">
+                    <div className="p-4 bg-primary/10 rounded-full text-primary group-hover:scale-110 transition-transform">
+                      <FaImage className="text-3xl" />
+                    </div>
+                    <span className="font-semibold text-gray-700">
+                      {t("clickToUploadImage") || "Click or drag to upload category image"}
+                    </span>
+                    <span className="text-sm text-gray-400">
+                      PNG, JPG, WEBP (Max 5MB)
+                    </span>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Action Buttons */}
@@ -284,20 +311,6 @@ export default function CreateCategories() {
               </button>
             </div>
           </form>
-
-          {/* Quick Tips */}
-          <div className="mt-8 p-4 bg-info/10 rounded-lg border border-info/20">
-            <h3 className="font-semibold text-info mb-2 flex items-center gap-2">
-              <FaPlus />
-              {t("quickTips") || "Quick Tips"}
-            </h3>
-            <ul className="text-sm text-gray-600 space-y-1">
-              <li>• {t("categoryNameTip") || "Category names should be clear and descriptive"}</li>
-              <li>• {t("slugTip") || "Slugs are auto-generated but can be customized"}</li>
-              <li>• {t("imageTip") || "Use high-quality images for better presentation"}</li>
-              <li>• {t("slugShortTip") || "Keep slugs short and URL-friendly"}</li>
-            </ul>
-          </div>
         </div>
       </div>
     </div>

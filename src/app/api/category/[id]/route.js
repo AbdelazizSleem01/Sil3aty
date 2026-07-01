@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import dbConnect from "../../../../../lib/dbConnect";
 import Category from "../../../../../models/Category";
+import { uploadImages } from "../../../../../lib/cloudinary";
 
 // Fetch a single category by ID
 export async function GET(req, { params }) {
@@ -24,8 +25,27 @@ export async function PUT(req, { params }) {
   const { id } = await params;
 
   try {
-    const body = await req.json();
-    const { name, slug, image } = body;
+    let name, slug, image;
+
+    const contentType = req.headers.get("content-type") || "";
+    if (contentType.includes("multipart/form-data")) {
+      const formData = await req.formData();
+      name = formData.get("name");
+      slug = formData.get("slug");
+
+      const imageFile = formData.get("image");
+      if (imageFile && imageFile instanceof File && imageFile.size > 0) {
+        const uploaded = await uploadImages([imageFile]);
+        image = uploaded[0];
+      } else {
+        image = formData.get("image") || "";
+      }
+    } else {
+      const body = await req.json();
+      name = body.name;
+      slug = body.slug;
+      image = body.image;
+    }
 
     // Validate fields
     if (!name || !slug) {

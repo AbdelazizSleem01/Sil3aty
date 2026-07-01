@@ -4,14 +4,33 @@ import { CartProvider } from './CartContext';
 import LanguageSync from './LanguageSync';
 import I18nProvider from './I18nProvider';
 
+import { SWRConfig } from 'swr';
+
+const defaultFetcher = async (url) => {
+  const res = await fetch(url);
+  if (!res.ok) {
+    const error = new Error('An error occurred while fetching the data.');
+    error.info = await res.json().catch(() => ({}));
+    error.status = res.status;
+    throw error;
+  }
+  return res.json();
+};
+
 export default function Providers({ children, session }) {
   return (
     <SessionProvider session={session}>
       <I18nProvider>
-        <CartProvider>
-          <LanguageSync />
-          {children}
-        </CartProvider>
+        <SWRConfig value={{ 
+          fetcher: defaultFetcher,
+          revalidateOnFocus: false,
+          dedupingInterval: 5000,
+        }}>
+          <CartProvider>
+            <LanguageSync />
+            {children}
+          </CartProvider>
+        </SWRConfig>
       </I18nProvider>
     </SessionProvider>
   );

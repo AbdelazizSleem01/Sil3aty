@@ -170,18 +170,11 @@ export default function OurTeams() {
               </div>
             </div>
 
-            <div className="flex gap-4">
-              <button
-                onClick={handleRefresh}
-                className="btn btn-primary btn-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 flex items-center gap-3 px-6 rounded-xl"
-              >
-                <FaSync className="text-lg" />
-                Refresh
-              </button>
-              <Link
-                href="/admin/create-employee"
-                className="btn btn-success btn-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 flex items-center gap-3 px-6 rounded-xl"
-              >
+          <div className="flex gap-4">
+            <Link
+              href="/admin/create-employee"
+              className="btn btn-success btn-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 flex items-center gap-3 px-6 rounded-xl"
+            >
                 <FaUserPlus className="text-lg" />
                 Add Member
               </Link>
