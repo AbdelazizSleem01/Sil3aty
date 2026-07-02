@@ -23,6 +23,8 @@ import {
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
+  ChevronDown,
+  ChevronUp,
   Filter,
   Calendar,
   ShoppingCart,
@@ -52,6 +54,10 @@ export default function AdminOrdersPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(5);
   const [statusFilter, setStatusFilter] = useState("all");
+  const [expandedOrders, setExpandedOrders] = useState({});
+  const toggleExpand = (orderId) => {
+    setExpandedOrders(prev => ({ ...prev, [orderId]: !prev[orderId] }));
+  };
 
   useEffect(() => {
     if (status === "loading") return;
@@ -698,6 +704,7 @@ export default function AdminOrdersPage() {
     paid: orders.filter((order) => order.isPaid).length,
     pending: orders.filter((order) => order.status === "processing").length,
     delivered: orders.filter((order) => order.status === "delivered").length,
+    revenue: orders.reduce((sum, order) => sum + (order.finalTotal || order.totalPrice || 0), 0),
   };
 
   if (!session?.user?.isAdmin) {
@@ -777,19 +784,19 @@ export default function AdminOrdersPage() {
   }
 
   return (
-    <div dir={isRTL ? "rtl" : "ltr"} className={`min-h-screen bg-gradient-to-br from-base-100 to-base-200 p-4 lg:p-6 ${isRTL ? "font-arabic" : ""}`}>
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div dir={isRTL ? "rtl" : "ltr"} className={`min-h-screen bg-slate-50/50 p-4 lg:p-8 ${isRTL ? "font-arabic" : ""}`}>
+      <div className="max-w-7xl mx-auto space-y-8">
         {/* Header */}
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 bg-white/70 backdrop-blur-md border border-base-300 rounded-3xl p-6 shadow-sm">
           <div className="flex items-center gap-4">
-            <div className="p-3 bg-primary/10 rounded-2xl shadow-lg">
+            <div className="p-4 bg-primary/10 rounded-2xl">
               <ShoppingCart className="w-8 h-8 text-primary" />
             </div>
             <div>
-              <h1 className="text-3xl lg:text-4xl font-bold text-gray-900">
+              <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">
                 {t("adminOrders.title")}
               </h1>
-              <p className="text-gray-600 mt-1">
+              <p className="text-gray-500 mt-1 text-sm">
                 {t("adminOrders.subtitle")}
               </p>
             </div>
@@ -798,7 +805,7 @@ export default function AdminOrdersPage() {
           <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
             <button
               onClick={exportToExcel}
-              className="btn btn-primary gap-2 shadow-lg hover:shadow-xl transition-all duration-300"
+              className="btn btn-primary gap-2 shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 rounded-xl"
             >
               <Download className="w-4 h-4" />
               {t("adminOrders.exportExcel")}
@@ -806,523 +813,504 @@ export default function AdminOrdersPage() {
           </div>
         </div>
 
-        {/* Statistics Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="stat bg-base-100 rounded-2xl shadow-lg border border-gray-300">
-            <div className="stat-figure text-primary">
-              <ShoppingCart className="w-6 h-6" />
+        {/* Statistics Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-5">
+          <div className="bg-white/80 border border-base-300 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full translate-x-8 -translate-y-8 group-hover:scale-110 transition-transform duration-500" />
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-primary/10 text-primary rounded-xl">
+                <ShoppingCart className="w-6 h-6" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-500">{t("adminOrders.total")}</p>
+                <p className="text-2xl font-bold text-gray-900 mt-1">{stats.total}</p>
+              </div>
             </div>
-            <div className="stat-title">{t("adminOrders.total")}</div>
-            <div className="stat-value text-2xl">{stats.total}</div>
           </div>
 
-          <div className="stat bg-base-100 rounded-2xl shadow-lg border border-gray-300">
-            <div className="stat-figure text-success">
-              <CheckCircle className="w-6 h-6" />
+          <div className="bg-white/80 border border-base-300 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-success/5 rounded-full translate-x-8 -translate-y-8 group-hover:scale-110 transition-transform duration-500" />
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-success/10 text-success rounded-xl">
+                <DollarSign className="w-6 h-6" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-500">{isRTL ? "إجمالي المبيعات" : "Total Revenue"}</p>
+                <p className="text-2xl font-bold text-success mt-1">${stats.revenue.toFixed(2)}</p>
+              </div>
             </div>
-            <div className="stat-title">{t("adminOrders.paid")}</div>
-            <div className="stat-value text-2xl">{stats.paid}</div>
           </div>
 
-          <div className="stat bg-base-100 rounded-2xl shadow-lg border border-gray-300">
-            <div className="stat-figure text-warning">
-              <Clock className="w-6 h-6" />
+          <div className="bg-white/80 border border-base-300 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-success/5 rounded-full translate-x-8 -translate-y-8 group-hover:scale-110 transition-transform duration-500" />
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-success/10 text-success rounded-xl">
+                <CheckCircle className="w-6 h-6" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-500">{t("adminOrders.paid")}</p>
+                <p className="text-2xl font-bold text-gray-900 mt-1">{stats.paid}</p>
+              </div>
             </div>
-            <div className="stat-title">{t("adminOrders.pending")}</div>
-            <div className="stat-value text-2xl">{stats.pending}</div>
           </div>
 
-          <div className="stat bg-base-100 rounded-2xl shadow-lg border border-gray-300">
-            <div className="stat-figure text-info">
-              <Truck className="w-6 h-6" />
+          <div className="bg-white/80 border border-base-300 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-warning/5 rounded-full translate-x-8 -translate-y-8 group-hover:scale-110 transition-transform duration-500" />
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-warning/10 text-warning rounded-xl">
+                <Clock className="w-6 h-6" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-500">{t("adminOrders.pending")}</p>
+                <p className="text-2xl font-bold text-gray-900 mt-1">{stats.pending}</p>
+              </div>
             </div>
-            <div className="stat-title">{t("adminOrders.delivered")}</div>
-            <div className="stat-value text-2xl">{stats.delivered}</div>
+          </div>
+
+          <div className="bg-white/80 border border-base-300 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-info/5 rounded-full translate-x-8 -translate-y-8 group-hover:scale-110 transition-transform duration-500" />
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-info/10 text-info rounded-xl">
+                <Truck className="w-6 h-6" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-500">{t("adminOrders.delivered")}</p>
+                <p className="text-2xl font-bold text-gray-900 mt-1">{stats.delivered}</p>
+              </div>
+            </div>
           </div>
         </div>
 
         {/* Filters and Search */}
-        <div className="card bg-base-100 shadow-lg border border-gray-300">
-          <div className="card-body">
-            <div className="flex flex-col lg:flex-row gap-4">
-              <div className="flex-1">
-                <label className="input input-border border-gray-300ed flex items-center gap-2 shadow-sm">
-                  <Search className="w-4 h-4 text-gray-400" />
-                  <input
-                    type="text"
-                    placeholder={t("adminOrders.searchPlaceholder")}
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="grow"
-                  />
-                </label>
+        <div className="bg-white/70 backdrop-blur-md border border-base-300 rounded-2xl p-6 shadow-sm">
+          <div className="flex flex-col lg:flex-row gap-4">
+            <div className="flex-1">
+              <div className="relative">
+                <Search className="w-5 h-5 text-gray-400 absolute left-4 top-1/2 transform -translate-y-1/2" />
+                <input
+                  type="text"
+                  placeholder={t("adminOrders.searchPlaceholder")}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className={`w-full bg-slate-50 border border-base-300 rounded-xl py-3 ${isRTL ? "pr-12 pl-4" : "pl-12 pr-4"} focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm`}
+                />
               </div>
+            </div>
 
-              <div className="flex gap-3">
-                <select
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                  className="select select-border border-gray-300ed shadow-sm"
-                >
-                  <option value="all">{t("adminOrders.allStatus")}</option>
-                  <option value="processing">{t("adminOrders.processing")}</option>
-                  <option value="shipped">{t("adminOrders.shipped")}</option>
-                  <option value="delivered">{t("adminOrders.deliveredOption")}</option>
-                  <option value="cancelled">{t("adminOrders.cancelled")}</option>
-                </select>
+            <div className="flex flex-wrap gap-3">
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="select select-bordered rounded-xl border-base-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm h-12"
+              >
+                <option value="all">{t("adminOrders.allStatus")}</option>
+                <option value="processing">{t("adminOrders.processing")}</option>
+                <option value="shipped">{t("adminOrders.shipped")}</option>
+                <option value="delivered">{t("adminOrders.deliveredOption")}</option>
+                <option value="cancelled">{t("adminOrders.cancelled")}</option>
+              </select>
 
-                <select
-                  value={itemsPerPage}
-                  onChange={(e) => setItemsPerPage(Number(e.target.value))}
-                  className="select select-border border-gray-300ed shadow-sm"
-                >
-                  <option value={5}>{t("adminOrders.perPage", { count: 5 })}</option>
-                  <option value={10}>{t("adminOrders.perPage", { count: 10 })}</option>
-                  <option value={20}>{t("adminOrders.perPage", { count: 20 })}</option>
-                  <option value={50}>{t("adminOrders.perPage", { count: 50 })}</option>
-                </select>
-              </div>
+              <select
+                value={itemsPerPage}
+                onChange={(e) => setItemsPerPage(Number(e.target.value))}
+                className="select select-bordered rounded-xl border-base-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm h-12"
+              >
+                <option value={5}>{t("adminOrders.perPage", { count: 5 })}</option>
+                <option value={10}>{t("adminOrders.perPage", { count: 10 })}</option>
+                <option value={20}>{t("adminOrders.perPage", { count: 20 })}</option>
+                <option value={50}>{t("adminOrders.perPage", { count: 50 })}</option>
+              </select>
             </div>
           </div>
         </div>
 
         {/* Orders List */}
         {currentOrders.length === 0 ? (
-          <div className="card bg-base-100 shadow-xl">
-            <div className="card-body items-center text-center py-16">
-              <Package className="w-16 h-16 text-gray-400 mb-4" />
-              <h2 className="card-title text-2xl text-gray-500 mb-2">
-                {t("adminOrders.noOrders")}
-              </h2>
-              <p className="text-gray-500 mb-6">
-                {isRTL ? "جرب تعديل شروط البحث أو الفلاتر" : "Try adjusting your search or filters"}
-              </p>
-              <button
-                onClick={() => {
-                  setSearchQuery("");
-                  setStatusFilter("all");
-                }}
-                className="btn btn-primary gap-2"
-              >
-                <Filter className="w-4 h-4" />
-                {t("adminOrders.clearFilters")}
-              </button>
-            </div>
+          <div className="bg-white border border-base-300 rounded-2xl shadow-sm text-center py-20">
+            <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <h2 className="text-xl font-bold text-gray-700 mb-2">
+              {t("adminOrders.noOrders")}
+            </h2>
+            <p className="text-gray-400 mb-6 text-sm">
+              {isRTL ? "جرب تعديل شروط البحث أو الفلاتر" : "Try adjusting your search or filters"}
+            </p>
+            <button
+              onClick={() => {
+                setSearchQuery("");
+                setStatusFilter("all");
+              }}
+              className="btn btn-primary btn-sm rounded-xl px-6 gap-2"
+            >
+              <Filter className="w-4 h-4" />
+              {t("adminOrders.clearFilters")}
+            </button>
           </div>
         ) : (
-          <div className="space-y-6">
-            {currentOrders.map((order) => (
-              <div
-                key={order._id}
-                className="card bg-base-100 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-300"
-              >
-                <div className="card-body">
-                  {/* Header */}
-                  <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6 pb-4 border-b border-gray-300">
-                    <div className="flex items-center gap-4">
-                      <div className="p-2 bg-primary/10 rounded-lg">
-                        <Hash className="w-5 h-5 text-primary" />
+          <div className="space-y-4">
+            {currentOrders.map((order) => {
+              const isExpanded = !!expandedOrders[order._id];
+              return (
+                <div
+                  key={order._id}
+                  className={`bg-white border border-base-300 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden ${
+                    order.status === "cancelled" ? "border-l-4 border-l-red-500" :
+                    order.status === "delivered" ? "border-l-4 border-l-green-500" :
+                    order.status === "shipped" ? "border-l-4 border-l-blue-500" :
+                    "border-l-4 border-l-amber-500"
+                  }`}
+                >
+                  {/* Compact/Main Header Row */}
+                  <div
+                    onClick={() => toggleExpand(order._id)}
+                    className="p-5 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 cursor-pointer hover:bg-slate-50/50 transition-colors select-none"
+                  >
+                    <div className="flex flex-wrap items-center gap-4">
+                      <div className="p-2.5 bg-slate-100 rounded-xl text-gray-700">
+                        <Hash className="w-5 h-5" />
                       </div>
                       <div>
-                        <h2 className="text-xl font-bold">
-                          {t("adminOrders.orderNo")}{order._id.substring(18).toUpperCase()}
-                        </h2>
-                        <div className="flex items-center gap-2 mt-1">
-                          <Calendar className="w-4 h-4 text-gray-400" />
-                          <span className="text-sm text-gray-500">
-                            {new Date(order.createdAt).toLocaleDateString(
-                              isRTL ? "ar-EG" : "en-US",
-                              {
-                                year: "numeric",
-                                month: "long",
-                                day: "numeric",
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              }
-                            )}
-                          </span>
+                        <div className="flex items-center gap-2">
+                          <h2 className="text-lg font-bold text-gray-900">
+                            {t("adminOrders.orderNo")}{order._id.substring(18).toUpperCase()}
+                          </h2>
+                          <span className="text-xs text-gray-400 font-mono">({order._id})</span>
                         </div>
+                        <p className="text-xs text-gray-500 mt-0.5">
+                          {new Date(order.createdAt).toLocaleDateString(
+                            isRTL ? "ar-EG" : "en-US",
+                            {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            }
+                          )}
+                        </p>
                       </div>
                     </div>
 
-                    <div className="flex flex-col sm:flex-row gap-3">
-                      <div className="flex gap-2">
+                    <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto justify-between lg:justify-end">
+                      <div className="flex items-center gap-2">
                         {order.discountCode && (
-                          <div className="badge badge-lg badge-success gap-1">
-                            <span>{t("adminOrders.coupon")}: {order.discountCode}</span>
-                            {order.discountAmount > 0 && (
-                              <span>(-${order.discountAmount.toFixed(2)})</span>
-                            )}
+                          <div className="badge badge-success badge-sm font-semibold rounded-lg px-2">
+                            {t("adminOrders.coupon")}
                           </div>
                         )}
-                        <div
-                          className={`badge badge-lg ${getStatusColor(
-                            order.status
-                          )} gap-1`}
-                        >
+                        <div className={`badge ${getStatusColor(order.status)} font-semibold rounded-lg px-2.5 py-1 gap-1 text-xs`}>
                           {getStatusIcon(order.status)}
                           {t("adminOrders." + order.status.toLowerCase()) || order.status}
                         </div>
-                        <div
-                          className={`badge badge-lg ${
-                            order.isPaid ? "badge-success" : "badge-error"
-                          } gap-1`}
-                        >
-                          {order.isPaid ? (
-                            <CheckCircle className="w-3 h-3" />
-                          ) : (
-                            <XCircle className="w-3 h-3" />
-                          )}
+                        <div className={`badge ${order.isPaid ? "badge-success" : "badge-error"} font-semibold rounded-lg px-2.5 py-1 gap-1 text-xs`}>
                           {order.isPaid ? t("adminOrders.paidLabel") : t("adminOrders.unpaidLabel")}
                         </div>
                       </div>
-                    </div>
-                  </div>
 
-                  {/* Customer and Shipping */}
-                  <div className="grid lg:grid-cols-2 gap-6 mb-6">
-                    <div className="space-y-4">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 bg-emerald-50 rounded-lg">
-                          <User className="w-4 h-4 text-emerald-600" />
+                      <div className="flex items-center gap-4">
+                        <div className="text-right">
+                          <span className="text-xs text-gray-400 block">{isRTL ? "إجمالي المبلغ" : "Total Amount"}</span>
+                          <span className="text-lg font-black text-primary">
+                            ${(order.finalTotal || order.totalPrice).toFixed(2)}
+                          </span>
                         </div>
-                        <div>
-                          <h3 className="font-semibold text-gray-900">
-                            {t("adminOrders.customerDetails")}
-                          </h3>
-                          <p className="text-gray-600">
-                            {order.shippingAddress?.firstName}{" "}
-                            {order.shippingAddress?.lastName}
-                          </p>
-                          <p className="text-sm text-gray-500">
-                            {order.shippingAddress?.email}
-                          </p>
-                          <p className="text-sm text-gray-500">
-                            {order.shippingAddress?.phone}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="space-y-4">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 bg-green-50 rounded-lg">
-                          <MapPin className="w-4 h-4 text-green-600" />
-                        </div>
-                        <div>
-                          <h3 className="font-semibold text-gray-900">
-                            {t("adminOrders.shippingAddress")}
-                          </h3>
-                          <p className="text-gray-600">
-                            {order.shippingAddress?.address}
-                          </p>
-                          <p className="text-sm text-gray-500">
-                            {order.shippingAddress?.city},{" "}
-                            {order.shippingAddress?.country}
-                          </p>
-                          <p className="text-sm text-gray-500">
-                            {t("adminOrders.postalCode")}: {order.shippingAddress?.postalCode}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Order Items */}
-                  <div className="mb-6">
-                    <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
-                      <Package className="w-5 h-5 text-primary" />
-                      {t("adminOrders.orderItems")} ({order.orderItems.length})
-                    </h3>
-                    <div className="overflow-x-auto">
-                      <table className="table table-zebra">
-                        <thead>
-                          <tr className="bg-base-200">
-                            <th>{t("adminOrders.product")}</th>
-                            <th>{t("adminOrders.details")}</th>
-                            <th className="text-right">{t("adminOrders.price")}</th>
-                            <th className="text-center">{t("adminOrders.qty")}</th>
-                            <th className="text-right">{t("adminOrders.totalAmount")}</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {order.orderItems.map((item) => (
-                            <tr
-                              key={item._id}
-                              className="hover:bg-base-200/50 transition-colors"
-                            >
-                              <td>
-                                <div className="flex items-center gap-3">
-                                  <div className="avatar">
-                                    <div className="w-12 h-12 rounded-lg border border-gray-300">
-                                      <img
-                                        src={item.image}
-                                        alt={item.name}
-                                        className="object-cover"
-                                      />
-                                    </div>
-                                  </div>
-                                  <div className="font-medium">{item.name}</div>
-                                </div>
-                              </td>
-                              <td>
-                                <div className="flex gap-2">
-                                  {item.color && (
-                                    <div className="flex items-center gap-1">
-                                      <div
-                                        className="w-3 h-3 rounded-full border border-gray-300"
-                                        style={{ backgroundColor: item.color }}
-                                      />
-                                      <span className="text-xs">
-                                        {item.color}
-                                      </span>
-                                    </div>
-                                  )}
-                                  {item.size && (
-                                    <span className="badge badge-outline badge-sm">
-                                      {item.size}
-                                    </span>
-                                  )}
-                                </div>
-                              </td>
-                              <td className="text-right font-semibold">
-                                ${item.price.toFixed(2)}
-                              </td>
-                              <td className="text-center">
-                                <span className="font-semibold">
-                                  {item.qty}
-                                </span>
-                              </td>
-                              <td className="text-right font-bold text-primary">
-                                ${(item.price * item.qty).toFixed(2)}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-
-                  {/* Price Details */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                    {/* Coupon Information */}
-                    {order.discountCode && (
-                      <div className="p-4 bg-success/10 rounded-lg border border-success/20">
-                        <h4 className="font-semibold text-success mb-2 flex items-center gap-2">
-                          <span>{t("adminOrders.couponInfo")}</span>
-                        </h4>
-                        <div className="space-y-2">
-                          <div className="flex justify-between items-center">
-                            <span>{t("adminOrders.couponCode")}</span>
-                            <span className="font-bold">
-                              {order.discountCode}
-                            </span>
-                          </div>
-                          {order.discountAmount > 0 && (
-                            <div className="flex justify-between items-center text-success">
-                              <span>{t("adminOrders.discountAmount")}</span>
-                              <span className="font-bold">
-                                ${order.discountAmount.toFixed(2)}
-                              </span>
-                            </div>
+                        <div className="p-2 bg-slate-100 hover:bg-slate-200 text-gray-500 rounded-xl transition-all">
+                          {isExpanded ? (
+                            <ChevronUp className="w-5 h-5" />
+                          ) : (
+                            <ChevronDown className="w-5 h-5" />
                           )}
                         </div>
                       </div>
-                    )}
+                    </div>
+                  </div>
 
-                    {/* Price Breakdown */}
-                    <div className="p-4 bg-base-200 rounded-lg">
-                      <h4 className="font-semibold mb-2 flex items-center gap-2">
-                        <DollarSign className="w-4 h-4" />
-                        <span>{t("adminOrders.priceDetails")}</span>
-                      </h4>
-                      <div className="space-y-2">
-                        <div className="flex justify-between items-center">
-                          <span>{t("adminOrders.originalPrice")}</span>
-                          <span className="font-bold">
-                            $
-                            {order.subTotal?.toFixed(2) ||
-                              order.totalPrice.toFixed(2)}
+                  {/* Expanded Block Details */}
+                  {isExpanded && (
+                    <div className="p-6 border-t border-base-200 bg-slate-50/30 space-y-6">
+                      {/* Customer Info Card & Shipping Info Card */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="bg-white border border-base-300 rounded-xl p-5 shadow-sm space-y-4">
+                          <div className="flex items-center gap-3 pb-3 border-b border-base-200">
+                            <div className="p-2 bg-emerald-50 rounded-lg text-emerald-600">
+                              <User className="w-5 h-5" />
+                            </div>
+                            <h3 className="font-bold text-gray-800 text-sm">
+                              {t("adminOrders.customerDetails")}
+                            </h3>
+                          </div>
+                          <div className="space-y-2 text-sm">
+                            <p className="text-gray-700 font-semibold">
+                              {order.shippingAddress?.firstName} {order.shippingAddress?.lastName}
+                            </p>
+                            <p className="text-gray-500 flex items-center gap-2">
+                              <Mail className="w-4 h-4 text-gray-400" />
+                              {order.shippingAddress?.email}
+                            </p>
+                            <p className="text-gray-500 flex items-center gap-2">
+                              <Phone className="w-4 h-4 text-gray-400" />
+                              {order.shippingAddress?.phone}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="bg-white border border-base-300 rounded-xl p-5 shadow-sm space-y-4">
+                          <div className="flex items-center gap-3 pb-3 border-b border-base-200">
+                            <div className="p-2 bg-blue-50 rounded-lg text-blue-600">
+                              <MapPin className="w-5 h-5" />
+                            </div>
+                            <h3 className="font-bold text-gray-800 text-sm">
+                              {t("adminOrders.shippingAddress")}
+                            </h3>
+                          </div>
+                          <div className="space-y-2 text-sm">
+                            <p className="text-gray-700">
+                              {order.shippingAddress?.address}
+                            </p>
+                            <p className="text-gray-500">
+                              {order.shippingAddress?.city}, {order.shippingAddress?.country}
+                            </p>
+                            <p className="text-xs text-gray-400">
+                              {t("adminOrders.postalCode")}: {order.shippingAddress?.postalCode}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Items Ordered Table */}
+                      <div className="bg-white border border-base-300 rounded-xl p-5 shadow-sm">
+                        <h3 className="font-bold text-gray-800 text-sm mb-4 flex items-center gap-2 pb-3 border-b border-base-200">
+                          <Package className="w-5 h-5 text-primary" />
+                          {t("adminOrders.orderItems")} ({order.orderItems.length})
+                        </h3>
+                        <div className="overflow-x-auto">
+                          <table className="table w-full">
+                            <thead>
+                              <tr className="bg-slate-50 text-gray-500">
+                                <th>{t("adminOrders.product")}</th>
+                                <th>{t("adminOrders.details")}</th>
+                                <th className="text-right">{t("adminOrders.price")}</th>
+                                <th className="text-center">{t("adminOrders.qty")}</th>
+                                <th className="text-right">{t("adminOrders.totalAmount")}</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {order.orderItems.map((item) => (
+                                <tr key={item._id} className="hover:bg-slate-50/50 transition-colors">
+                                  <td>
+                                    <div className="flex items-center gap-3">
+                                      <div className="avatar">
+                                        <div className="w-12 h-12 rounded-xl border border-base-300 overflow-hidden bg-slate-100">
+                                          <img
+                                            src={item.image}
+                                            alt={item.name}
+                                            className="object-cover w-full h-full"
+                                          />
+                                        </div>
+                                      </div>
+                                      <div>
+                                        <div className="font-bold text-gray-800">{item.name}</div>
+                                        <span className="text-xs text-gray-400 font-mono">({item.product})</span>
+                                      </div>
+                                    </div>
+                                  </td>
+                                  <td>
+                                    <div className="flex flex-wrap gap-1.5">
+                                      {item.color && (
+                                        <div className="flex items-center gap-1 bg-slate-100 px-2 py-0.5 rounded-lg border border-base-300">
+                                          <div
+                                            className="w-2.5 h-2.5 rounded-full border border-gray-300"
+                                            style={{ backgroundColor: item.color }}
+                                          />
+                                          <span className="text-[10px] text-gray-600 font-medium">
+                                            {item.color}
+                                          </span>
+                                        </div>
+                                      )}
+                                      {item.size && (
+                                        <span className="badge badge-sm badge-outline text-[10px] font-semibold border-base-300">
+                                          {item.size}
+                                        </span>
+                                      )}
+                                    </div>
+                                  </td>
+                                  <td className="text-right font-semibold text-gray-700">
+                                    ${item.price.toFixed(2)}
+                                  </td>
+                                  <td className="text-center font-bold text-gray-800">
+                                    {item.qty}
+                                  </td>
+                                  <td className="text-right font-black text-primary">
+                                    ${(item.price * item.qty).toFixed(2)}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+
+                      {/* Pricing Breakdown & Summary */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {order.discountCode ? (
+                          <div className="bg-success/5 border border-success/20 rounded-xl p-5 space-y-3">
+                            <h4 className="font-bold text-success text-sm flex items-center gap-2">
+                              <span>{t("adminOrders.couponInfo")}</span>
+                            </h4>
+                            <div className="space-y-2 text-sm text-success font-medium">
+                              <div className="flex justify-between">
+                                <span>{t("adminOrders.couponCode")}</span>
+                                <span className="font-mono bg-success/10 px-2 py-0.5 rounded-md">
+                                  {order.discountCode}
+                                </span>
+                              </div>
+                              {order.discountAmount > 0 && (
+                                <div className="flex justify-between">
+                                  <span>{t("adminOrders.discountAmount")}</span>
+                                  <span>-${order.discountAmount.toFixed(2)}</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="bg-slate-100/50 rounded-xl p-5 flex flex-col justify-center items-center text-center text-gray-400 border border-dashed border-base-300">
+                            <DollarSign className="w-8 h-8 opacity-40 mb-2" />
+                            <span className="text-xs">{isRTL ? "لم يتم استخدام كوبون خصم لهذا الطلب" : "No discount coupon was applied"}</span>
+                          </div>
+                        )}
+
+                        <div className="bg-white border border-base-300 rounded-xl p-5 shadow-sm space-y-3">
+                          <h4 className="font-bold text-gray-800 text-sm pb-2 border-b border-base-200">
+                            {t("adminOrders.priceDetails")}
+                          </h4>
+                          <div className="space-y-2 text-sm text-gray-600">
+                            <div className="flex justify-between">
+                              <span>{t("adminOrders.originalPrice")}</span>
+                              <span className="font-semibold text-gray-800">
+                                ${order.subTotal?.toFixed(2) || order.totalPrice.toFixed(2)}
+                              </span>
+                            </div>
+                            {order.discountAmount > 0 && (
+                              <div className="flex justify-between text-success">
+                                <span>{t("adminOrders.discount")}</span>
+                                <span className="font-bold">-${order.discountAmount.toFixed(2)}</span>
+                              </div>
+                            )}
+                            {order.shippingCost > 0 && (
+                              <div className="flex justify-between">
+                                <span>{t("adminOrders.shippingCost")}</span>
+                                <span className="font-semibold text-gray-800">${order.shippingCost.toFixed(2)}</span>
+                              </div>
+                            )}
+                            <div className="border-t border-base-200 pt-3 mt-1 flex justify-between items-center text-base font-black text-primary">
+                              <span>{t("adminOrders.finalPrice")}</span>
+                              <span>
+                                ${(order.finalTotal || order.totalPrice).toFixed(2)}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Expanded Card Controls Footer */}
+                      <div className="pt-4 border-t border-base-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-gray-400 uppercase font-bold tracking-wider">{t("adminOrders.totalAmount")}</span>
+                          <span className="text-2xl font-black text-primary">
+                            ${(order.finalTotal || order.totalPrice).toFixed(2)}
                           </span>
                         </div>
-                        {order.discountAmount > 0 && (
-                          <div className="flex justify-between items-center text-success">
-                            <span>{t("adminOrders.discount")}</span>
-                            <span className="font-bold">
-                              -${order.discountAmount.toFixed(2)}
-                            </span>
+
+                        <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
+                          <div className="dropdown dropdown-top w-full md:w-auto">
+                            <label
+                              tabIndex={0}
+                              className="btn btn-outline btn-sm rounded-xl gap-2 w-full md:w-auto border-base-300"
+                            >
+                              <FileText className="w-4 h-4 text-gray-500" />
+                              {t("adminOrders.invoiceOptions")}
+                            </label>
+                            <ul
+                              tabIndex={0}
+                              className="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52 z-50 border border-base-300"
+                            >
+                              <li>
+                                <a onClick={() => generateInvoicePDF(order)} className="cursor-pointer">
+                                  📄 {t("adminOrders.invoiceStandard")}
+                                </a>
+                              </li>
+                              <li>
+                                <a onClick={() => generateCompactInvoice(order)} className="cursor-pointer">
+                                  📦 {t("adminOrders.invoiceCompact")}
+                                </a>
+                              </li>
+                              <li>
+                                <a onClick={() => printInvoice(order)} className="cursor-pointer">
+                                  🖨️ {t("adminOrders.invoicePrint")}
+                                </a>
+                              </li>
+                            </ul>
                           </div>
-                        )}
-                        {order.shippingCost > 0 && (
-                          <div className="flex justify-between items-center">
-                            <span>{t("adminOrders.shippingCost")}</span>
-                            <span className="font-bold">
-                              ${order.shippingCost.toFixed(2)}
-                            </span>
-                          </div>
-                        )}
-                        <div className="border-t border-gray-300 pt-2 mt-2">
-                          <div className="flex justify-between items-center font-bold text-primary">
-                            <span>{t("adminOrders.finalPrice")}</span>
-                            <span>
-                              $
-                              {(order.finalTotal || order.totalPrice).toFixed(
-                                2
-                              )}
-                            </span>
+
+                          <button
+                            onClick={() => handlePaymentStatusChange(order._id, !order.isPaid)}
+                            className={`btn btn-sm rounded-xl gap-2 w-full md:w-auto ${
+                              order.isPaid ? "btn-error btn-outline" : "btn-success"
+                            }`}
+                          >
+                            <CreditCard className="w-4 h-4" />
+                            {order.isPaid ? t("adminOrders.markUnpaid") : t("adminOrders.markPaid")}
+                          </button>
+
+                          <div className="flex items-center gap-1.5 w-full md:w-auto">
+                            <span className="text-xs text-gray-400 hidden md:inline">{t("adminOrders.changeStatus")}:</span>
+                            <select
+                              value={order.status}
+                              onChange={(e) => handleStatusChange(order._id, e.target.value)}
+                              className="select select-bordered select-sm rounded-xl border-base-300 focus:ring-primary/20 w-full md:w-auto"
+                            >
+                              <option value="processing">{t("adminOrders.processing")}</option>
+                              <option value="shipped">{t("adminOrders.shipped")}</option>
+                              <option value="delivered">{t("adminOrders.deliveredOption")}</option>
+                              <option value="cancelled">{t("adminOrders.cancelled")}</option>
+                            </select>
                           </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-
-                  {/* Order Summary */}
-                  <div className="mb-6 p-4 bg-base-200/50 rounded-lg">
-                    <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
-                      <DollarSign className="w-5 h-5 text-primary" />
-                      {t("adminOrders.orderDetails")}
-                    </h3>
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">{t("adminOrders.totalProducts")}</span>
-                        <span className="font-medium">
-                          $
-                          {order.subTotal?.toFixed(2) ||
-                            order.totalPrice.toFixed(2)}
-                        </span>
-                      </div>
-
-                      {order.discountAmount > 0 && (
-                        <div className="flex justify-between text-success font-medium">
-                          <span>{t("adminOrders.discount")} ({order.discountCode}):</span>
-                          <span>-${order.discountAmount.toFixed(2)}</span>
-                        </div>
-                      )}
-
-                      {order.shippingCost > 0 && (
-                        <div className="flex justify-between">
-                          <span>{t("adminOrders.shippingCost")}:</span>
-                          <span>${order.shippingCost.toFixed(2)}</span>
-                        </div>
-                      )}
-
-                      <div className="flex justify-between font-bold pt-2 border-t border-gray-300 text-lg">
-                        <span>{t("adminOrders.finalPrice")}</span>
-                        <span className="text-primary">
-                          ${(order.finalTotal || order.totalPrice).toFixed(2)}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Footer with Controls */}
-                  <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 pt-4 border-t border-gray-300">
-                    <div className="flex items-center gap-2">
-                      <DollarSign className="w-6 h-6 text-primary" />
-                      <span className="text-xl font-bold">{t("adminOrders.totalAmount")}:</span>
-                      <span className="text-2xl font-bold text-primary ml-2">
-                        ${(order.finalTotal || order.totalPrice).toFixed(2)}
-                      </span>
-                    </div>
-                    <div className="flex flex-col sm:flex-row gap-2">
-                      <div className="dropdown dropdown-top">
-                        <label
-                          tabIndex={0}
-                          className="btn btn-primary whitespace-nowrap  btn-sm gap-2 hover:bg-primary hover:text-white transition-all duration-300"
-                        >
-                          <FileText className="w-4 h-4" />
-                          {t("adminOrders.invoiceOptions")}
-                        </label>
-                        <ul
-                          tabIndex={0}
-                          className="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52 z-50"
-                        >
-                          <li>
-                            <a
-                              onClick={() => generateInvoicePDF(order)}
-                              className="cursor-pointer"
-                            >
-                              📄 {t("adminOrders.invoiceStandard")}
-                            </a>
-                          </li>
-                          <li>
-                            <a
-                              onClick={() => generateCompactInvoice(order)}
-                              className="cursor-pointer"
-                            >
-                              📦 {t("adminOrders.invoiceCompact")}
-                            </a>
-                          </li>
-                          <li>
-                            <a
-                              onClick={() => printInvoice(order)}
-                              className="cursor-pointer"
-                            >
-                              🖨️ {t("adminOrders.invoicePrint")}
-                            </a>
-                          </li>
-                        </ul>
-                      </div>
-
-                      <button
-                        onClick={() =>
-                          handlePaymentStatusChange(order._id, !order.isPaid)
-                        }
-                        className={`btn btn-sm gap-2 ${
-                          order.isPaid ? "btn-error" : "btn-success"
-                        }`}
-                      >
-                        <CreditCard className="w-4 h-4" />
-                        {order.isPaid ? t("adminOrders.markUnpaid") : t("adminOrders.markPaid")}
-                      </button>
-
-                      <select
-                        value={order.status}
-                        onChange={(e) =>
-                          handleStatusChange(order._id, e.target.value)
-                        }
-                        className="select select-bordered select-sm"
-                      >
-                        <option value="processing">{t("adminOrders.processing")}</option>
-                        <option value="shipped">{t("adminOrders.shipped")}</option>
-                        <option value="delivered">{t("adminOrders.deliveredOption")}</option>
-                        <option value="cancelled">{t("adminOrders.cancelled")}</option>
-                      </select>
-                    </div>
-                  </div>
+                  )}
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
 
         {/* Pagination */}
         {filteredOrders.length > 0 && (
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="text-sm text-gray-600">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white/70 border border-base-300 p-5 rounded-2xl shadow-sm">
+            <div className="text-sm text-gray-500">
               {isRTL ? (
                 <>
-                  عرض {startIndex + 1} إلى {Math.min(endIndex, filteredOrders.length)} من {filteredOrders.length} طلبات
+                  عرض <span className="font-bold text-gray-800">{startIndex + 1}</span> إلى <span className="font-bold text-gray-800">{Math.min(endIndex, filteredOrders.length)}</span> من <span className="font-bold text-primary">{filteredOrders.length}</span> طلبات
                 </>
               ) : (
                 <>
-                  Showing {startIndex + 1} to {Math.min(endIndex, filteredOrders.length)} of {filteredOrders.length} orders
+                  Showing <span className="font-bold text-gray-800">{startIndex + 1}</span> to <span className="font-bold text-gray-800">{Math.min(endIndex, filteredOrders.length)}</span> of <span className="font-bold text-primary">{filteredOrders.length}</span> orders
                 </>
               )}
             </div>
 
-            <div className="join">
+            <div className="join gap-1.5">
               <button
                 onClick={() => setCurrentPage(1)}
                 disabled={currentPage === 1}
-                className="join-item btn btn-sm"
+                className="join-item btn btn-sm rounded-xl border-base-300"
               >
                 <ChevronsLeft className="w-4 h-4" />
               </button>
               <button
                 onClick={() => setCurrentPage(currentPage - 1)}
                 disabled={currentPage === 1}
-                className="join-item btn btn-sm"
+                className="join-item btn btn-sm rounded-xl border-base-300"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
@@ -1333,8 +1321,8 @@ export default function AdminOrdersPage() {
                   <button
                     key={pageNum}
                     onClick={() => setCurrentPage(pageNum)}
-                    className={`join-item btn btn-sm ${
-                      currentPage === pageNum ? "btn-primary" : ""
+                    className={`join-item btn btn-sm rounded-xl border-base-300 ${
+                      currentPage === pageNum ? "btn-primary shadow-sm" : "btn-ghost text-gray-600 hover:bg-slate-100"
                     }`}
                   >
                     {pageNum}
@@ -1345,14 +1333,14 @@ export default function AdminOrdersPage() {
               <button
                 onClick={() => setCurrentPage(currentPage + 1)}
                 disabled={currentPage === totalPages}
-                className="join-item btn btn-sm"
+                className="join-item btn btn-sm rounded-xl border-base-300"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>
               <button
                 onClick={() => setCurrentPage(totalPages)}
                 disabled={currentPage === totalPages}
-                className="join-item btn btn-sm"
+                className="join-item btn btn-sm rounded-xl border-base-300"
               >
                 <ChevronsRight className="w-4 h-4" />
               </button>
