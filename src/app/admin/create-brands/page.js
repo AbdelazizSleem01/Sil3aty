@@ -1,21 +1,24 @@
+// app/admin/create-brands/page.js
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import { useSession } from "next-auth/react";
+import { useTranslation } from "react-i18next";
 import { 
   FaPlus, 
   FaSpinner, 
-  FaUpload, 
   FaImage, 
   FaSave,
   FaArrowLeft,
   FaTag,
   FaFileAlt
 } from "react-icons/fa";
-import { compressImage } from "../../../../lib/imageCompressor";
+import { compressImage } from "../../../lib/imageCompressor";
 
 export default function NewBrandPage() {
+  const { t, i18n } = useTranslation();
+  const isRTL = i18n.language === "ar";
   const { data: session, status } = useSession();
   const router = useRouter();
   const [brand, setBrand] = useState({ name: "", description: "", logo: "" });
@@ -41,20 +44,20 @@ export default function NewBrandPage() {
     const file = e.target.files?.[0];
     if (file) {
       if (!file.type.startsWith('image/')) {
-        toast.error("Please select a valid image file");
+        toast.error(t("createBrand.validImageError"));
         return;
       }
       if (file.size > 10 * 1024 * 1024) {
-        toast.error("Image size should be less than 10MB");
+        toast.error(t("createBrand.sizeImageError"));
         return;
       }
       
       try {
-        toast.info("Optimizing logo image...");
+        toast.info(t("createBrand.optimizeMsg"));
         const compressed = await compressImage(file, 400, 400, 0.7);
         setLogoFile(compressed);
         setPreviewUrl(URL.createObjectURL(compressed));
-        toast.success("Logo optimized successfully");
+        toast.success(t("createBrand.optimizeSuccess"));
       } catch (err) {
         setLogoFile(file);
         setPreviewUrl(URL.createObjectURL(file));
@@ -72,12 +75,12 @@ export default function NewBrandPage() {
     e.preventDefault();
     
     if (!brand.name.trim() || !brand.description.trim()) {
-      toast.error("Please fill in all required fields");
+      toast.error(t("createBrand.requiredFieldsError"));
       return;
     }
 
     if (!logoFile) {
-      toast.error("Please select a logo image");
+      toast.error(t("createBrand.logoRequiredError"));
       return;
     }
 
@@ -102,8 +105,7 @@ export default function NewBrandPage() {
         throw new Error(errorData.message || "Failed to create brand");
       }
 
-      const data = await response.json();
-      toast.success("🎉 Brand created successfully!");
+      toast.success(`🎉 ${t("createBrand.successCreate")}`);
       
       setTimeout(() => {
         router.push("/admin/brands");
@@ -118,7 +120,7 @@ export default function NewBrandPage() {
 
   const handleCancel = () => {
     if (brand.name || brand.description || logoFile) {
-      if (confirm("Are you sure you want to cancel? All changes will be lost.")) {
+      if (confirm(t("createBrand.confirmCancel"))) {
         router.back();
       }
     } else {
@@ -127,7 +129,7 @@ export default function NewBrandPage() {
   };
 
   return (
-    <div className="min-h-screen p-8 bg-gradient-to-br from-base-100 to-base-200">
+    <div dir={isRTL ? "rtl" : "ltr"} className={`min-h-screen p-8 bg-gradient-to-br from-base-100 to-base-200 ${isRTL ? "font-arabic" : ""}`}>
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
@@ -135,11 +137,11 @@ export default function NewBrandPage() {
             onClick={handleCancel}
             className="btn btn-ghost btn-circle hover:bg-base-300 transition-colors"
           >
-            <FaArrowLeft className="text-lg" />
+            <FaArrowLeft className={`text-lg ${isRTL ? "rotate-180" : ""}`} />
           </button>
           <div className="flex items-center gap-3">
             <FaPlus className="text-3xl text-primary" />
-            <h1 className="text-3xl font-bold text-gray-800">Add New Brand</h1>
+            <h1 className="text-3xl font-bold text-gray-800">{t("createBrand.addBrand")}</h1>
           </div>
         </div>
 
@@ -153,7 +155,7 @@ export default function NewBrandPage() {
           <div className="mb-6">
             <label className="label flex items-center gap-2 mb-3">
               <FaTag className="text-primary" />
-              <span className="text-lg font-semibold text-gray-700">Brand Name</span>
+              <span className="text-lg font-semibold text-gray-700">{t("createBrand.brandName")}</span>
               <span className="text-red-500">*</span>
             </label>
             <input
@@ -161,7 +163,7 @@ export default function NewBrandPage() {
               value={brand.name}
               onChange={(e) => setBrand({ ...brand, name: e.target.value })}
               className="input input-bordered input-primary w-full text-lg py-3"
-              placeholder="Enter brand name"
+              placeholder={t("createBrand.enterBrandName")}
               required
               maxLength={100}
             />
@@ -171,18 +173,18 @@ export default function NewBrandPage() {
           <div className="mb-6">
             <label className="label flex items-center gap-2 mb-3">
               <FaFileAlt className="text-primary" />
-              <span className="text-lg font-semibold text-gray-700">Description</span>
+              <span className="text-lg font-semibold text-gray-700">{t("createBrand.description")}</span>
               <span className="text-red-500">*</span>
             </label>
             <textarea
               value={brand.description}
               onChange={(e) => setBrand({ ...brand, description: e.target.value })}
               className="textarea textarea-bordered textarea-primary w-full text-lg py-3 min-h-32"
-              placeholder="Enter brand description"
+              placeholder={t("createBrand.enterBrandDesc")}
               required
               maxLength={500}
             />
-            <div className="text-right text-sm text-gray-500 mt-1">
+            <div className={`text-${isRTL ? "left" : "right"} text-sm text-gray-500 mt-1`}>
               {brand.description.length}/500
             </div>
           </div>
@@ -191,7 +193,7 @@ export default function NewBrandPage() {
           <div className="mb-6">
             <label className="label flex items-center gap-2 mb-3">
               <FaImage className="text-primary text-lg" />
-              <span className="text-lg font-semibold text-gray-700">Brand Logo</span>
+              <span className="text-lg font-semibold text-gray-700">{t("createBrand.brandLogo")}</span>
               <span className="text-red-500">*</span>
             </label>
 
@@ -216,7 +218,7 @@ export default function NewBrandPage() {
                     onClick={removeLogo}
                     className="mt-3 btn btn-sm btn-error btn-outline"
                   >
-                    Remove Logo
+                    {t("createBrand.removeLogo")}
                   </button>
                 </div>
               ) : (
@@ -225,7 +227,7 @@ export default function NewBrandPage() {
                     <FaImage className="text-3xl" />
                   </div>
                   <span className="font-semibold text-gray-700">
-                    Click or drag to upload brand logo
+                    {t("createBrand.clickDragUpload")}
                   </span>
                   <span className="text-sm text-gray-400">
                     PNG, JPG, WEBP (Max 5MB)
@@ -243,7 +245,7 @@ export default function NewBrandPage() {
               className="btn flex-1"
               disabled={loading}
             >
-              Cancel
+              {t("createBrand.cancel")}
             </button>
             
             <button
@@ -254,12 +256,12 @@ export default function NewBrandPage() {
               {loading ? (
                 <>
                   <FaSpinner className="animate-spin" />
-                  Creating Brand...
+                  {t("createBrand.creatingBrand")}
                 </>
               ) : (
                 <>
                   <FaSave />
-                  Create Brand
+                  {t("createBrand.createBrandBtn")}
                 </>
               )}
             </button>
