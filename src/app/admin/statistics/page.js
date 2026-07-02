@@ -610,7 +610,7 @@ export default function StatisticsPage() {
               <div className="space-y-4">
                 {stats.topProducts.slice(0, 5).map((product, index) => (
                   <div
-                    key={product._id}
+                    key={product._id || index}
                     className="flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-white rounded-xl border border-gray-200 hover:shadow-sm transition-all"
                   >
                     <div className="flex items-center">
