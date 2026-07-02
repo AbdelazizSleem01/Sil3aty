@@ -178,70 +178,86 @@ export default function AdminOrdersPage() {
       format: "a4",
     });
 
-    const primaryColor = [59, 130, 246];
-    const secondaryColor = [107, 114, 128];
-    const successColor = [34, 197, 94];
-    const warningColor = [245, 158, 11];
+    const primaryColor = [79, 70, 229]; // Indigo-600
+    const secondaryColor = [107, 114, 128]; // Gray-500
+    const successColor = [16, 185, 129]; // Emerald-500
+    const darkSlate = [15, 23, 42]; // Slate-900
 
+    // Top primary accent bar
     doc.setFillColor(...primaryColor);
-    doc.rect(0, 0, 210, 30, "F");
+    doc.rect(0, 0, 210, 4, "F");
 
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(20);
+    // Header Company Name
+    doc.setTextColor(...darkSlate);
+    doc.setFontSize(22);
     doc.setFont("helvetica", "bold");
-    doc.text("Sil3aty STORE", 15, 18);
+    doc.text("Sil3aty Store", 15, 20);
 
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "normal");
-    doc.text("INVOICE", 180, 18, { align: "right" });
-
+    // Company Meta
     doc.setFontSize(8);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(...secondaryColor);
     doc.text("https://sil3aty.vercel.app/", 15, 25);
-    doc.text(`Generated: ${new Date().toLocaleDateString()}`, 180, 25, {
-      align: "right",
-    });
+    doc.text("support@sil3aty-store.com", 15, 29);
 
-    doc.setFillColor(249, 250, 251);
-    doc.rect(15, 40, 180, 25, "F");
-    doc.setDrawColor(229, 231, 235);
-    doc.rect(15, 40, 180, 25);
-
-    doc.setTextColor(0, 0, 0);
-    doc.setFontSize(10);
+    // Invoice Label on right
+    doc.setTextColor(...primaryColor);
+    doc.setFontSize(24);
     doc.setFont("helvetica", "bold");
-    doc.text("ORDER INFORMATION", 20, 48);
+    doc.text("INVOICE", 195, 20, { align: "right" });
+
+    doc.setTextColor(...darkSlate);
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Invoice ID: Sil3aty-${order._id.substring(18).toUpperCase()}`, 195, 25, { align: "right" });
+    doc.text(`Date: ${new Date(order.createdAt).toLocaleDateString()}`, 195, 29, { align: "right" });
+
+    // Horizontal Separator Line
+    doc.setDrawColor(229, 231, 235);
+    doc.line(15, 35, 195, 35);
+
+    // Invoice Details Summary (Status / Payment)
+    doc.setFillColor(248, 250, 252);
+    doc.rect(15, 40, 180, 22, "F");
+    doc.setDrawColor(226, 232, 240);
+    doc.rect(15, 40, 180, 22);
+
+    doc.setTextColor(...darkSlate);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.text("ORDER SUMMARY", 20, 47);
 
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8);
-    doc.text(
-      `Invoice #: Sil3aty-${order._id.substring(18).toUpperCase()}`,
-      20,
-      53
-    );
-    doc.text(
-      `Order Date: ${new Date(order.createdAt).toLocaleDateString()}`,
-      20,
-      58
-    );
+    doc.setTextColor(...secondaryColor);
+    doc.text(`Order Status:`, 20, 52);
+    doc.text(`Payment Status:`, 100, 52);
 
-    doc.text(`Status: ${order.status.toUpperCase()}`, 100, 53);
-    doc.text(`Payment: ${order.isPaid ? "PAID" : "PENDING"}`, 100, 58);
-
-    if (order.isPaid && order.paidAt) {
-      doc.text(
-        `Paid On: ${new Date(order.paidAt).toLocaleDateString()}`,
-        150,
-        53
-      );
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(...darkSlate);
+    doc.text(order.status.toUpperCase(), 42, 52);
+    
+    if (order.isPaid) {
+      doc.setTextColor(...successColor);
+      doc.text("PAID", 125, 52);
+      if (order.paidAt) {
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(...secondaryColor);
+        doc.text(` (On ${new Date(order.paidAt).toLocaleDateString()})`, 135, 52);
+      }
+    } else {
+      doc.setTextColor(239, 68, 68); // Red-500
+      doc.text("UNPAID / PENDING", 125, 52);
     }
 
+    // Customer Billing/Shipping info
     const customerInfo = [
       [
         {
           content: "BILL TO",
           styles: {
             fontStyle: "bold",
-            fontSize: 9,
+            fontSize: 8.5,
             fillColor: primaryColor,
             textColor: 255,
           },
@@ -250,47 +266,40 @@ export default function AdminOrdersPage() {
           content: "SHIP TO",
           styles: {
             fontStyle: "bold",
-            fontSize: 9,
+            fontSize: 8.5,
             fillColor: primaryColor,
             textColor: 255,
           },
         },
       ],
       [
-        `${order.shippingAddress?.firstName || ""} ${
-          order.shippingAddress?.lastName || ""
-        }\n${order.shippingAddress?.email || ""}\n${
-          order.shippingAddress?.phone || ""
-        }`,
-        `${order.shippingAddress?.address || ""}\n${
-          order.shippingAddress?.city || ""
-        }, ${order.shippingAddress?.country || ""}\nPostal: ${
-          order.shippingAddress?.postalCode || ""
-        }`,
+        `${order.shippingAddress?.firstName || ""} ${order.shippingAddress?.lastName || ""}\n${order.shippingAddress?.email || ""}\n${order.shippingAddress?.phone || ""}`,
+        `${order.shippingAddress?.address || ""}\n${order.shippingAddress?.city || ""}, ${order.shippingAddress?.country || ""}\nPostal Code: ${order.shippingAddress?.postalCode || ""}`,
       ],
     ];
 
     autoTable(doc, {
-      startY: 75,
+      startY: 68,
       head: customerInfo.slice(0, 1),
       body: customerInfo.slice(1),
       theme: "grid",
       styles: {
         fontSize: 8,
-        cellPadding: 3,
-        lineColor: [229, 231, 235],
+        cellPadding: 4,
+        lineColor: [226, 232, 240],
         lineWidth: 0.1,
       },
       columnStyles: {
-        0: { cellWidth: 95, fontStyle: "normal" },
-        1: { cellWidth: 95, fontStyle: "normal" },
+        0: { cellWidth: 90, fontStyle: "normal" },
+        1: { cellWidth: 90, fontStyle: "normal" },
       },
       margin: { left: 15, right: 15 },
     });
 
-    const tableColumn = ["Product", "Color/Size", "Price", "Qty", "Total"];
+    // Items list
+    const tableColumn = ["Product", "Details", "Price", "Qty", "Total"];
     const tableRows = order.orderItems.map((item) => [
-      item.name.length > 30 ? item.name.substring(0, 30) + "..." : item.name,
+      item.name,
       `${item.color || "N/A"} / ${item.size || "N/A"}`,
       `$${item.price.toFixed(2)}`,
       item.qty.toString(),
@@ -298,365 +307,550 @@ export default function AdminOrdersPage() {
     ]);
 
     autoTable(doc, {
-      startY: 110,
+      startY: doc.lastAutoTable.finalY + 8,
       head: [tableColumn],
       body: tableRows,
-      theme: "grid",
+      theme: "striped",
       headStyles: {
         fillColor: primaryColor,
         textColor: 255,
         fontStyle: "bold",
-        fontSize: 8,
+        fontSize: 8.5,
       },
       bodyStyles: {
         fontSize: 8,
-        cellPadding: 3,
-        lineColor: [229, 231, 235],
+        cellPadding: 4,
+        lineColor: [241, 245, 249],
         lineWidth: 0.1,
       },
       columnStyles: {
-        0: { cellWidth: 70 },
+        0: { cellWidth: 75 },
         1: { cellWidth: 35 },
-        2: { cellWidth: 25 },
-        3: { cellWidth: 20 },
-        4: { cellWidth: 30 },
+        2: { cellWidth: 25, halign: "right" },
+        3: { cellWidth: 15, halign: "center" },
+        4: { cellWidth: 30, halign: "right" },
       },
       margin: { left: 15, right: 15 },
     });
 
-    const finalY = doc.lastAutoTable.finalY + 10;
+    // Pricing details block
+    const finalY = doc.lastAutoTable.finalY + 8;
+    doc.setFillColor(250, 250, 250);
+    doc.rect(125, finalY, 70, 32, "F");
+    doc.setDrawColor(226, 232, 240);
+    doc.rect(125, finalY, 70, 32);
 
-    doc.setFillColor(249, 250, 251);
-    doc.rect(120, finalY, 75, 30, "F");
-    doc.setDrawColor(229, 231, 235);
-    doc.rect(120, finalY, 75, 30);
-
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(0, 0, 0);
-    doc.text("ORDER SUMMARY", 125, finalY + 7);
-
-    doc.setFont("helvetica", "normal");
     doc.setFontSize(8);
-    doc.text(
-      `Subtotal: $${order.subTotal?.toFixed(2) || order.totalPrice.toFixed(2)}`,
-      125,
-      finalY + 14
-    );
+    doc.setTextColor(...darkSlate);
+    
+    // Subtotal
+    doc.setFont("helvetica", "normal");
+    doc.text("Subtotal:", 129, finalY + 6);
+    doc.text(`$${(order.subTotal || order.totalPrice).toFixed(2)}`, 191, finalY + 6, { align: "right" });
 
+    // Discount
+    let offset = 0;
     if (order.discountAmount > 0) {
       doc.setTextColor(...successColor);
-      doc.text(
-        `Discount (${order.discountCode}): -$${order.discountAmount.toFixed(
-          2
-        )}`,
-        125,
-        finalY + 19
-      );
-      doc.setTextColor(0, 0, 0);
+      doc.text(`Discount (${order.discountCode}):`, 129, finalY + 12);
+      doc.text(`-$${order.discountAmount.toFixed(2)}`, 191, finalY + 12, { align: "right" });
+      doc.setTextColor(...darkSlate);
+      offset = 6;
     }
 
-    if (order.shippingCost > 0) {
-      doc.text(`Shipping: $${order.shippingCost.toFixed(2)}`, 125, finalY + 24);
-    } else {
-      doc.text(`Shipping: $0.00`, 125, finalY + 24);
-    }
+    // Shipping
+    doc.text("Shipping Cost:", 129, finalY + 12 + offset);
+    const shipping = order.shippingCost || 0;
+    doc.text(`$${shipping.toFixed(2)}`, 191, finalY + 12 + offset, { align: "right" });
+
+    // Total
+    doc.setDrawColor(226, 232, 240);
+    doc.line(129, finalY + 18 + offset, 191, finalY + 18 + offset);
 
     doc.setFont("helvetica", "bold");
     doc.setFontSize(9);
     doc.setTextColor(...primaryColor);
-    doc.text(
-      `TOTAL: $${(order.finalTotal || order.totalPrice).toFixed(2)}`,
-      125,
-      finalY + 29
-    );
+    doc.text("Total:", 129, finalY + 24 + offset);
+    doc.text(`$${(order.finalTotal || order.totalPrice).toFixed(2)}`, 191, finalY + 24 + offset, { align: "right" });
 
     // Footer
-    const footerY = 270;
-
-    doc.setDrawColor(229, 231, 235);
+    const footerY = 272;
+    doc.setDrawColor(226, 232, 240);
     doc.line(15, footerY, 195, footerY);
 
-    doc.setFontSize(7);
+    doc.setFontSize(7.5);
     doc.setTextColor(...secondaryColor);
     doc.setFont("helvetica", "normal");
     doc.text("Thank you for shopping with Sil3aty Store!", 15, footerY + 5);
-    doc.text(
-      "For questions: support@Sil3aty-store.com | +20 1012105407",
-      15,
-      footerY + 10
-    );
-    doc.text(
-      "Terms: All sales are final. Returns subject to return policy.",
-      15,
-      footerY + 15
-    );
+    doc.text("For support: support@sil3aty-store.com | +20 1012105407", 15, footerY + 9);
+    doc.text("All sales are subject to terms and return conditions.", 15, footerY + 13);
 
-    const fileName = `Sil3aty-Invoice-${order._id
-      .substring(18)
-      .toUpperCase()}.pdf`;
+    const fileName = `Sil3aty-Invoice-${order._id.substring(18).toUpperCase()}.pdf`;
     doc.save(fileName);
+    toast.success("📄 Invoice PDF downloaded successfully!");
   };
 
   const generateCompactInvoice = (order) => {
     const doc = new jsPDF({
       orientation: "portrait",
       unit: "mm",
-      format: [80, 150],
+      format: [80, 180], // Extended height for items space
     });
 
-    const primaryColor = [59, 130, 246];
+    const primaryColor = [79, 70, 229];
     const secondaryColor = [107, 114, 128];
+    const successColor = [16, 185, 129];
+    const darkSlate = [15, 23, 42];
 
+    // Colored bar at the top
     doc.setFillColor(...primaryColor);
-    doc.rect(0, 0, 80, 12, "F");
+    doc.rect(0, 0, 80, 3, "F");
 
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(10);
+    // Centered Store Header
+    doc.setTextColor(...darkSlate);
+    doc.setFontSize(14);
     doc.setFont("helvetica", "bold");
-    doc.text("Sil3aty", 5, 7);
-    doc.text("INVOICE", 65, 7, { align: "right" });
+    doc.text("Sil3aty Store", 40, 10, { align: "center" });
 
-    doc.setTextColor(0, 0, 0);
-    doc.setFontSize(6);
-    doc.setFont("helvetica", "normal");
-    doc.text(`Order: ${order._id.substring(18).toUpperCase()}`, 5, 16);
-    doc.text(`Date: ${new Date(order.createdAt).toLocaleDateString()}`, 5, 20);
-    doc.text(`Status: ${order.status}`, 40, 16);
-    doc.text(`Paid: ${order.isPaid ? "Yes" : "No"}`, 40, 20);
-
-    doc.setFont("helvetica", "bold");
-    doc.text("CUSTOMER:", 5, 28);
-    doc.setFont("helvetica", "normal");
-    const customerName = `${order.shippingAddress?.firstName || ""} ${
-      order.shippingAddress?.lastName || ""
-    }`;
-    doc.text(customerName, 5, 32);
-    doc.text(order.shippingAddress?.phone || "", 5, 36);
-
-    doc.setDrawColor(...secondaryColor);
-    doc.line(5, 42, 75, 42);
-
-    doc.setFont("helvetica", "bold");
-    doc.text("PRICE DETAILS:", 5, 46);
-    doc.setFont("helvetica", "normal");
-    doc.text(
-      `Subtotal: $${order.subTotal?.toFixed(2) || order.totalPrice.toFixed(2)}`,
-      5,
-      50
-    );
-
-    let yOffset = 54;
-    if (order.discountCode) {
-      doc.setTextColor(...successColor);
-      doc.text(
-        `Discount (${order.discountCode}): -$${
-          order.discountAmount?.toFixed(2) || "0.00"
-        }`,
-        5,
-        yOffset
-      );
-      doc.setTextColor(0, 0, 0);
-      yOffset += 4;
-    }
-
-    if (order.shippingCost > 0) {
-      doc.text(`Shipping: $${order.shippingCost.toFixed(2)}`, 5, yOffset);
-      yOffset += 4;
-    }
-
-    doc.setFont("helvetica", "bold");
-    doc.text(
-      `Final Total: $${(order.finalTotal || order.totalPrice).toFixed(2)}`,
-      5,
-      yOffset + 4
-    );
-
-    doc.setFont("helvetica", "bold");
-    doc.text("ITEMS", 5, 46);
-    doc.text("QTY", 45, 46);
-    doc.text("TOTAL", 60, 46);
-
-    doc.line(5, 48, 75, 48);
-
-    let yPos = 52;
-    order.orderItems.forEach((item, index) => {
-      if (index < 4) {
-        const itemName =
-          item.name.length > 20
-            ? item.name.substring(0, 20) + "..."
-            : item.name;
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(5);
-        doc.text(itemName, 5, yPos);
-        doc.text(item.qty.toString(), 48, yPos);
-        doc.text(`$${(item.price * item.qty).toFixed(2)}`, 62, yPos);
-        yPos += 4;
-      }
-    });
-
-    doc.setDrawColor(...secondaryColor);
-    doc.line(5, yPos + 2, 75, yPos + 2);
-
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(7);
-    doc.text("TOTAL AMOUNT", 5, yPos + 8);
-    doc.text(`$${order.totalPrice.toFixed(2)}`, 62, yPos + 8);
-
-    doc.setFontSize(4);
+    doc.setFontSize(6.5);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(...secondaryColor);
-    doc.text("Thank you for your purchase!", 40, yPos + 15, {
-      align: "center",
-    });
-    doc.text("https://sil3aty.vercel.app/", 40, yPos + 18, {
-      align: "center",
+    doc.text("https://sil3aty.vercel.app/", 40, 13, { align: "center" });
+    doc.text("support@sil3aty-store.com", 40, 16, { align: "center" });
+
+    // Separator line
+    doc.setDrawColor(229, 231, 235);
+    doc.line(5, 19, 75, 19);
+
+    // Receipt Meta
+    doc.setTextColor(...darkSlate);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(7);
+    doc.text("RECEIPT DETAILS", 5, 24);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(6);
+    doc.setTextColor(...secondaryColor);
+    doc.text(`Receipt #: Sil3aty-${order._id.substring(18).toUpperCase()}`, 5, 28);
+    doc.text(`Date: ${new Date(order.createdAt).toLocaleDateString()}`, 5, 32);
+    doc.text(`Status: ${order.status.toUpperCase()}`, 5, 36);
+
+    doc.text("BILL TO / SHIP TO:", 42, 28);
+    const clientName = `${order.shippingAddress?.firstName || ""} ${order.shippingAddress?.lastName || ""}`;
+    doc.text(clientName.substring(0, 20), 42, 32);
+    doc.text(order.shippingAddress?.phone || "", 42, 36);
+
+    doc.setDrawColor(229, 231, 235);
+    doc.line(5, 40, 75, 40);
+
+    // Items Section
+    doc.setTextColor(...darkSlate);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(7);
+    doc.text("ITEMS DESCRIPTION", 5, 45);
+
+    doc.setDrawColor(241, 245, 249);
+    doc.line(5, 47, 75, 47);
+
+    let yPos = 51;
+    order.orderItems.forEach((item) => {
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(6.5);
+      doc.setTextColor(...darkSlate);
+      // Word wrap safety
+      const name = item.name.length > 30 ? item.name.substring(0, 30) + "..." : item.name;
+      doc.text(name, 5, yPos);
+      yPos += 3.5;
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(5.5);
+      doc.setTextColor(...secondaryColor);
+      doc.text(`${item.color || "N/A"} / ${item.size || "N/A"}`, 5, yPos);
+      doc.text(`${item.qty} x $${item.price.toFixed(2)}`, 35, yPos);
+      
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(...darkSlate);
+      doc.text(`$${(item.price * item.qty).toFixed(2)}`, 75, yPos, { align: "right" });
+      yPos += 5;
     });
 
-    const fileName = `Compact-Invoice-${order._id
-      .substring(18)
-      .toUpperCase()}.pdf`;
+    doc.setDrawColor(229, 231, 235);
+    doc.line(5, yPos, 75, yPos);
+    yPos += 4;
+
+    // Totals Breakdown
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(6.5);
+    doc.setTextColor(...secondaryColor);
+    doc.text("Subtotal:", 5, yPos);
+    doc.text(`$${(order.subTotal || order.totalPrice).toFixed(2)}`, 75, yPos, { align: "right" });
+    yPos += 4;
+
+    if (order.discountAmount > 0) {
+      doc.setTextColor(...successColor);
+      doc.text(`Discount (${order.discountCode}):`, 5, yPos);
+      doc.text(`-$${order.discountAmount.toFixed(2)}`, 75, yPos, { align: "right" });
+      doc.setTextColor(...secondaryColor);
+      yPos += 4;
+    }
+
+    doc.text("Shipping:", 5, yPos);
+    doc.text(`$${(order.shippingCost || 0).toFixed(2)}`, 75, yPos, { align: "right" });
+    yPos += 4.5;
+
+    // Final Total Box
+    doc.setFillColor(248, 250, 252);
+    doc.rect(5, yPos - 1.5, 70, 7, "F");
+    doc.setDrawColor(226, 232, 240);
+    doc.rect(5, yPos - 1.5, 70, 7);
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(7.5);
+    doc.setTextColor(...primaryColor);
+    doc.text("TOTAL AMOUNT:", 7, yPos + 3);
+    doc.text(`$${(order.finalTotal || order.totalPrice).toFixed(2)}`, 73, yPos + 3, { align: "right" });
+
+    // Receipt Footer
+    yPos += 12;
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(5.5);
+    doc.setTextColor(...secondaryColor);
+    doc.text("Thank you for shopping with us!", 40, yPos, { align: "center" });
+    doc.text("Please keep this receipt for your records.", 40, yPos + 3, { align: "center" });
+
+    const fileName = `Sil3aty-Receipt-${order._id.substring(18).toUpperCase()}.pdf`;
     doc.save(fileName);
-    toast.success("📄 Compact invoice downloaded!");
+    toast.success("📄 Compact receipt downloaded!");
   };
 
   const printInvoice = (order) => {
     const printWindow = window.open("", "_blank");
     const invoiceContent = `
       <!DOCTYPE html>
-      <html>
+      <html dir="${isRTL ? "rtl" : "ltr"}">
       <head>
-        <title>Invoice ${order._id.substring(18).toUpperCase()}</title>
+        <title>Invoice - ${order._id.substring(18).toUpperCase()}</title>
+        <meta charset="utf-8">
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
         <style>
-          @media print {
-            body { margin: 0; padding: 10px; font-family: Arial, sans-serif; }
-            .invoice { max-width: 800px; margin: 0 auto; }
-            .no-print { display: none !important; }
+          body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 20px;
+            color: #0f172a;
+            background-color: #f8fafc;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
           }
-          .invoice-header { 
-            background: #3b82f6; 
-            color: white; 
-            padding: 20px; 
-            text-align: center;
-            border-radius: 8px 8px 0 0;
-          }
-          .invoice-details { 
-            background: #f8fafc; 
-            padding: 15px; 
+          .container {
+            max-width: 850px;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
             border: 1px solid #e2e8f0;
           }
-          .items-table {
-            width: 100%; 
-            border-collapse: collapse; 
-            margin: 20px 0;
+          .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 24px;
+            margin-bottom: 30px;
           }
-          .items-table th {
-            background: #3b82f6;
-            color: white;
-            padding: 8px;
+          .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 800;
+            color: #4f46e5;
+          }
+          .header p {
+            margin: 4px 0 0 0;
+            font-size: 14px;
+            color: #64748b;
+          }
+          .invoice-label {
+            text-align: right;
+          }
+          html[dir="rtl"] .invoice-label {
             text-align: left;
           }
-          .items-table td {
-            padding: 8px;
-            border-bottom: 1px solid #e2e8f0;
+          .invoice-label h2 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 800;
+            color: #0f172a;
           }
-          .total-section {
-            background: #1e40af;
-            color: white;
-            padding: 15px;
+          .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+          }
+          .info-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+          }
+          .info-card h3 {
+            margin: 0 0 12px 0;
+            font-size: 12px;
+            font-weight: 800;
+            color: #4f46e5;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+          }
+          .info-card p {
+            margin: 6px 0;
+            font-size: 14px;
+            color: #334155;
+            line-height: 1.5;
+          }
+          .table-container {
+            margin-bottom: 40px;
+          }
+          .table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+          }
+          html[dir="rtl"] .table {
             text-align: right;
-            border-radius: 0 0 8px 8px;
           }
-          .customer-info { 
-            display: grid; 
-            grid-template-columns: 1fr 1fr; 
-            gap: 20px; 
-            margin: 15px 0;
+          .table th {
+            background: #4f46e5;
+            color: #ffffff;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 12px 16px;
+            text-transform: uppercase;
+          }
+          .table th:first-child {
+            border-top-left-radius: 8px;
+            border-bottom-left-radius: 8px;
+          }
+          .table th:last-child {
+            border-top-right-radius: 8px;
+            border-bottom-right-radius: 8px;
+          }
+          html[dir="rtl"] .table th:first-child {
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+            border-top-right-radius: 8px;
+            border-bottom-right-radius: 8px;
+          }
+          html[dir="rtl"] .table th:last-child {
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+            border-top-left-radius: 8px;
+            border-bottom-left-radius: 8px;
+          }
+          .table td {
+            padding: 16px;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 14px;
+            color: #334155;
+          }
+          .table tr:hover td {
+            background-color: #f8fafc;
+          }
+          .summary-container {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 40px;
+          }
+          html[dir="rtl"] .summary-container {
+            justify-content: flex-start;
+          }
+          .summary-box {
+            width: 320px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+          }
+          .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: #475569;
+          }
+          .summary-row.discount {
+            color: #10b981;
+            font-weight: 500;
+          }
+          .summary-row.total {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 2px solid #e2e8f0;
+            font-size: 18px;
+            font-weight: 800;
+            color: #4f46e5;
+          }
+          .footer {
+            text-align: center;
+            font-size: 12px;
+            color: #64748b;
+            border-top: 2px solid #f1f5f9;
+            padding-top: 30px;
+            margin-top: 40px;
+          }
+          .btn-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+          }
+          .btn {
+            padding: 10px 24px;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 10px;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+          }
+          .btn-primary {
+            background: #4f46e5;
+            color: #ffffff;
+            box-shadow: 0 4px 6px -1px rgb(79 70 229 / 0.2);
+          }
+          .btn-primary:hover {
+            background: #4338ca;
+            transform: translateY(-1px);
+          }
+          .btn-secondary {
+            background: #64748b;
+            color: #ffffff;
+          }
+          .btn-secondary:hover {
+            background: #475569;
+            transform: translateY(-1px);
+          }
+          @media print {
+            body {
+              background-color: #ffffff;
+              padding: 0;
+            }
+            .container {
+              box-shadow: none;
+              border: none;
+              padding: 0;
+            }
+            .btn-container {
+              display: none !important;
+            }
           }
         </style>
       </head>
       <body>
-        <div class="invoice">
-          <div class="invoice-header">
-            <h1>Sil3aty STORE</h1>
-            <p>INVOICE</p>
+        <div class="container">
+          <div class="header">
+            <div>
+              <h1>Sil3aty Store</h1>
+              <p>https://sil3aty.vercel.app/</p>
+              <p>support@sil3aty-store.com</p>
+            </div>
+            <div class="invoice-label">
+              <h2>${isRTL ? "فاتورة شراء" : "INVOICE"}</h2>
+              <p><strong>${isRTL ? "رقم الفاتورة" : "Invoice ID"}:</strong> Sil3aty-${order._id.substring(18).toUpperCase()}</p>
+              <p><strong>${isRTL ? "التاريخ" : "Date"}:</strong> ${new Date(order.createdAt).toLocaleDateString(isRTL ? "ar-EG" : "en-US")}</p>
+            </div>
           </div>
-          
-          <div class="invoice-details">
-            <div class="customer-info">
-              <div>
-                <h3>Bill To:</h3>
-                <p>${order.shippingAddress?.firstName} ${
-      order.shippingAddress?.lastName
-    }</p>
-                <p>${order.shippingAddress?.email}</p>
-                <p>${order.shippingAddress?.phone}</p>
+
+          <div class="info-grid">
+            <div class="info-card">
+              <h3>${isRTL ? "بيانات الشحن والتوصيل" : "SHIP TO"}</h3>
+              <p><strong>${isRTL ? "الاسم" : "Name"}:</strong> ${order.shippingAddress?.firstName} ${order.shippingAddress?.lastName}</p>
+              <p><strong>${isRTL ? "الهاتف" : "Phone"}:</strong> ${order.shippingAddress?.phone}</p>
+              <p><strong>${isRTL ? "البريد الإلكتروني" : "Email"}:</strong> ${order.shippingAddress?.email}</p>
+            </div>
+            <div class="info-card">
+              <h3>${isRTL ? "تفاصيل الطلب والدفع" : "ORDER & PAYMENT"}</h3>
+              <p><strong>${isRTL ? "عنوان التوصيل" : "Address"}:</strong> ${order.shippingAddress?.address}</p>
+              <p><strong>${isRTL ? "البلد / المدينة" : "City/Country"}:</strong> ${order.shippingAddress?.city}, ${order.shippingAddress?.country}</p>
+              <p><strong>${isRTL ? "حالة الدفع" : "Payment Status"}:</strong> 
+                <span style="font-weight: 700; color: ${order.isPaid ? "#10b981" : "#ef4444"}">
+                  ${order.isPaid ? (isRTL ? "مدفوع" : "PAID") : (isRTL ? "قيد الانتظار" : "PENDING")}
+                </span>
+              </p>
+            </div>
+          </div>
+
+          <div class="table-container">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>${isRTL ? "المنتج" : "Product"}</th>
+                  <th>${isRTL ? "المواصفات" : "Details"}</th>
+                  <th style="text-align: right;">${isRTL ? "السعر" : "Price"}</th>
+                  <th style="text-align: center;">${isRTL ? "الكمية" : "Qty"}</th>
+                  <th style="text-align: right;">${isRTL ? "الإجمالي" : "Total"}</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${order.orderItems
+                  .map(
+                    (item) => `
+                  <tr>
+                    <td style="font-weight: 600;">${item.name}</td>
+                    <td>${item.color || "N/A"} / ${item.size || "N/A"}</td>
+                    <td style="text-align: right;">$${item.price.toFixed(2)}</td>
+                    <td style="text-align: center; font-weight: 600;">${item.qty}</td>
+                    <td style="text-align: right; font-weight: 700; color: #4f46e5;">$${(item.price * item.qty).toFixed(2)}</td>
+                  </tr>
+                `
+                  )
+                  .join("")}
+              </tbody>
+            </table>
+          </div>
+
+          <div class="summary-container">
+            <div class="summary-box">
+              <div class="summary-row">
+                <span>${isRTL ? "المجموع الفرعي" : "Subtotal"}:</span>
+                <span>$${(order.subTotal || order.totalPrice).toFixed(2)}</span>
               </div>
-              <div>
-                <h3>Order Details:</h3>
-                <p><strong>Invoice #:</strong> Sil3aty-${order._id
-                  .substring(18)
-                  .toUpperCase()}</p>
-                <p><strong>Date:</strong> ${new Date(
-                  order.createdAt
-                ).toLocaleDateString()}</p>
-                <p><strong>Status:</strong> ${order.status}</p>
-                <p><strong>Payment:</strong> ${
-                  order.isPaid ? "Paid" : "Pending"
-                }</p>
+              ${
+                order.discountAmount > 0
+                  ? `
+                <div class="summary-row discount">
+                  <span>${isRTL ? "الخصم" : "Discount"} (${order.discountCode}):</span>
+                  <span>-$${order.discountAmount.toFixed(2)}</span>
+                </div>
+              `
+                  : ""
+              }
+              <div class="summary-row">
+                <span>${isRTL ? "مصاريف الشحن" : "Shipping"}:</span>
+                <span>$${(order.shippingCost || 0).toFixed(2)}</span>
+              </div>
+              <div class="summary-row total">
+                <span>${isRTL ? "الإجمالي النهائي" : "Total"}:</span>
+                <span>$${(order.finalTotal || order.totalPrice).toFixed(2)}</span>
               </div>
             </div>
           </div>
 
-          <table class="items-table">
-            <thead>
-              <tr>
-                <th>Product</th>
-                <th>Details</th>
-                <th>Price</th>
-                <th>Qty</th>
-                <th>Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${order.orderItems
-                .map(
-                  (item) => `
-                <tr>
-                  <td>${item.name}</td>
-                  <td>${item.color || "N/A"} / ${item.size || "N/A"}</td>
-                  <td>$${item.price.toFixed(2)}</td>
-                  <td>${item.qty}</td>
-                  <td>$${(item.price * item.qty).toFixed(2)}</td>
-                </tr>
-              `
-                )
-                .join("")}
-            </tbody>
-          </table>
-
-          <div class="total-section">
-            <h2>TOTAL: $${order.totalPrice.toFixed(2)}</h2>
-          </div>
-
-          <div style="text-align: center; margin-top: 20px; color: #666; font-size: 12px;">
-            <p>Thank you for shopping with Sil3aty Store!</p>
-            <p>https://sil3aty.vercel.app/ | support@Sil3aty-store.com</p>
+          <div class="footer">
+            <p>${isRTL ? "شكراً لتسوقكم من متجر سلعتي!" : "Thank you for shopping with Sil3aty Store!"}</p>
+            <p>https://sil3aty.vercel.app/ | support@sil3aty-store.com</p>
           </div>
         </div>
 
-        <div class="no-print" style="text-align: center; margin-top: 20px;">
-          <button onclick="window.print()" style="padding: 10px 20px; background: #3b82f6; color: white; border: none; border-radius: 5px; cursor: pointer;">
-            Print Invoice
-          </button>
-          <button onclick="window.close()" style="padding: 10px 20px; background: #6b7280; color: white; border: none; border-radius: 5px; cursor: pointer; margin-left: 10px;">
-            Close
-          </button>
+        <div class="btn-container no-print">
+          <button class="btn btn-primary" onclick="window.print()">${isRTL ? "طباعة الفاتورة" : "Print Invoice"}</button>
+          <button class="btn btn-secondary" onclick="window.close()">${isRTL ? "إغلاق" : "Close"}</button>
         </div>
       </body>
       </html>
     `;
 
+    printWindow.document.open();
     printWindow.document.write(invoiceContent);
     printWindow.document.close();
   };
