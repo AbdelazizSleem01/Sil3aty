@@ -800,7 +800,7 @@ export default function AdminOrdersPage() {
         {/* Header */}
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 bg-gradient-to-r from-white via-slate-50/80 to-indigo-50/20 border border-base-300 rounded-3xl p-6 shadow-sm">
           <div className="flex items-center gap-4">
-            <div className="p-4 bg-gradient-to-tr from-primary to-indigo-500 text-white rounded-2xl shadow-lg shadow-primary/20">
+            <div className="p-4 bg-gradient-to-tr from-primary to-primary/50 text-white rounded-2xl shadow-lg shadow-primary/20">
               <ShoppingCart className="w-8 h-8" />
             </div>
             <div>
@@ -986,7 +986,6 @@ export default function AdminOrdersPage() {
                           <h2 className="text-lg font-bold text-gray-900">
                             {t("adminOrders.orderNo")}{order._id.substring(18).toUpperCase()}
                           </h2>
-                          <span className="text-xs text-gray-400 font-mono">({order._id})</span>
                         </div>
                         <p className="text-xs text-gray-500 mt-0.5">
                           {new Date(order.createdAt).toLocaleDateString(
