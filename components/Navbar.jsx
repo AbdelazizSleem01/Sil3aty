@@ -298,6 +298,7 @@ export default function Navbar() {
         isOpen={isSearchModalOpen}
         onClose={() => setIsSearchModalOpen(false)}
         t={t}
+        isRTL={isRTL}
       />
     </>
   );
@@ -718,7 +719,7 @@ function UserAuth({ user, session, isRTL, t }) {
   );
 }
 
-function SearchModal({ isOpen, onClose, t }) {
+function SearchModal({ isOpen, onClose, t, isRTL }) {
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
@@ -761,26 +762,28 @@ function SearchModal({ isOpen, onClose, t }) {
 
   return (
     <div
-      className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-start justify-center pt-20"
+      className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-start justify-center pt-16 md:pt-28 animate-fadeIn"
       onClick={onClose}
+      dir={isRTL ? "rtl" : "ltr"}
     >
       <div
-        className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 overflow-hidden"
+        className="bg-white/95 backdrop-blur-xl border border-white/20 rounded-3xl shadow-2xl w-full max-w-2xl mx-4 overflow-hidden transform scale-95 animate-scaleUp"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between p-4 border-b">
-          <h2 className="text-lg font-bold text-gray-900">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+          <h2 className="text-xl font-black text-gray-900 flex items-center gap-2">
+            <span className="h-6 w-2 rounded-full bg-emerald-500"></span>
             {t("searchProducts")}
           </h2>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg"
+            className="p-2 hover:bg-gray-100/80 rounded-full text-gray-400 hover:text-gray-600 transition-colors"
           >
             <FiX size={20} />
           </button>
         </div>
 
-        <div className="p-4">
+        <div className="p-6">
           <div className="relative">
             <input
               type="text"
@@ -788,50 +791,57 @@ function SearchModal({ isOpen, onClose, t }) {
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && goToSearch()}
               placeholder={t("searchPlaceholder")}
-              className="w-full h-12 pl-10 pr-4 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:border-emerald-500 focus:bg-white transition-all"
+              className={`w-full h-14 bg-gray-50/50 border border-gray-200/80 rounded-2xl text-gray-900 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10 transition-all duration-300 text-base ${
+                isRTL ? "pr-12 pl-4 text-right" : "pl-12 pr-4 text-left"
+              }`}
               autoFocus
             />
             <FiSearch
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-              size={18}
+              className={`absolute top-1/2 -translate-y-1/2 text-gray-400 ${
+                isRTL ? "right-4" : "left-4"
+              }`}
+              size={20}
             />
           </div>
         </div>
 
-        <div className="max-h-96 overflow-y-auto">
+        <div className="max-h-96 overflow-y-auto px-6 pb-6 custom-scrollbar">
           {loading ? (
-            <div className="flex justify-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div>
+            <div className="flex flex-col items-center justify-center py-12 gap-3">
+              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-emerald-600"></div>
+              <span className="text-sm text-gray-400">{t("common.loading")}</span>
             </div>
           ) : query && results.length > 0 ? (
-            <div className="divide-y divide-gray-100">
+            <div className="space-y-2">
               {results.slice(0, 6).map((p) => (
                 <div
                   key={p._id}
                   onClick={() => goToProduct(p._id)}
-                  className="flex items-center gap-3 p-3 hover:bg-gray-50 cursor-pointer"
+                  className={`flex items-center gap-4 p-3 rounded-2xl border border-transparent hover:border-emerald-100 hover:bg-emerald-50/30 cursor-pointer transition-all duration-300 hover:scale-[1.01] hover:shadow-sm ${
+                    isRTL ? "text-right" : "text-left"
+                  }`}
                 >
-                  <div className="w-10 h-10 bg-gray-100 rounded-lg overflow-hidden">
+                  <div className="w-12 h-12 bg-gray-50 rounded-xl overflow-hidden flex-shrink-0 border border-gray-100 shadow-inner">
                     <img
                       src={p.images?.[0] || "/placeholder.png"}
                       alt={p.name}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover transform hover:scale-110 transition-transform duration-500"
                     />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-medium text-gray-900 truncate">
+                    <h3 className="font-semibold text-gray-900 truncate hover:text-emerald-600 transition-colors">
                       {p.name}
                     </h3>
-                    <p className="text-xs text-gray-600 truncate">
+                    <span className="inline-block mt-0.5 px-2 py-0.5 text-[10px] font-bold tracking-wider text-emerald-700 bg-emerald-50 rounded-md">
                       {p.category?.name}
-                    </p>
+                    </span>
                   </div>
-                  <div className="text-right">
-                    <p className="font-bold text-gray-900">
+                  <div className={`flex flex-col ${isRTL ? "items-start" : "items-end"}`}>
+                    <p className="font-extrabold text-gray-900 text-lg">
                       ${p.discountPrice || p.price}
                     </p>
                     {p.discountPrice && (
-                      <p className="text-xs text-gray-500 line-through">
+                      <p className="text-xs text-gray-400 line-through">
                         ${p.price}
                       </p>
                     )}
@@ -839,10 +849,10 @@ function SearchModal({ isOpen, onClose, t }) {
                 </div>
               ))}
               {results.length > 6 && (
-                <div className="p-3 text-center">
+                <div className="pt-4 text-center border-t border-gray-50">
                   <button
                     onClick={goToSearch}
-                    className="text-emerald-600 hover:text-emerald-700 text-sm font-medium"
+                    className="btn btn-ghost hover:bg-emerald-50/50 text-emerald-600 hover:text-emerald-700 text-sm font-semibold gap-2"
                   >
                     {t("viewAll")} {results.length} {t("results")}
                   </button>
@@ -850,12 +860,14 @@ function SearchModal({ isOpen, onClose, t }) {
               )}
             </div>
           ) : query ? (
-            <div className="text-center py-8 text-gray-500">
-              {t("noResults")}
+            <div className="flex flex-col items-center justify-center py-12 text-gray-400 gap-2">
+              <FiSearch size={40} className="opacity-30 animate-pulse" />
+              <span className="text-sm font-medium">{t("noResults")}</span>
             </div>
           ) : (
-            <div className="text-center py-8 text-gray-400">
-              {t("startTyping")}
+            <div className="flex flex-col items-center justify-center py-12 text-gray-400 gap-2">
+              <FiSearch size={40} className="opacity-30" />
+              <span className="text-sm font-medium">{t("startTyping")}</span>
             </div>
           )}
         </div>

@@ -344,7 +344,6 @@ export default function HomePage() {
                     {t("premiumShoppingExperience")}
                   </span>
                 </div>
-                <Sparkles className="w-4 h-4 text-yellow-500 animate-spin" />
               </div>
 
               <h1
@@ -442,17 +441,6 @@ export default function HomePage() {
                     priority
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                   />
-                </div>
-
-                <div className="absolute top-6 right-6 z-20">
-                  <div className="bg-gradient-to-r from-yellow-400 to-amber-500 text-white px-4 py-3 rounded-2xl shadow-2xl transform animate-bounce hover:scale-110 transition-transform">
-                    <div className="flex items-center gap-2 font-bold text-sm">
-                      <Sparkles className="w-4 h-4" />
-                      <div className="text-center">
-                        <div className="text-lg">50% OFF</div>
-                      </div>
-                    </div>
-                  </div>
                 </div>
               </div>
 

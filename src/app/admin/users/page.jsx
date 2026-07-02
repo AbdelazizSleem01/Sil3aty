@@ -21,10 +21,107 @@ import {
 import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { useTranslation } from "react-i18next";
 
 export default function Users() {
+  const { t, i18n } = useTranslation();
+  const isRTL = i18n.language === "ar";
   const { data: session, status } = useSession();
   const router = useRouter();
+
+  const localT = {
+    ar: {
+      userManagement: "إدارة المستخدمين",
+      manageUsers: "إدارة أدوار المستخدمين وصلاحيات النظام",
+      loadingUsers: "جاري تحميل المستخدمين...",
+      waitFetch: "يرجى الانتظار حتى يتم جلب البيانات",
+      totalUsers: "إجمالي المستخدمين",
+      admins: "المدراء",
+      regularUsers: "المستخدمين العاديين",
+      searchPlaceholder: "البحث عن مستخدم بالاسم أو البريد الإلكتروني...",
+      usersFound: "مستخدمين تم العثور عليهم",
+      userFound: "مستخدم تم العثور عليه",
+      noUsersFound: "لم يتم العثور على مستخدمين",
+      noUsersAvailable: "لا يوجد مستخدمين متاحين",
+      searchAdjust: "حاول تغيير كلمات البحث للعثور على ما تبحث عنه.",
+      usersAppear: "سيظهر المستخدمون هنا بمجرد تسجيلهم في النظام.",
+      tableUser: "المستخدم",
+      tableEmail: "البريد الإلكتروني",
+      tableRole: "الدور",
+      tableActions: "الإجراءات",
+      adminRole: "مدير",
+      userRole: "مستخدم",
+      makeUser: "تعيين كمستخدم",
+      makeAdmin: "تعيين كمدير",
+      reset: "إعادة تعيين",
+      disable: "تعطيل",
+      adminPercent: "نسبة المدراء",
+      confirmRoleTitle: "تحديث دور المستخدم؟",
+      confirmRoleHtml: "أنت على وشك ترقية/تنزيل دور المستخدم:",
+      confirmRoleWarning: "سيؤدي هذا إلى تغيير صلاحياته في النظام.",
+      yesUpdate: "نعم، قم بالتحديث!",
+      cancel: "إلغاء",
+      roleUpdated: "تم تحديث دور المستخدم بنجاح",
+      roleUpdateFailed: "فشل تحديث دور المستخدم",
+      confirmDisableTitle: "تعطيل حساب {name}؟",
+      confirmDisableText: "سيؤدي التعطيل إلى منع هذا المستخدم من تسجيل الدخول. يمكن التراجع عن هذا الإجراء لاحقاً.",
+      yesDisable: "نعم، قم بالتعطيل",
+      userDisabled: "تم تعطيل حساب المستخدم بنجاح",
+      disableFailed: "فشل تعطيل حساب المستخدم",
+      confirmResetTitle: "إعادة تعيين كلمة مرور {name}؟",
+      confirmResetText: "سيؤدي هذا إلى إعادة تعيين كلمة مرور المستخدم إلى <strong>123456789</strong>. يجب تغييرها بعد تسجيل الدخول.",
+      yesReset: "نعم، قم بإعادة التعيين",
+      passwordResetSuccess: "تم إعادة تعيين كلمة المرور بنجاح",
+      passwordResetFailed: "فشل إعادة تعيين كلمة المرور",
+      fetchUsersFailed: "فشل جلب قائمة المستخدمين",
+    },
+    en: {
+      userManagement: "User Management",
+      manageUsers: "Manage user roles and system permissions",
+      loadingUsers: "Loading Users...",
+      waitFetch: "Please wait while we fetch user data",
+      totalUsers: "Total Users",
+      admins: "Administrators",
+      regularUsers: "Regular Users",
+      searchPlaceholder: "Search users by name or email...",
+      usersFound: "users found",
+      userFound: "user found",
+      noUsersFound: "No users found",
+      noUsersAvailable: "No users available",
+      searchAdjust: "Try adjusting your search terms to find what you're looking for.",
+      usersAppear: "Users will appear here once they register in the system.",
+      tableUser: "User",
+      tableEmail: "Email",
+      tableRole: "Role",
+      tableActions: "Actions",
+      adminRole: "Administrator",
+      userRole: "User",
+      makeUser: "Make User",
+      makeAdmin: "Make Admin",
+      reset: "Reset",
+      disable: "Disable",
+      adminPercent: "Admin Percentage",
+      confirmRoleTitle: "Update User Role?",
+      confirmRoleHtml: "You are about to update the role of:",
+      confirmRoleWarning: "This will change their system permissions.",
+      yesUpdate: "Yes, Update Role!",
+      cancel: "Cancel",
+      roleUpdated: "User role updated successfully",
+      roleUpdateFailed: "Failed to update user role",
+      confirmDisableTitle: "Disable {name}?",
+      confirmDisableText: "Disabling will prevent this user from logging in. This action can be reversed by reactivating the account.",
+      yesDisable: "Yes, disable",
+      userDisabled: "User disabled successfully",
+      disableFailed: "Failed to disable user",
+      confirmResetTitle: "Reset password for {name}?",
+      confirmResetText: "This will reset the user's password to <strong>123456789</strong>. They should change it after logging in.",
+      yesReset: "Yes, reset",
+      passwordResetSuccess: "Password reset successfully",
+      passwordResetFailed: "Failed to reset password",
+      fetchUsersFailed: "Failed to fetch users",
+    }
+  };
+  const currentT = isRTL ? localT.ar : localT.en;
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -57,40 +154,42 @@ export default function Users() {
         if (res.ok) {
           setUsers(data.users);
         } else {
-          toast.error(data.error);
+          toast.error(data.error || currentT.fetchUsersFailed);
         }
       } catch (error) {
-        toast.error("Failed to fetch users");
+        toast.error(currentT.fetchUsersFailed);
       } finally {
         setLoading(false);
       }
     };
 
     fetchUsers();
-  }, []);
+  }, [isRTL]);
 
   const handleUpdateRole = async (userId, isAdmin, userName) => {
     const newRole = !isAdmin;
-    const action = newRole ? "promote to Admin" : "demote to User";
+    const actionText = newRole 
+      ? (isRTL ? "ترقية إلى مدير" : "promote to Admin") 
+      : (isRTL ? "تنزيل صلاحياته لمستخدم عادي" : "demote to User");
 
     const confirmation = await Swal.fire({
-      title: `Update User Role?`,
+      title: currentT.confirmRoleTitle,
       html: `
-        <div class="text-center">
+        <div class="text-center" dir="${isRTL ? "rtl" : "ltr"}">
           <div class="text-6xl ${newRole ? "text-warning" : "text-info"} mb-4">
             ${newRole ? "👑" : "👤"}
           </div>
-          <p class="text-lg font-semibold mb-2">You are about to ${action}:</p>
+          <p class="text-lg font-semibold mb-2">${currentT.confirmRoleHtml} ${actionText}:</p>
           <p class="text-xl text-primary font-bold">${userName}</p>
-          <p class="text-gray-600 mt-2">This will change their system permissions.</p>
+          <p class="text-gray-600 mt-2">${currentT.confirmRoleWarning}</p>
         </div>
       `,
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: newRole ? "#f59e0b" : "#3b82f6",
       cancelButtonColor: "#6b7280",
-      confirmButtonText: `Yes, ${action}!`,
-      cancelButtonText: "Cancel",
+      confirmButtonText: isRTL ? "نعم، قم بالتعديل!" : "Yes, Update!",
+      cancelButtonText: currentT.cancel,
 
       customClass: {
         popup: "rounded-2xl",
@@ -112,17 +211,17 @@ export default function Users() {
         const data = await res.json();
 
         if (res.ok) {
-          toast.success(`🎉 ${data.message}`);
+          toast.success(`🎉 ${isRTL ? "تم تحديث الصلاحيات بنجاح" : data.message || "Role updated"}`);
           setUsers((prevUsers) =>
             prevUsers.map((user) =>
               user._id === userId ? { ...user, isAdmin: newRole } : user
             )
           );
         } else {
-          toast.error(`❌ ${data.error}`);
+          toast.error(`❌ ${data.error || currentT.roleUpdateFailed}`);
         }
       } catch (error) {
-        toast.error("❌ Failed to update user role");
+        toast.error(`❌ ${currentT.roleUpdateFailed}`);
       }
     }
   };
@@ -135,12 +234,12 @@ export default function Users() {
 
       if (res.ok) {
         setUsers(data.users);
-        toast.info("Users list refreshed!");
+        toast.info(isRTL ? "تم تحديث القائمة!" : "Users list refreshed!");
       } else {
-        toast.error(data.error);
+        toast.error(data.error || currentT.fetchUsersFailed);
       }
     } catch (error) {
-      toast.error("Failed to refresh users");
+      toast.error(currentT.fetchUsersFailed);
     } finally {
       setLoading(false);
     }
@@ -148,13 +247,13 @@ export default function Users() {
 
   const handleSoftDelete = async (userId, userName) => {
     const confirmation = await Swal.fire({
-      title: `Disable ${userName}?`,
-      text: `Disabling will prevent this user from logging in. This action can be reversed by reactivating the account.`,
+      title: currentT.confirmDisableTitle.replace("{name}", userName),
+      text: currentT.confirmDisableText,
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#ef4444",
-      confirmButtonText: "Yes, disable",
-      cancelButtonText: "Cancel",
+      confirmButtonText: currentT.yesDisable,
+      cancelButtonText: currentT.cancel,
     });
 
     if (!confirmation.isConfirmed) return;
@@ -168,27 +267,27 @@ export default function Users() {
 
       const data = await res.json();
       if (res.ok) {
-        toast.success(data.message || "User disabled");
+        toast.success(isRTL ? "تم تعطيل الحساب بنجاح" : data.message || "User disabled");
         setUsers((prev) =>
           prev.map((u) => (u._id === userId ? { ...u, status: "inactive" } : u))
         );
       } else {
-        toast.error(data.error || "Failed to disable user");
+        toast.error(data.error || currentT.disableFailed);
       }
     } catch (error) {
-      toast.error("Failed to disable user");
+      toast.error(currentT.disableFailed);
     }
   };
 
   const handleResetPassword = async (userId, userName) => {
     const confirmation = await Swal.fire({
-      title: `Reset password for ${userName}?`,
-      html: `This will reset the user's password to <strong>123456789</strong>. They should change it after logging in.`,
+      title: currentT.confirmResetTitle.replace("{name}", userName),
+      html: currentT.confirmResetText,
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#2563eb",
-      confirmButtonText: "Yes, reset",
-      cancelButtonText: "Cancel",
+      confirmButtonText: currentT.yesReset,
+      cancelButtonText: currentT.cancel,
     });
 
     if (!confirmation.isConfirmed) return;
@@ -202,12 +301,12 @@ export default function Users() {
 
       const data = await res.json();
       if (res.ok) {
-        toast.success(data.message || "Password reset");
+        toast.success(isRTL ? "تم إعادة تعيين كلمة المرور بنجاح" : data.message || "Password reset");
       } else {
-        toast.error(data.error || "Failed to reset password");
+        toast.error(data.error || currentT.passwordResetFailed);
       }
     } catch (error) {
-      toast.error("Failed to reset password");
+      toast.error(currentT.passwordResetFailed);
     }
   };
 
@@ -227,15 +326,15 @@ export default function Users() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-base-100 to-base-200 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-base-100 to-base-200 flex items-center justify-center" dir={isRTL ? "rtl" : "ltr"}>
         <div className="text-center">
           <FaSpinner className="text-8xl text-primary animate-spin mx-auto mb-6" />
-          <div className="flex items-center gap-3 text-2xl font-semibold text-gray-700">
+          <div className="flex items-center gap-3 text-2xl font-semibold text-gray-700 justify-center">
             <FaUsers className="text-primary" />
-            <span>Loading Users...</span>
+            <span>{currentT.loadingUsers}</span>
           </div>
           <p className="text-gray-500 mt-2">
-            Please wait while we fetch user data
+            {currentT.waitFetch}
           </p>
         </div>
       </div>
@@ -243,7 +342,7 @@ export default function Users() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-base-100 to-base-200 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-base-100 to-base-200 p-6" dir={isRTL ? "rtl" : "ltr"}>
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-8">
@@ -253,11 +352,11 @@ export default function Users() {
               </div>
               <div>
                 <h1 className="text-4xl font-bold text-gray-800">
-                  User Management
+                  {currentT.userManagement}
                 </h1>
                 <p className="text-gray-600 mt-2 flex items-center gap-2">
                   <FaIdCard className="text-primary" />
-                  Manage user roles and system permissions
+                  {currentT.manageUsers}
                 </p>
               </div>
             </div>
@@ -273,7 +372,7 @@ export default function Users() {
                   {users.length}
                 </span>
               </div>
-              <p className="text-gray-600 font-semibold">Total Users</p>
+              <p className="text-gray-600 font-semibold">{currentT.totalUsers}</p>
             </div>
 
             <div className="bg-base-100 rounded-2xl p-6 shadow-lg border border-base-300 text-center">
@@ -283,7 +382,7 @@ export default function Users() {
                   {adminCount}
                 </span>
               </div>
-              <p className="text-gray-600 font-semibold">Administrators</p>
+              <p className="text-gray-600 font-semibold">{currentT.admins}</p>
             </div>
 
             <div className="bg-base-100 rounded-2xl p-6 shadow-lg border border-base-300 text-center">
@@ -293,7 +392,7 @@ export default function Users() {
                   {userCount}
                 </span>
               </div>
-              <p className="text-gray-600 font-semibold">Regular Users</p>
+              <p className="text-gray-600 font-semibold">{currentT.regularUsers}</p>
             </div>
           </div>
 
@@ -301,13 +400,13 @@ export default function Users() {
             <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
               <div className="flex-1 w-full">
                 <div className="relative">
-                  <FaSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-lg" />
+                  <FaSearch className={`absolute ${isRTL ? "right-4" : "left-4"} top-1/2 transform -translate-y-1/2 text-gray-400 text-lg`} />
                   <input
                     type="text"
-                    placeholder="Search users by name or email..."
+                    placeholder={currentT.searchPlaceholder}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="input input-bordered input-lg w-full pl-12 pr-4 rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20"
+                    className={`input input-bordered input-lg w-full ${isRTL ? "pr-12 pl-4" : "pl-12 pr-4"} rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20`}
                   />
                 </div>
               </div>
@@ -315,7 +414,7 @@ export default function Users() {
                 <FaUsers className="text-primary" />
                 <span>
                   {filteredUsers.length}{" "}
-                  {filteredUsers.length === 1 ? "user" : "users"} found
+                  {filteredUsers.length === 1 ? currentT.userFound : currentT.usersFound}
                 </span>
               </div>
             </div>
@@ -327,12 +426,10 @@ export default function Users() {
             <div className="text-center py-16">
               <FaExclamationCircle className="text-6xl text-gray-300 mx-auto mb-4" />
               <h3 className="text-2xl font-semibold text-gray-600 mb-2">
-                {searchTerm ? "No users found" : "No users available"}
+                {searchTerm ? currentT.noUsersFound : currentT.noUsersAvailable}
               </h3>
-              <p className="text-gray-500 max-w-md mx-auto">
-                {searchTerm
-                  ? "Try adjusting your search terms to find what you're looking for."
-                  : "Users will appear here once they register in the system."}
+              <p className="text-gray-500 max-w-md mx-auto px-4">
+                {searchTerm ? currentT.searchAdjust : currentT.usersAppear}
               </p>
             </div>
           ) : (
@@ -340,17 +437,17 @@ export default function Users() {
               <table className="table w-full">
                 <thead className="bg-base-200">
                   <tr>
-                    <th className="py-4 px-6 text-left font-semibold text-gray-700">
-                      User
+                    <th className={`py-4 px-6 ${isRTL ? "text-right" : "text-left"} font-semibold text-gray-700`}>
+                      {currentT.tableUser}
                     </th>
-                    <th className="py-4 px-6 text-left font-semibold text-gray-700">
-                      Email
+                    <th className={`py-4 px-6 ${isRTL ? "text-right" : "text-left"} font-semibold text-gray-700`}>
+                      {currentT.tableEmail}
                     </th>
-                    <th className="py-4 px-6 text-left font-semibold text-gray-700">
-                      Role
+                    <th className={`py-4 px-6 ${isRTL ? "text-right" : "text-left"} font-semibold text-gray-700`}>
+                      {currentT.tableRole}
                     </th>
-                    <th className="py-4 px-6 text-left font-semibold text-gray-700">
-                      Actions
+                    <th className={`py-4 px-6 ${isRTL ? "text-right" : "text-left"} font-semibold text-gray-700`}>
+                      {currentT.tableActions}
                     </th>
                   </tr>
                 </thead>
@@ -365,7 +462,7 @@ export default function Users() {
                     >
                       <td className="py-4 px-6">
                         <div className="flex items-center gap-3">
-                          <div className="avatar">
+                          <div className="avatar relative">
                             <div
                               className={`w-12 h-12 rounded-full ${
                                 user.isAdmin
@@ -408,7 +505,7 @@ export default function Users() {
                               )}
                             </div>
                             {user.isAdmin && (
-                              <div className="absolute -top-1 -right-1">
+                              <div className={`absolute -top-1 ${isRTL ? "-left-1" : "-right-1"}`}>
                                 <div className="bg-warning text-white rounded-full p-1">
                                   <FaUserShield className="text-xs" />
                                 </div>
@@ -444,12 +541,12 @@ export default function Users() {
                           {user.isAdmin ? (
                             <>
                               <FaUserShield />
-                              Administrator
+                              {currentT.adminRole}
                             </>
                           ) : (
                             <>
                               <FaUser />
-                              User
+                              {currentT.userRole}
                             </>
                           )}
                         </div>
@@ -466,21 +563,21 @@ export default function Users() {
                               )
                             }
                             className={`btn btn-sm flex items-center gap-2 px-3 rounded-lg transition-all duration-200 hover:scale-105 ${
-                              user.isAdmin ? "btn-neutral" : "btn-warning"
+                              user.isAdmin ? "btn-neutral" : "btn-warning text-white"
                             }`}
                           >
                             {user.isAdmin ? (
                               <>
                                 <FaUser />
                                 <span className="hidden sm:inline">
-                                  Make User
+                                  {currentT.makeUser}
                                 </span>
                               </>
                             ) : (
                               <>
                                 <FaCrown />
                                 <span className="hidden sm:inline">
-                                  Make Admin
+                                  {currentT.makeAdmin}
                                 </span>
                               </>
                             )}
@@ -490,22 +587,22 @@ export default function Users() {
                             onClick={() =>
                               handleResetPassword(user._id, user.name)
                             }
-                            className="btn btn-sm btn-secondary flex items-center gap-2 px-3 rounded-lg transition-all duration-200 hover:scale-105"
+                            className="btn btn-sm btn-secondary flex items-center gap-2 px-3 rounded-lg transition-all duration-200 hover:scale-105 text-white"
                             title="Reset password to 123456789"
                           >
                             <FaKey />
-                            <span className="hidden sm:inline">Reset</span>
+                            <span className="hidden sm:inline">{currentT.reset}</span>
                           </button>
 
                           <button
                             onClick={() =>
                               handleSoftDelete(user._id, user.name)
                             }
-                            className="btn btn-sm btn-error flex items-center gap-2 px-3 rounded-lg transition-all duration-200 hover:scale-105"
+                            className="btn btn-sm btn-error flex items-center gap-2 px-3 rounded-lg transition-all duration-200 hover:scale-105 text-white"
                             title="Disable user (soft delete)"
                           >
                             <FaTrash />
-                            <span className="hidden sm:inline">Disable</span>
+                            <span className="hidden sm:inline">{currentT.disable}</span>
                           </button>
                         </div>
                       </td>
@@ -528,7 +625,7 @@ export default function Users() {
                   <p className="text-2xl font-bold text-gray-800">
                     {users.length}
                   </p>
-                  <p className="text-sm text-gray-600">Total Users</p>
+                  <p className="text-sm text-gray-600">{currentT.totalUsers}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
@@ -537,10 +634,9 @@ export default function Users() {
                 </div>
                 <div>
                   <p className="text-2xl font-bold text-gray-800">
-                    {adminCount} (
-                    {Math.round((adminCount / users.length) * 100)}%)
+                    {adminCount} ({users.length > 0 ? Math.round((adminCount / users.length) * 100) : 0}%)
                   </p>
-                  <p className="text-sm text-gray-600">Admin Percentage</p>
+                  <p className="text-sm text-gray-600">{currentT.adminPercent}</p>
                 </div>
               </div>
             </div>

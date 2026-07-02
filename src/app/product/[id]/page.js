@@ -6,6 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { toast } from "react-toastify";
 import { useTranslation } from "react-i18next";
+import "../../../../i18n";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination } from "swiper/modules";
 import { useSession } from "next-auth/react";
@@ -33,7 +34,8 @@ import "swiper/css/pagination";
 import Swal from "sweetalert2";
 
 export default function ProductPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isRTL = i18n.language === "ar";
   const { id } = useParams();
   const { data: session } = useSession();
   const { updateCartCount } = useCart();
@@ -128,7 +130,7 @@ export default function ProductPage() {
 
   const handleAddToCart = async () => {
     if (!selectedSize || !selectedColor) {
-      toast.error("Please select a size and color");
+      toast.error(t("selectSizeAndColor"));
       return;
     }
 
@@ -141,13 +143,13 @@ export default function ProductPage() {
       });
 
       if (response.status === 200) {
-        toast.success("Product added to cart!");
+        toast.success(t("productAddedToCart"));
         await updateCartCount();
       } else {
-        toast.error("Failed to add product to cart");
+        toast.error(t("failedToAddToCart"));
       }
     } catch (error) {
-      toast.error("Failed to add product to cart");
+      toast.error(t("failedToAddToCart"));
     }
   };
 
@@ -155,9 +157,10 @@ export default function ProductPage() {
     if (!session) {
       await Swal.fire({
         icon: "warning",
-        title: "Sign in required",
-        text: "Please sign in to add a review.",
+        title: t("signInRequired"),
+        text: t("signInToAddReview"),
         confirmButtonColor: "#3085d6",
+        confirmButtonText: t("common.ok")
       });
       return;
     }
@@ -165,9 +168,10 @@ export default function ProductPage() {
     if (rating === 0 || !comment.trim()) {
       await Swal.fire({
         icon: "info",
-        title: "Incomplete review",
-        text: "Please provide both a rating and a comment.",
+        title: t("incompleteReview"),
+        text: t("provideRatingAndComment"),
         confirmButtonColor: "#3085d6",
+        confirmButtonText: t("common.ok")
       });
       return;
     }
@@ -176,7 +180,7 @@ export default function ProductPage() {
 
     try {
       Swal.fire({
-        title: "Submitting your review...",
+        title: t("submittingReview"),
         allowOutsideClick: false,
         didOpen: () => {
           Swal.showLoading();
@@ -193,8 +197,8 @@ export default function ProductPage() {
       if (response.status === 201) {
         await Swal.fire({
           icon: "success",
-          title: "Thank you!",
-          text: "Your review has been added successfully.",
+          title: t("thankYou"),
+          text: t("reviewAddedSuccessfully"),
           timer: 2000,
           showConfirmButton: false,
         });
@@ -210,16 +214,16 @@ export default function ProductPage() {
       } else {
         await Swal.fire({
           icon: "error",
-          title: "Error",
-          text: "Failed to add review. Please try again.",
+          title: t("error"),
+          text: t("failedToAddReview"),
         });
       }
     } catch (error) {
       Swal.close();
       await Swal.fire({
         icon: "error",
-        title: "Error",
-        text: error.response?.data?.message || "Failed to add review.",
+        title: t("error"),
+        text: error.response?.data?.message || t("failedToAddReview"),
       });
     } finally {
       setSubmittingReview(false);
@@ -228,7 +232,7 @@ export default function ProductPage() {
 
   const toggleWishlist = async () => {
     if (!session) {
-      toast.error("Please sign in to add to wishlist");
+      toast.error(t("pleaseSignInToAddToWishlist"));
       return;
     }
 
@@ -236,14 +240,14 @@ export default function ProductPage() {
       if (isWishlisted) {
         await axios.delete(`/api/wishlist/${product._id}`);
         setIsWishlisted(false);
-        toast.success("Removed from wishlist");
+        toast.success(t("removedFromWishlist"));
       } else {
         await axios.post("/api/wishlist", { productId: product._id });
         setIsWishlisted(true);
-        toast.success("Added to wishlist");
+        toast.success(t("addedToWishlist"));
       }
     } catch (error) {
-      toast.error("Failed to update wishlist");
+      toast.error(t("failedToUpdateWishlist"));
     }
   };
 
@@ -285,17 +289,17 @@ export default function ProductPage() {
 
   const handleDeleteReview = async (reviewId) => {
     if (!session) {
-      toast.error("Please sign in to delete reviews");
+      toast.error(t("signInToDeleteReviews"));
       return;
     }
 
     const confirmResult = await Swal.fire({
-      title: "Are you sure?",
-      text: "This review will be permanently deleted!",
+      title: t("areYouSure"),
+      text: t("reviewWillBeDeleted"),
       icon: "warning",
       showCancelButton: true,
-      confirmButtonText: "Yes, delete it!",
-      cancelButtonText: "Cancel",
+      confirmButtonText: t("yesDeleteIt"),
+      cancelButtonText: t("cancel"),
       confirmButtonColor: "#d33",
       cancelButtonColor: "#3085d6",
     });
@@ -310,7 +314,7 @@ export default function ProductPage() {
       );
 
       if (response.status === 200) {
-        toast.success("Review deleted successfully!");
+        toast.success(t("reviewDeletedSuccessfully"));
 
         const reviewsRes = await axios.get(`/api/products/${id}/reviews`);
         setReviews(reviewsRes.data);
@@ -318,10 +322,10 @@ export default function ProductPage() {
         const productRes = await axios.get(`/api/products/${id}`);
         setProduct(productRes.data);
       } else {
-        toast.error("Failed to delete review");
+        toast.error(t("failedToDeleteReview"));
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to delete review");
+      toast.error(error.response?.data?.message || t("failedToDeleteReview"));
     }
   };
 
@@ -344,7 +348,7 @@ export default function ProductPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-slate-50 to-emerald-50">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-slate-50 to-emerald-50" dir={isRTL ? "rtl" : "ltr"}>
         <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-green-600 mb-4"></div>
         <p className="text-gray-600 text-lg">{t("loadingProductDetails")}</p>
       </div>
@@ -353,7 +357,7 @@ export default function ProductPage() {
 
   if (!product) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-emerald-50">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-emerald-50" dir={isRTL ? "rtl" : "ltr"}>
         <div className="text-center">
           <div className="text-6xl mb-4">😔</div>
           <h2 className="text-2xl font-bold text-gray-800 mb-2">
@@ -374,7 +378,7 @@ export default function ProductPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-emerald-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-emerald-50" dir={isRTL ? "rtl" : "ltr"}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
           <div className="space-y-4">
@@ -403,11 +407,11 @@ export default function ProductPage() {
               </Swiper>
 
               {hasDiscount && (
-                <div className="absolute top-6 left-6 z-10">
+                <div className={`absolute top-6 ${isRTL ? "right-6" : "left-6"} z-10`}>
                   <div className="bg-gradient-to-r from-red-500 to-orange-500 text-white px-4 py-2 rounded-full font-bold text-sm shadow-2xl transform -rotate-6">
                     <div className="flex items-center gap-2">
                       <Zap size={16} fill="white" />
-                      {discountPercentage}% OFF
+                      {discountPercentage}% {t("off")}
                     </div>
                   </div>
                 </div>
@@ -436,15 +440,15 @@ export default function ProductPage() {
 
           <div className="space-y-6">
             <div className="flex flex-wrap gap-2">
-              <span className="bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 px-4 py-2 rounded-full font-medium text-sm border border-green-200">
+              <span className="bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 px-4 py-2 rounded-full font-semibold text-sm border border-green-200 shadow-sm">
                 {product.category?.name || t("uncategorized")}
               </span>
-              <span className="bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 px-4 py-2 rounded-full font-medium text-sm border border-green-200">
+              <span className="bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 px-4 py-2 rounded-full font-semibold text-sm border border-green-200 shadow-sm">
                 {product.brand?.name || t("noBrand")}
               </span>
               {product.isFeatured && (
-                <span className="bg-gradient-to-r from-amber-100 to-orange-100 text-amber-800 px-4 py-2 rounded-full font-medium text-sm border border-amber-200">
-                  ⭐ Featured
+                <span className="bg-gradient-to-r from-amber-100 to-orange-100 text-amber-800 px-4 py-2 rounded-full font-semibold text-sm border border-amber-200 shadow-sm">
+                  ⭐ {t("featured")}
                 </span>
               )}
             </div>
@@ -453,7 +457,7 @@ export default function ProductPage() {
               {product.name}
             </h1>
 
-            <div className="flex items-center gap-4">
+            <div className="flex flex-wrap items-center gap-4">
               <div className="flex items-center gap-2">
                 {renderStars(product.averageRating || 0, "lg")}
                 <span className="text-lg font-semibold text-gray-700">
@@ -462,16 +466,15 @@ export default function ProductPage() {
               </div>
               <span className="text-gray-500">•</span>
               <span className="text-gray-600 font-medium">
-                {product.numReviews || 0} reviews
+                {product.numReviews || 0} {t("reviews")}
               </span>
               <span className="text-gray-500">•</span>
               <span
-                className={`font-semibold ${
+                className={`font-bold ${
                   product.countInStock > 0 ? "text-green-600" : "text-red-600"
                 }`}
               >
-                {product.countInStock}{" "}
-                {product.countInStock > 0 ? "In Stock" : "Out of Stock"}
+                {product.countInStock > 0 ? t("inStock") : t("outOfStock")} ({product.countInStock})
               </span>
             </div>
 
@@ -486,8 +489,8 @@ export default function ProductPage() {
                       ${product.price.toFixed(2)}
                     </span>
                   </div>
-                  <div className="bg-gradient-to-r from-red-500 to-orange-500 text-white px-3 py-1 rounded-full text-sm font-bold">
-                    Save ${(product.price - product.discountPrice).toFixed(2)}
+                  <div className="bg-gradient-to-r from-red-500 to-orange-500 text-white px-3 py-1 rounded-full text-sm font-bold shadow-sm">
+                    {t("save")} {(product.price - product.discountPrice).toFixed(2)}
                   </div>
                 </div>
               ) : (
@@ -498,15 +501,15 @@ export default function ProductPage() {
             </div>
 
             <div
-              className="text-lg text-gray-700 leading-relaxed"
+              className="text-lg text-gray-700 leading-relaxed border-t border-gray-100 pt-4"
               dangerouslySetInnerHTML={{ __html: product.description }}
             />
 
-            <div className="space-y-6">
+            <div className="space-y-6 border-t border-gray-100 pt-4">
               {product.sizes && product.sizes.length > 0 && (
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                    <span>Size</span>
+                    <span>{t("size")}</span>
                   </h3>
                   <div className="grid grid-cols-4 gap-3">
                     {product.sizes.map((size) => (
@@ -529,7 +532,7 @@ export default function ProductPage() {
               {product.colors && product.colors.length > 0 && (
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                    Color
+                    {t("color")}
                   </h3>
                   <div className="flex flex-wrap gap-3">
                     {product.colors.map((color) => (
@@ -553,7 +556,7 @@ export default function ProductPage() {
 
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                  Quantity
+                  {t("quantity")}
                 </h3>
                 <div className="flex items-center gap-4 w-fit">
                   <button
@@ -582,26 +585,26 @@ export default function ProductPage() {
                 className="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white py-4 rounded-2xl font-bold text-lg shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
               >
                 <ShoppingCart size={24} />
-                {product.countInStock === 0 ? "Out of Stock" : "Add to Cart"}
+                {product.countInStock === 0 ? t("outOfStock") : t("addToCart")}
               </button>
 
               <div className="grid grid-cols-3 gap-4">
                 <div className="bg-white rounded-2xl p-4 text-center border border-gray-100 shadow-sm">
                   <Truck className="w-8 h-8 text-green-600 mx-auto mb-2" />
                   <p className="text-sm font-semibold text-gray-900">
-                    Free Shipping
+                    {t("freeShipping")}
                   </p>
                 </div>
                 <div className="bg-white rounded-2xl p-4 text-center border border-gray-100 shadow-sm">
                   <RotateCcw className="w-8 h-8 text-emerald-600 mx-auto mb-2" />
                   <p className="text-sm font-semibold text-gray-900">
-                    30-Day Return
+                    {t("dayReturn")}
                   </p>
                 </div>
                 <div className="bg-white rounded-2xl p-4 text-center border border-gray-100 shadow-sm">
                   <Shield className="w-8 h-8 text-green-600 mx-auto mb-2" />
                   <p className="text-sm font-semibold text-gray-900">
-                    2-Year Warranty
+                    {t("yearWarranty")}
                   </p>
                 </div>
               </div>
@@ -614,12 +617,12 @@ export default function ProductPage() {
             <div className="flex items-center justify-between mb-8">
               <div>
                 <h2 className="text-3xl font-bold text-gray-900">
-                  {session ? "Recommended for You" : "You Might Also Like"}
+                  {session ? t("recommendedForYou") : t("youMightAlsoLike")}
                 </h2>
                 <p className="text-gray-600 mt-2">
                   {session
-                    ? "Products tailored to your interests and purchase history"
-                    : "Popular products you might be interested in"}
+                    ? t("tailoredToInterests")
+                    : t("popularProducts")}
                 </p>
               </div>
             </div>
@@ -659,12 +662,12 @@ export default function ProductPage() {
                       {recommendedProduct.discountPrice &&
                         recommendedProduct.discountPrice <
                           recommendedProduct.price && (
-                          <div className="absolute top-3 left-3 bg-gradient-to-r from-red-500 to-orange-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
-                            SALE
+                          <div className={`absolute top-3 ${isRTL ? "right-3" : "left-3"} bg-gradient-to-r from-red-500 to-orange-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg`}>
+                            {t("onSale")}
                           </div>
                         )}
                       {recommendedProduct.isFeatured && (
-                        <div className="absolute top-3 right-3 bg-gradient-to-r from-emerald-500 to-green-500 text-white px-2 py-1 rounded-full text-xs font-bold shadow-lg">
+                        <div className={`absolute top-3 ${isRTL ? "left-3" : "right-3"} bg-gradient-to-r from-emerald-500 to-green-500 text-white px-2 py-1 rounded-full text-xs font-bold shadow-lg`}>
                           ⭐
                         </div>
                       )}
@@ -675,7 +678,7 @@ export default function ProductPage() {
                       </h3>
                       {recommendedProduct.brand?.name && (
                         <p className="text-xs text-gray-500 mb-2">
-                          by {recommendedProduct.brand.name}
+                          {t("by")} {recommendedProduct.brand.name}
                         </p>
                       )}
                       <div className="flex items-center justify-between">
@@ -713,16 +716,16 @@ export default function ProductPage() {
           <div className="mt-20">
             <div className="flex items-center justify-between mb-8">
               <h2 className="text-3xl font-bold text-gray-900">
-                Related Products
+                {t("relatedProducts")}
               </h2>
               <Link
                 href={`/products?category=${product.category?.slug}`}
                 className="group flex items-center gap-2 text-green-600 hover:text-green-700 font-semibold"
               >
-                View All
+                {t("viewAll")}
                 <ArrowRight
                   size={20}
-                  className="group-hover:translate-x-1 transition-transform"
+                  className={`group-hover:${isRTL ? "-translate-x-1" : "translate-x-1"} transition-transform ${isRTL ? "rotate-180" : ""}`}
                 />
               </Link>
             </div>
@@ -761,8 +764,8 @@ export default function ProductPage() {
                       />
                       {relatedProduct.discountPrice &&
                         relatedProduct.discountPrice < relatedProduct.price && (
-                          <div className="absolute top-3 left-3 bg-gradient-to-r from-red-500 to-orange-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
-                            SALE
+                          <div className={`absolute top-3 ${isRTL ? "right-3" : "left-3"} bg-gradient-to-r from-red-500 to-orange-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg`}>
+                            {t("onSale")}
                           </div>
                         )}
                     </div>
@@ -801,11 +804,11 @@ export default function ProductPage() {
           </div>
         )}
 
-        <div className="mt-16 lg:mt-20">
+        <div className="mt-16 lg:mt-20" dir={isRTL ? "rtl" : "ltr"}>
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             {/* Header */}
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-6 sm:mb-8 text-center">
-              Customer Reviews
+              {t("customerReviews")}
             </h2>
 
             {/* Rating Summary */}
@@ -820,9 +823,9 @@ export default function ProductPage() {
                     <div className="flex items-center justify-center mb-1">
                       {renderStars(product.averageRating || 0, "lg")}
                     </div>
-                    <div className="text-sm text-gray-600">
+                    <div className="text-sm text-gray-600 font-medium">
                       {product.numReviews || 0}{" "}
-                      {product.numReviews === 1 ? "review" : "reviews"}
+                      {product.numReviews === 1 ? t("review") : t("reviews")}
                     </div>
                   </div>
 
@@ -868,7 +871,7 @@ export default function ProductPage() {
                     }
                     className="w-full sm:w-auto bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 sm:px-8 py-3 rounded-xl sm:rounded-2xl font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-300 text-sm sm:text-base"
                   >
-                    Write a Review
+                    {t("writeAReview")}
                   </button>
                 )}
               </div>
@@ -881,12 +884,12 @@ export default function ProductPage() {
                 className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 mb-6 sm:mb-8 shadow-lg border border-gray-100"
               >
                 <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">
-                  Share Your Experience
+                  {t("shareYourExperience")}
                 </h3>
                 <div className="space-y-4 sm:space-y-6">
                   <div>
                     <label className="block text-base sm:text-lg font-medium text-gray-700 mb-2 sm:mb-3">
-                      Your Rating
+                      {t("yourRating")}
                     </label>
                     <div className="flex items-center gap-1 sm:gap-2">
                       {[...Array(5)].map((_, i) => (
@@ -912,7 +915,7 @@ export default function ProductPage() {
                       htmlFor="comment"
                       className="block text-base sm:text-lg font-medium text-gray-700 mb-2 sm:mb-3"
                     >
-                      Your Review
+                      {t("yourReview")}
                     </label>
                     <textarea
                       id="comment"
@@ -920,7 +923,7 @@ export default function ProductPage() {
                       className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl sm:rounded-2xl focus:outline-none focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all duration-300 resize-none text-sm sm:text-base"
                       value={comment}
                       onChange={(e) => setComment(e.target.value)}
-                      placeholder="Share your thoughts about this product..."
+                      placeholder={t("shareThoughtsPlaceholder")}
                     ></textarea>
                   </div>
                   <button
@@ -932,11 +935,11 @@ export default function ProductPage() {
                       <>
                         <div className="animate-spin rounded-full h-5 w-5 sm:h-6 sm:w-6 border-b-2 border-white"></div>
                         <span className="text-sm sm:text-base">
-                          Submitting...
+                          {t("submitting")}
                         </span>
                       </>
                     ) : (
-                      "Submit Review"
+                      t("submitReview")
                     )}
                   </button>
                 </div>
@@ -948,26 +951,26 @@ export default function ProductPage() {
                 <div className="text-center py-8 sm:py-12">
                   <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-b-2 border-green-600 mx-auto mb-3 sm:mb-4"></div>
                   <p className="text-gray-600 text-base sm:text-lg">
-                    Loading reviews...
+                    {t("loadingReviews")}
                   </p>
                 </div>
               ) : reviews.length === 0 ? (
                 <div className="text-center py-8 sm:py-12 bg-gradient-to-br from-gray-50 to-emerald-50 rounded-2xl sm:rounded-3xl border-2 border-dashed border-gray-200">
                   <div className="text-4xl sm:text-6xl mb-3 sm:mb-4">💬</div>
                   <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">
-                    No Reviews Yet
+                    {t("noReviewsYet")}
                   </h3>
                   <p className="text-gray-600 mb-4 sm:mb-6 text-sm sm:text-base">
-                    Be the first to share your thoughts about this product!
+                    {t("beFirstToShare")}
                   </p>
                   {!session && (
                     <button
                       onClick={() =>
-                        toast.info("Please sign in to add a review")
+                        toast.info(t("signInToAddReview"))
                       }
                       className="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 sm:px-8 py-2 sm:py-3 rounded-xl sm:rounded-2xl font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-300 text-sm sm:text-base"
                     >
-                      Sign In to Review
+                      {t("signInToReview")}
                     </button>
                   )}
                 </div>
@@ -985,8 +988,8 @@ export default function ProductPage() {
                           className="hidden sm:flex absolute bottom-4 right-4 p-2 text-gray-300 hover:text-red-500 transition-all duration-300 opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0"
                           title={
                             session.user.role === "admin"
-                              ? "Delete review (Admin)"
-                              : "Delete my review"
+                              ? (isRTL ? "حذف التقييم (مسؤول)" : "Delete review (Admin)")
+                              : (isRTL ? "حذف تقييمي" : "Delete my review")
                           }
                         >
                           <Trash2 className="w-5 h-5" />
@@ -1034,7 +1037,7 @@ export default function ProductPage() {
                             <Clock size={12} className="sm:w-3 sm:h-3" />
                             <span>
                               {new Date(review.createdAt).toLocaleDateString(
-                                "en-US",
+                                isRTL ? "ar-EG" : "en-US",
                                 {
                                   year: "numeric",
                                   month: "short",
@@ -1047,7 +1050,7 @@ export default function ProductPage() {
 
                         <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-3">
                           <h4 className="font-bold text-gray-900 text-base sm:text-lg">
-                            {review.name || review.user?.name || "Anonymous"}
+                            {review.name || review.user?.name || (isRTL ? "مجهول" : "Anonymous")}
                           </h4>
                           {session?.user?.role === "admin" && (
                             <span className="bg-gradient-to-r from-red-100 to-emerald-100 text-red-700 text-xs px-2 py-1 rounded-full font-medium border border-red-200 w-fit">
@@ -1068,7 +1071,7 @@ export default function ProductPage() {
                             className="sm:w-4 sm:h-4 text-green-500"
                           />
                           <span className="text-xs sm:text-sm text-green-600 font-medium">
-                            Verified Purchase
+                            {t("verifiedPurchase")}
                           </span>
                         </div>
                       </div>

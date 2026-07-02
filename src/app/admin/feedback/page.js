@@ -4,6 +4,7 @@ import { toast } from "react-toastify";
 import Swal from "sweetalert2";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { useTranslation } from "react-i18next";
 import {
   FaStar,
   FaTrash,
@@ -21,8 +22,82 @@ import {
 } from "react-icons/fa";
 
 export default function AdminFeedbackPage() {
+  const { t, i18n } = useTranslation();
+  const isRTL = i18n.language === "ar";
   const { data: session, status } = useSession();
   const router = useRouter();
+
+  const localT = {
+    ar: {
+      feedbackManagement: "إدارة الآراء",
+      manageFeedback: "إدارة ومراجعة تقييمات وآراء العملاء",
+      totalFeedback: "إجمالي الآراء",
+      averageRating: "متوسط التقييم",
+      fiveStarReviews: "تقييمات 5 نجوم",
+      satisfactionRate: "معدل الرضا",
+      searchPlaceholder: "البحث عن آراء بالاسم، البريد الإلكتروني، الدور، أو التعليق...",
+      entryFound: "رأي تم العثور عليه",
+      entriesFound: "آراء تم العثور عليها",
+      noFeedbackFound: "لم يتم العثور على آراء",
+      noFeedbackYet: "لا توجد آراء بعد",
+      searchAdjust: "حاول تغيير كلمات البحث للعثور على ما تبحث عنه.",
+      signFeedback: "ستظهر آراء العملاء هنا بمجرد تقديمهم لتقييماتهم.",
+      customer: "العميل",
+      role: "الوظيفة / الدور",
+      comment: "التعليق",
+      rating: "التقييم",
+      date: "التاريخ",
+      actions: "الإجراءات",
+      delete: "حذف",
+      loadingFeedback: "جاري تحميل الآراء...",
+      pleaseWait: "يرجى الانتظار بينما نقوم بجلب آراء العملاء...",
+      confirmDeleteTitle: "حذف الرأي؟",
+      confirmDeleteHtml: "أنت على وشك حذف رأي العميل:",
+      confirmDeleteWarning: "لا يمكن التراجع عن هذا الإجراء!",
+      yesDelete: "نعم، قم بالحذف!",
+      cancel: "إلغاء",
+      deletedTitle: "تم الحذف!",
+      deletedSuccessText: "تمت إزالة رأي العميل بنجاح",
+      feedbackDeletedToast: "🗑️ تم حذف الرأي بنجاح",
+      fetchFailed: "فشل تحميل الآراء",
+      fiveStarPercentage: "نسبة الـ 5 نجوم"
+    },
+    en: {
+      feedbackManagement: "Feedback Management",
+      manageFeedback: "Manage and review customer feedback and ratings",
+      totalFeedback: "Total Feedback",
+      averageRating: "Average Rating",
+      fiveStarReviews: "5-Star Reviews",
+      satisfactionRate: "Satisfaction Rate",
+      searchPlaceholder: "Search feedback by name, email, role, or comment...",
+      entryFound: "entry found",
+      entriesFound: "entries found",
+      noFeedbackFound: "No feedback found",
+      noFeedbackYet: "No feedback yet",
+      searchAdjust: "Try adjusting your search terms to find what you're looking for.",
+      signFeedback: "Customer feedback will appear here once they submit their reviews.",
+      customer: "Customer",
+      role: "Role",
+      comment: "Comment",
+      rating: "Rating",
+      date: "Date",
+      actions: "Actions",
+      delete: "Delete",
+      loadingFeedback: "Loading Feedback...",
+      pleaseWait: "Please wait while we fetch customer feedback",
+      confirmDeleteTitle: "Delete Feedback?",
+      confirmDeleteHtml: "You are about to delete feedback from:",
+      confirmDeleteWarning: "This action cannot be undone!",
+      yesDelete: "Yes, Delete It!",
+      cancel: "Cancel",
+      deletedTitle: "Deleted!",
+      deletedSuccessText: "Feedback has been removed successfully",
+      feedbackDeletedToast: "🗑️ Feedback deleted successfully",
+      fetchFailed: "Failed to fetch feedback",
+      fiveStarPercentage: "5-Star Percentage"
+    }
+  };
+  const currentT = isRTL ? localT.ar : localT.en;
   const [feedbacks, setFeedbacks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -45,7 +120,7 @@ export default function AdminFeedbackPage() {
     const fetchData = async () => {
       try {
         const response = await fetch("/api/feedback");
-        if (!response.ok) throw new Error("Failed to fetch feedback");
+        if (!response.ok) throw new Error(currentT.fetchFailed);
         const data = await response.json();
         setFeedbacks(data);
       } catch (err) {
@@ -55,25 +130,25 @@ export default function AdminFeedbackPage() {
       }
     };
     fetchData();
-  }, []);
+  }, [isRTL]);
 
   const handleDelete = async (id, userName) => {
     Swal.fire({
-      title: "Delete Feedback?",
+      title: currentT.confirmDeleteTitle,
       html: `
-        <div class="text-center">
+        <div class="text-center" dir="${isRTL ? "rtl" : "ltr"}">
           <div class="text-6xl text-red-500 mb-4">🗑️</div>
-          <p class="text-lg font-semibold mb-2">You are about to delete feedback from:</p>
+          <p class="text-lg font-semibold mb-2">${currentT.confirmDeleteHtml}</p>
           <p class="text-xl text-primary font-bold">${userName}</p>
-          <p class="text-gray-600 mt-2">This action cannot be undone!</p>
+          <p class="text-gray-600 mt-2">${currentT.confirmDeleteWarning}</p>
         </div>
       `,
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#ef4444",
       cancelButtonColor: "#6b7280",
-      confirmButtonText: "Yes, Delete It!",
-      cancelButtonText: "Cancel",
+      confirmButtonText: currentT.yesDelete,
+      cancelButtonText: currentT.cancel,
 
       customClass: {
         popup: "rounded-2xl",
@@ -87,14 +162,14 @@ export default function AdminFeedbackPage() {
             method: "DELETE",
           });
 
-          if (!response.ok) throw new Error("Failed to delete feedback");
+          if (!response.ok) throw new Error(isRTL ? "فشل حذف الرأي" : "Failed to delete feedback");
 
           setFeedbacks(feedbacks.filter((fb) => fb._id !== id));
-          toast.success("🗑️ Feedback deleted successfully");
+          toast.success(currentT.feedbackDeletedToast);
 
           Swal.fire({
-            title: "Deleted!",
-            text: "Feedback has been removed successfully",
+            title: currentT.deletedTitle,
+            text: currentT.deletedSuccessText,
             icon: "success",
             timer: 1500,
             showConfirmButton: false,
@@ -110,10 +185,10 @@ export default function AdminFeedbackPage() {
     setLoading(true);
     try {
       const response = await fetch("/api/feedback");
-      if (!response.ok) throw new Error("Failed to fetch feedback");
+      if (!response.ok) throw new Error(currentT.fetchFailed);
       const data = await response.json();
       setFeedbacks(data);
-      toast.info("Feedback list refreshed!");
+      toast.info(isRTL ? "تم تحديث قائمة الآراء!" : "Feedback list refreshed!");
     } catch (err) {
       toast.error(`❌ ${err.message}`);
     } finally {
@@ -146,15 +221,15 @@ export default function AdminFeedbackPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-base-100 to-base-200 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-base-100 to-base-200 flex items-center justify-center" dir={isRTL ? "rtl" : "ltr"}>
         <div className="text-center">
           <FaSpinner className="text-8xl text-primary animate-spin mx-auto mb-6" />
-          <div className="flex items-center gap-3 text-2xl font-semibold text-gray-700">
+          <div className="flex items-center gap-3 text-2xl font-semibold text-gray-700 justify-center">
             <FaUsers className="text-primary" />
-            <span>Loading Feedback...</span>
+            <span>{currentT.loadingFeedback}</span>
           </div>
           <p className="text-gray-500 mt-2">
-            Please wait while we fetch customer feedback
+            {currentT.pleaseWait}
           </p>
         </div>
       </div>
@@ -162,7 +237,7 @@ export default function AdminFeedbackPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-base-100 to-base-200 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-base-100 to-base-200 p-6" dir={isRTL ? "rtl" : "ltr"}>
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-8">
@@ -172,11 +247,11 @@ export default function AdminFeedbackPage() {
               </div>
               <div>
                 <h1 className="text-4xl font-bold text-gray-800">
-                  Feedback Management
+                  {currentT.feedbackManagement}
                 </h1>
                 <p className="text-gray-600 mt-2 flex items-center gap-2">
                   <FaEye className="text-primary" />
-                  Manage and review customer feedback and ratings
+                  {currentT.manageFeedback}
                 </p>
               </div>
             </div>
@@ -192,7 +267,7 @@ export default function AdminFeedbackPage() {
                   {feedbacks.length}
                 </span>
               </div>
-              <p className="text-gray-600 font-semibold">Total Feedback</p>
+              <p className="text-gray-600 font-semibold">{currentT.totalFeedback}</p>
             </div>
 
             <div className="bg-base-100 rounded-2xl p-6 shadow-lg border border-base-300 text-center">
@@ -202,7 +277,7 @@ export default function AdminFeedbackPage() {
                   {averageRating}
                 </span>
               </div>
-              <p className="text-gray-600 font-semibold">Average Rating</p>
+              <p className="text-gray-600 font-semibold">{currentT.averageRating}</p>
             </div>
 
             <div className="bg-base-100 rounded-2xl p-6 shadow-lg border border-base-300 text-center">
@@ -212,7 +287,7 @@ export default function AdminFeedbackPage() {
                   {ratingDistribution[5]}
                 </span>
               </div>
-              <p className="text-gray-600 font-semibold">5-Star Reviews</p>
+              <p className="text-gray-600 font-semibold">{currentT.fiveStarReviews}</p>
             </div>
 
             <div className="bg-base-100 rounded-2xl p-6 shadow-lg border border-base-300 text-center">
@@ -227,7 +302,7 @@ export default function AdminFeedbackPage() {
                   %
                 </span>
               </div>
-              <p className="text-gray-600 font-semibold">Satisfaction Rate</p>
+              <p className="text-gray-600 font-semibold">{currentT.satisfactionRate}</p>
             </div>
           </div>
 
@@ -235,13 +310,13 @@ export default function AdminFeedbackPage() {
             <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
               <div className="flex-1 w-full">
                 <div className="relative">
-                  <FaSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-lg" />
+                  <FaSearch className={`absolute ${isRTL ? "right-4" : "left-4"} top-1/2 transform -translate-y-1/2 text-gray-400 text-lg`} />
                   <input
                     type="text"
-                    placeholder="Search feedback by name, email, role, or comment..."
+                    placeholder={currentT.searchPlaceholder}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="input input-bordered input-lg w-full pl-12 pr-4 rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20"
+                    className={`input input-bordered input-lg w-full ${isRTL ? "pr-12 pl-4" : "pl-12 pr-4"} rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20`}
                   />
                 </div>
               </div>
@@ -249,7 +324,7 @@ export default function AdminFeedbackPage() {
                 <FaUsers className="text-primary" />
                 <span>
                   {filteredFeedbacks.length}{" "}
-                  {filteredFeedbacks.length === 1 ? "entry" : "entries"} found
+                  {filteredFeedbacks.length === 1 ? currentT.entryFound : currentT.entriesFound}
                 </span>
               </div>
             </div>
@@ -258,15 +333,13 @@ export default function AdminFeedbackPage() {
 
         <div className="bg-base-100 rounded-2xl shadow-xl border border-base-300 overflow-hidden">
           {filteredFeedbacks.length === 0 ? (
-            <div className="text-center py-16">
+            <div className="text-center py-16 px-4">
               <FaExclamationTriangle className="text-6xl text-gray-300 mx-auto mb-4" />
               <h3 className="text-2xl font-semibold text-gray-600 mb-2">
-                {searchTerm ? "No feedback found" : "No feedback yet"}
+                {searchTerm ? currentT.noFeedbackFound : currentT.noFeedbackYet}
               </h3>
               <p className="text-gray-500 max-w-md mx-auto">
-                {searchTerm
-                  ? "Try adjusting your search terms to find what you're looking for."
-                  : "Customer feedback will appear here once they submit their reviews."}
+                {searchTerm ? currentT.searchAdjust : currentT.signFeedback}
               </p>
             </div>
           ) : (
@@ -274,23 +347,23 @@ export default function AdminFeedbackPage() {
               <table className="table w-full">
                 <thead className="bg-base-200">
                   <tr>
-                    <th className="py-4 px-6 text-left font-semibold text-gray-700">
-                      Customer
+                    <th className={`py-4 px-6 ${isRTL ? "text-right" : "text-left"} font-semibold text-gray-700`}>
+                      {currentT.customer}
                     </th>
-                    <th className="py-4 px-6 text-left font-semibold text-gray-700">
-                      Role
+                    <th className={`py-4 px-6 ${isRTL ? "text-right" : "text-left"} font-semibold text-gray-700`}>
+                      {currentT.role}
                     </th>
-                    <th className="py-4 px-6 text-left font-semibold text-gray-700">
-                      Comment
+                    <th className={`py-4 px-6 ${isRTL ? "text-right" : "text-left"} font-semibold text-gray-700`}>
+                      {currentT.comment}
                     </th>
-                    <th className="py-4 px-6 text-left font-semibold text-gray-700">
-                      Rating
+                    <th className={`py-4 px-6 ${isRTL ? "text-right" : "text-left"} font-semibold text-gray-700`}>
+                      {currentT.rating}
                     </th>
-                    <th className="py-4 px-6 text-left font-semibold text-gray-700">
-                      Date
+                    <th className={`py-4 px-6 ${isRTL ? "text-right" : "text-left"} font-semibold text-gray-700`}>
+                      {currentT.date}
                     </th>
-                    <th className="py-4 px-6 text-left font-semibold text-gray-700">
-                      Actions
+                    <th className={`py-4 px-6 ${isRTL ? "text-right" : "text-left"} font-semibold text-gray-700`}>
+                      {currentT.actions}
                     </th>
                   </tr>
                 </thead>
@@ -325,7 +398,7 @@ export default function AdminFeedbackPage() {
                       </td>
 
                       <td className="py-4 px-6">
-                        <div className="badge badge-primary badge-lg capitalize">
+                        <div className="badge badge-primary badge-lg capitalize font-bold">
                           {feedback.role}
                         </div>
                       </td>
@@ -333,7 +406,7 @@ export default function AdminFeedbackPage() {
                       <td className="py-4 px-6 max-w-md">
                         <div className="flex items-start gap-2">
                           <FaComment className="text-gray-400 mt-1 flex-shrink-0" />
-                          <p className="text-gray-600 line-clamp-2 hover:line-clamp-none transition-all cursor-help">
+                          <p className="text-gray-600 line-clamp-2 hover:line-clamp-none transition-all cursor-help leading-relaxed">
                             {feedback.comment}
                           </p>
                         </div>
@@ -363,7 +436,7 @@ export default function AdminFeedbackPage() {
                         <div className="flex items-center gap-2 text-gray-600">
                           <FaCalendar className="text-gray-400" />
                           {new Date(feedback.createdAt).toLocaleDateString(
-                            "en-US",
+                            isRTL ? "ar-EG" : "en-US",
                             {
                               year: "numeric",
                               month: "short",
@@ -378,10 +451,10 @@ export default function AdminFeedbackPage() {
                           onClick={() =>
                             handleDelete(feedback._id, feedback.name)
                           }
-                          className="btn btn-error btn-sm flex items-center gap-2 px-4 rounded-lg transition-all duration-200 hover:scale-105"
+                          className="btn btn-error btn-sm flex items-center justify-center gap-2 px-4 rounded-lg transition-all duration-200 hover:scale-105 text-white"
                         >
                           <FaTrash className="text-sm" />
-                          Delete
+                          {currentT.delete}
                         </button>
                       </td>
                     </tr>
@@ -403,7 +476,7 @@ export default function AdminFeedbackPage() {
                   <p className="text-2xl font-bold text-gray-800">
                     {feedbacks.length}
                   </p>
-                  <p className="text-sm text-gray-600">Total Feedback</p>
+                  <p className="text-sm text-gray-600">{currentT.totalFeedback}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
@@ -414,7 +487,7 @@ export default function AdminFeedbackPage() {
                   <p className="text-2xl font-bold text-gray-800">
                     {averageRating}/5
                   </p>
-                  <p className="text-sm text-gray-600">Average Rating</p>
+                  <p className="text-sm text-gray-600">{currentT.averageRating}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
@@ -430,7 +503,7 @@ export default function AdminFeedbackPage() {
                       : 0}
                     %
                   </p>
-                  <p className="text-sm text-gray-600">5-Star Percentage</p>
+                  <p className="text-sm text-gray-600">{currentT.fiveStarPercentage}</p>
                 </div>
               </div>
             </div>

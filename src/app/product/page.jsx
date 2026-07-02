@@ -2,6 +2,7 @@
 import { useEffect, useState, useMemo, Suspense } from "react";
 import { toast } from "react-toastify";
 import { useTranslation } from "react-i18next";
+import "../../../i18n";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
@@ -20,7 +21,8 @@ import Image from "next/image";
 import { useCart } from "../../../components/CartContext";
 
 function AllProductsPageContent() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isRTL = i18n.language === "ar";
   const { updateCartCount } = useCart();
   const [products, setProducts] = useState([]);
   const [brands, setBrands] = useState([]);
@@ -255,7 +257,7 @@ function AllProductsPageContent() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen backdrop-blur-sm">
+      <div className="flex justify-center items-center min-h-screen backdrop-blur-sm" dir={isRTL ? "rtl" : "ltr"}>
         <div className="text-center space-y-4">
           <span className="loading loading-infinity loading-lg text-primary"></span>
           <p className="text-lg font-medium text-gray-800" suppressHydrationWarning>
@@ -267,7 +269,7 @@ function AllProductsPageContent() {
   }
 
   return (
-    <div className="min-h-screen py-8 bg-gradient-to-br from-gray-50 to-emerald-50">
+    <div className="min-h-screen py-8 bg-gradient-to-br from-gray-50 to-emerald-50" dir={isRTL ? "rtl" : "ltr"}>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <h1 className="text-4xl font-bold mb-8 text-center text-primary ">
           {t("allProducts")}
@@ -277,18 +279,18 @@ function AllProductsPageContent() {
         <div className="mb-8 space-y-4">
           <div className="relative max-w-2xl mx-auto">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <Search className={`absolute ${isRTL ? "right-3" : "left-3"} top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5`} />
               <input
                 type="text"
                 placeholder={t("searchProductsByNameBrandDescription")}
                 value={filters.search}
                 onChange={(e) => handleFilterChange("search", e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-primary rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 bg-white shadow-sm"
+                className={`w-full ${isRTL ? "pr-10 pl-10" : "pl-10 pr-10"} py-3 border border-primary rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 bg-white shadow-sm`}
               />
               {filters.search && (
                 <button
                   onClick={() => handleFilterChange("search", "")}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                  className={`absolute ${isRTL ? "left-3" : "right-3"} top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors`}
                 >
                   <X size={20} />
                 </button>

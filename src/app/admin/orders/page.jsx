@@ -264,7 +264,6 @@ export default function AdminOrdersPage() {
     doc.setFillColor(...primaryColor);
     doc.rect(0, 0, 210, 4, "F");
 
-    // Logo image rendering
     const logoData = await getLogoBase64();
     let textStartX = 15;
     if (logoData) {

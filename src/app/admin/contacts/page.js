@@ -4,6 +4,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import Swal from "sweetalert2";
+import { useTranslation } from "react-i18next";
 import {
   FaEnvelope,
   FaUser,
@@ -22,16 +23,96 @@ import {
 } from "react-icons/fa";
 
 export default function AdminContactsPage() {
+  const { t, i18n } = useTranslation();
+  const isRTL = i18n.language === "ar";
   const { data: session, status } = useSession();
   const router = useRouter();
+
+  const localT = {
+    ar: {
+      contactManagement: "إدارة جهات الاتصال",
+      manageContacts: "إدارة الردود على استفسارات العملاء والرسائل الواردة",
+      totalMessages: "إجمالي الرسائل",
+      responded: "تم الرد عليها",
+      pendingResponse: "في انتظار الرد",
+      searchPlaceholder: "البحث في الرسائل بالاسم، البريد، الموضوع أو المحتوى...",
+      messagesFound: "رسائل تم العثور عليها",
+      messageFound: "رسالة تم العثور عليها",
+      noMessagesFound: "لم يتم العثور على رسائل",
+      noMessagesAvailable: "لا توجد رسائل تواصل حالياً",
+      searchAdjust: "حاول تغيير كلمات البحث للعثور على ما تبحث عنه.",
+      customersAppear: "ستظهر رسائل العملاء هنا بمجرد إرسالها من خلال نموذج التواصل.",
+      replied: "تم الرد",
+      pending: "قيد الانتظار",
+      senderName: "الاسم",
+      message: "الرسالة:",
+      yourResponse: "ردك:",
+      placeholderResponse: "اكتب ردك هنا...",
+      sendResponse: "إرسال الرد",
+      delete: "حذف",
+      responseRate: "معدل الاستجابة",
+      loadingContacts: "جاري تحميل الرسائل...",
+      pleaseWait: "يرجى الانتظار...",
+      accessDenied: "تم رفض الوصول",
+      adminPrivileges: "مطلوب صلاحيات مدير النظام للوصول إلى هذه الصفحة",
+      confirmDeleteTitle: "حذف الرسالة؟",
+      confirmDeleteHtml: "أنت على وشك حذف رسالة من العميل:",
+      confirmDeleteWarning: "لا يمكن التراجع عن هذا الإجراء!",
+      yesDelete: "نعم، احذفها!",
+      cancel: "إلغاء",
+      toastResponseSent: "تم إرسال الرد للعميل بنجاح!",
+      toastDeleteSuccess: "تم حذف رسالة التواصل بنجاح!",
+      toastDeleteFailed: "فشل حذف الرسالة",
+      toastLoadFailed: "فشل تحميل رسائل التواصل",
+      toastEmptyResponse: "يرجى كتابة الرد قبل الإرسال",
+    },
+    en: {
+      contactManagement: "Contact Management",
+      manageContacts: "Manage and respond to customer inquiries",
+      totalMessages: "Total Messages",
+      responded: "Responded",
+      pendingResponse: "Pending Response",
+      searchPlaceholder: "Search messages by name, email, subject, or content...",
+      messagesFound: "messages found",
+      messageFound: "message found",
+      noMessagesFound: "No messages found",
+      noMessagesAvailable: "No contact messages yet",
+      searchAdjust: "Try adjusting your search terms to find what you're looking for.",
+      customersAppear: "Customer messages will appear here once they contact you through the contact form.",
+      replied: "Replied",
+      pending: "Pending",
+      senderName: "Name",
+      message: "Message:",
+      yourResponse: "Your Response:",
+      placeholderResponse: "Type your response here...",
+      sendResponse: "Send Response",
+      delete: "Delete",
+      responseRate: "Response Rate",
+      loadingContacts: "Loading Contacts...",
+      pleaseWait: "Please wait while we fetch contact messages",
+      accessDenied: "Access Denied",
+      adminPrivileges: "Admin privileges required to access this page",
+      confirmDeleteTitle: "Delete Message?",
+      confirmDeleteHtml: "You are about to delete message from:",
+      confirmDeleteWarning: "This action cannot be undone!",
+      yesDelete: "Yes, Delete It!",
+      cancel: "Cancel",
+      toastResponseSent: "Response sent successfully!",
+      toastDeleteSuccess: "Contact message deleted successfully!",
+      toastDeleteFailed: "Failed to delete message",
+      toastLoadFailed: "Failed to load contact messages",
+      toastEmptyResponse: "Please write a response before sending",
+    }
+  };
+  const currentT = isRTL ? localT.ar : localT.en;
   const [contacts, setContacts] = useState([]);
   const [responses, setResponses] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
-    document.title = `Contacts | Admin Dashboard`;
-  }, []);
+    document.title = isRTL ? `التواصل | لوحة الأدمن` : `Contacts | Admin Dashboard`;
+  }, [isRTL]);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -53,7 +134,7 @@ export default function AdminContactsPage() {
           Authorization: `Bearer ${session.accessToken}`,
         },
       });
-      if (!res.ok) throw new Error("Failed to fetch contacts");
+      if (!res.ok) throw new Error(currentT.toastLoadFailed);
       const data = await res.json();
       setContacts(data);
 
@@ -65,7 +146,7 @@ export default function AdminContactsPage() {
       });
       setResponses(initialResponses);
     } catch (error) {
-      toast.error("❌ Failed to load contact messages");
+      toast.error(currentT.toastLoadFailed);
     } finally {
       setIsLoading(false);
     }
@@ -73,7 +154,7 @@ export default function AdminContactsPage() {
 
   const handleResponse = async (id, contactName) => {
     if (!responses[id]?.trim()) {
-      toast.error("Please write a response before sending");
+      toast.error(currentT.toastEmptyResponse);
       return;
     }
 
@@ -89,9 +170,9 @@ export default function AdminContactsPage() {
         }),
       });
 
-      if (!response.ok) throw new Error("Failed to update response");
+      if (!response.ok) throw new Error(isRTL ? "فشل إرسال الرد للعميل" : "Failed to update response");
 
-      toast.success(`🎉 Response sent to ${contactName}!`);
+      toast.success(currentT.toastResponseSent);
 
       setContacts(
         contacts.map((contact) =>
@@ -105,21 +186,21 @@ export default function AdminContactsPage() {
 
   const handleDelete = async (id, contactName) => {
     const result = await Swal.fire({
-      title: "Delete Message?",
+      title: currentT.confirmDeleteTitle,
       html: `
-        <div class="text-center">
+        <div class="text-center" dir="${isRTL ? "rtl" : "ltr"}">
           <div class="text-6xl text-red-500 mb-4">🗑️</div>
-          <p class="text-lg font-semibold mb-2">You are about to delete message from:</p>
+          <p class="text-lg font-semibold mb-2">${currentT.confirmDeleteHtml}</p>
           <p class="text-xl text-primary font-bold">${contactName}</p>
-          <p class="text-gray-600 mt-2">This action cannot be undone!</p>
+          <p class="text-gray-600 mt-2">${currentT.confirmDeleteWarning}</p>
         </div>
       `,
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#ef4444",
       cancelButtonColor: "#6b7280",
-      confirmButtonText: "Yes, Delete It!",
-      cancelButtonText: "Cancel",
+      confirmButtonText: currentT.yesDelete,
+      cancelButtonText: currentT.cancel,
       customClass: {
         popup: "rounded-2xl",
         confirmButton: "px-6 py-3 rounded-lg font-semibold",
@@ -136,9 +217,9 @@ export default function AdminContactsPage() {
           },
         });
 
-        if (!response.ok) throw new Error("Failed to delete contact");
+        if (!response.ok) throw new Error(currentT.toastDeleteFailed);
 
-        toast.success("🗑️ Contact message deleted successfully!");
+        toast.success(currentT.toastDeleteSuccess);
         setContacts(contacts.filter((contact) => contact._id !== id));
       } catch (error) {
         toast.error(`❌ ${error.message}`);
@@ -154,12 +235,12 @@ export default function AdminContactsPage() {
           Authorization: `Bearer ${session.accessToken}`,
         },
       });
-      if (!res.ok) throw new Error("Failed to fetch contacts");
+      if (!res.ok) throw new Error(currentT.toastLoadFailed);
       const data = await res.json();
       setContacts(data);
-      toast.info("Contact list refreshed!");
+      toast.info(isRTL ? "تم تحديث القائمة بنجاح!" : "Contact list refreshed!");
     } catch (error) {
-      toast.error("❌ Failed to refresh contacts");
+      toast.error(currentT.toastLoadFailed);
     } finally {
       setIsLoading(false);
     }
@@ -178,15 +259,15 @@ export default function AdminContactsPage() {
 
   if (status === "loading" || isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-base-100 to-base-200 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-base-100 to-base-200 flex items-center justify-center" dir={isRTL ? "rtl" : "ltr"}>
         <div className="text-center">
           <FaSpinner className="text-8xl text-primary animate-spin mx-auto mb-6" />
-          <div className="flex items-center gap-3 text-2xl font-semibold text-gray-700">
+          <div className="flex items-center gap-3 text-2xl font-semibold text-gray-700 justify-center">
             <FaEnvelope className="text-primary" />
-            <span>Loading Contacts...</span>
+            <span>{currentT.loadingContacts}</span>
           </div>
           <p className="text-gray-500 mt-2">
-            Please wait while we fetch contact messages
+            {currentT.pleaseWait}
           </p>
         </div>
       </div>
@@ -195,12 +276,12 @@ export default function AdminContactsPage() {
 
   if (!session?.user?.isAdmin) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-base-100 to-base-200 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-base-100 to-base-200 flex items-center justify-center" dir={isRTL ? "rtl" : "ltr"}>
         <div className="text-center">
           <FaShieldAlt className="text-8xl text-error mx-auto mb-6" />
-          <h2 className="text-3xl font-bold text-error mb-4">Access Denied</h2>
+          <h2 className="text-3xl font-bold text-error mb-4">{currentT.accessDenied}</h2>
           <p className="text-gray-600 text-lg">
-            Admin privileges required to access this page
+            {currentT.adminPrivileges}
           </p>
         </div>
       </div>
@@ -208,7 +289,7 @@ export default function AdminContactsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-base-100 to-base-200 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-base-100 to-base-200 p-6" dir={isRTL ? "rtl" : "ltr"}>
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-8">
@@ -218,11 +299,11 @@ export default function AdminContactsPage() {
               </div>
               <div>
                 <h1 className="text-4xl font-bold text-gray-800">
-                  Contact Management
+                  {currentT.contactManagement}
                 </h1>
                 <p className="text-gray-600 mt-2 flex items-center gap-2">
                   <FaEye className="text-primary" />
-                  Manage and respond to customer inquiries
+                  {currentT.manageContacts}
                 </p>
               </div>
             </div>
@@ -238,7 +319,7 @@ export default function AdminContactsPage() {
                   {contacts.length}
                 </span>
               </div>
-              <p className="text-gray-600 font-semibold">Total Messages</p>
+              <p className="text-gray-600 font-semibold">{currentT.totalMessages}</p>
             </div>
 
             <div className="bg-base-100 rounded-2xl p-6 shadow-lg border border-base-300 text-center">
@@ -248,7 +329,7 @@ export default function AdminContactsPage() {
                   {respondedCount}
                 </span>
               </div>
-              <p className="text-gray-600 font-semibold">Responded</p>
+              <p className="text-gray-600 font-semibold">{currentT.responded}</p>
             </div>
 
             <div className="bg-base-100 rounded-2xl p-6 shadow-lg border border-base-300 text-center">
@@ -258,7 +339,7 @@ export default function AdminContactsPage() {
                   {pendingCount}
                 </span>
               </div>
-              <p className="text-gray-600 font-semibold">Pending Response</p>
+              <p className="text-gray-600 font-semibold">{currentT.pendingResponse}</p>
             </div>
           </div>
 
@@ -266,13 +347,13 @@ export default function AdminContactsPage() {
             <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
               <div className="flex-1 w-full">
                 <div className="relative">
-                  <FaSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-lg" />
+                  <FaSearch className={`absolute ${isRTL ? "right-4" : "left-4"} top-1/2 transform -translate-y-1/2 text-gray-400 text-lg`} />
                   <input
                     type="text"
-                    placeholder="Search messages by name, email, subject, or content..."
+                    placeholder={currentT.searchPlaceholder}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="input input-bordered input-lg w-full pl-12 pr-4 rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20"
+                    className={`input input-bordered input-lg w-full ${isRTL ? "pr-12 pl-4" : "pl-12 pr-4"} rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20`}
                   />
                 </div>
               </div>
@@ -280,7 +361,7 @@ export default function AdminContactsPage() {
                 <FaEnvelope className="text-primary" />
                 <span>
                   {filteredContacts.length}{" "}
-                  {filteredContacts.length === 1 ? "message" : "messages"} found
+                  {filteredContacts.length === 1 ? currentT.messageFound : currentT.messagesFound}
                 </span>
               </div>
             </div>
@@ -289,15 +370,13 @@ export default function AdminContactsPage() {
 
         <div className="bg-base-100 rounded-2xl shadow-xl border border-base-300 overflow-hidden">
           {filteredContacts.length === 0 ? (
-            <div className="text-center py-16">
+            <div className="text-center py-16 px-4">
               <FaExclamationCircle className="text-6xl text-gray-300 mx-auto mb-4" />
               <h3 className="text-2xl font-semibold text-gray-600 mb-2">
-                {searchTerm ? "No messages found" : "No contact messages yet"}
+                {searchTerm ? currentT.noMessagesFound : currentT.noMessagesAvailable}
               </h3>
               <p className="text-gray-500 max-w-md mx-auto">
-                {searchTerm
-                  ? "Try adjusting your search terms to find what you're looking for."
-                  : "Customer messages will appear here once they contact you through the contact form."}
+                {searchTerm ? currentT.searchAdjust : currentT.customersAppear}
               </p>
             </div>
           ) : (
@@ -326,12 +405,12 @@ export default function AdminContactsPage() {
                         {contact.response ? (
                           <>
                             <FaCheckCircle className="text-xs" />
-                            Replied
+                            {currentT.replied}
                           </>
                         ) : (
                           <>
                             <FaExclamationCircle className="text-xs" />
-                            Pending
+                            {currentT.pending}
                           </>
                         )}
                       </div>
@@ -347,7 +426,7 @@ export default function AdminContactsPage() {
                       </div>
                       <a
                         href={`mailto:${contact.email}`}
-                        className="flex items-center gap-2 text-primary hover:text-primary/80 transition-colors"
+                        className="flex items-center gap-2 text-primary hover:text-primary/80 transition-colors w-max"
                       >
                         <FaEnvelope className="text-sm" />
                         <span className="text-sm">{contact.email}</span>
@@ -366,7 +445,7 @@ export default function AdminContactsPage() {
                       <div className="flex items-center gap-2 mb-2">
                         <FaComment className="text-gray-400 text-sm" />
                         <span className="text-sm font-semibold text-gray-600">
-                          Message:
+                          {currentT.message}
                         </span>
                       </div>
                       <p className="text-gray-700 text-sm leading-relaxed">
@@ -379,7 +458,7 @@ export default function AdminContactsPage() {
                       <label className="label flex items-center gap-2 mb-2">
                         <FaReply className="text-primary text-sm" />
                         <span className="label-text font-semibold">
-                          Your Response:
+                          {currentT.yourResponse}
                         </span>
                       </label>
                       <textarea
@@ -391,7 +470,7 @@ export default function AdminContactsPage() {
                             [contact._id]: e.target.value,
                           })
                         }
-                        placeholder="Type your response here..."
+                        placeholder={currentT.placeholderResponse}
                         rows={3}
                       />
                     </div>
@@ -402,18 +481,18 @@ export default function AdminContactsPage() {
                         onClick={() =>
                           handleResponse(contact._id, contact.name)
                         }
-                        className="btn btn-primary btn-sm flex-1 flex items-center gap-2 transition-all duration-200 hover:scale-105"
+                        className="btn btn-primary btn-sm flex-1 flex items-center justify-center gap-2 transition-all duration-200 hover:scale-105 text-white font-bold"
                         disabled={
                           !responses[contact._id]?.trim() ||
                           responses[contact._id] === contact.response
                         }
                       >
                         <FaPaperPlane className="text-xs" />
-                        Send Response
+                        {currentT.sendResponse}
                       </button>
                       <button
                         onClick={() => handleDelete(contact._id, contact.name)}
-                        className="btn btn-error btn-sm flex items-center gap-2 transition-all duration-200 hover:scale-105"
+                        className="btn btn-error btn-sm flex items-center justify-center gap-2 transition-all duration-200 hover:scale-105 text-white"
                       >
                         <FaTrash className="text-xs" />
                       </button>
@@ -436,7 +515,7 @@ export default function AdminContactsPage() {
                   <p className="text-2xl font-bold text-gray-800">
                     {contacts.length}
                   </p>
-                  <p className="text-sm text-gray-600">Total Messages</p>
+                  <p className="text-sm text-gray-600">{currentT.totalMessages}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
@@ -445,10 +524,9 @@ export default function AdminContactsPage() {
                 </div>
                 <div>
                   <p className="text-2xl font-bold text-gray-800">
-                    {respondedCount} (
-                    {Math.round((respondedCount / contacts.length) * 100)}%)
+                    {respondedCount} ({contacts.length > 0 ? Math.round((respondedCount / contacts.length) * 100) : 0}%)
                   </p>
-                  <p className="text-sm text-gray-600">Response Rate</p>
+                  <p className="text-sm text-gray-600">{currentT.responseRate}</p>
                 </div>
               </div>
             </div>

@@ -2,6 +2,8 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "../../../../../../lib/authOptions";
 import dbConnect from "../../../../../../lib/dbConnect";
 import Order from "../../../../../../models/Order";
+import User from "../../../../../../models/User";
+import Product from "../../../../../../models/Product";
 import { NextResponse } from "next/server";
 
 export async function GET(request, { params }) {

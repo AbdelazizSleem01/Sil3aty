@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { toast } from "react-toastify";
+import { useTranslation } from "react-i18next";
 import {
   FaBell,
   FaTrash,
@@ -22,16 +23,97 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
 export default function NotificationsTable() {
+  const { t, i18n } = useTranslation();
+  const isRTL = i18n.language === "ar";
   const { data: session, status } = useSession();
   const router = useRouter();
+
+  const localT = {
+    ar: {
+      notificationManagement: "إدارة الإشعارات",
+      manageNotifications: "عرض وإدارة جميع إشعارات النظام",
+      totalNotifications: "إجمالي الإشعارات",
+      totalRecipients: "إجمالي المستلمين",
+      notificationTypes: "أنواع الإشعارات",
+      activeRate: "معدل النشاط",
+      searchPlaceholder: "البحث عن إشعارات بالرسالة، النوع، أو المنشئ...",
+      allTypes: "جميع الأنواع",
+      notificationFound: "إشعار تم العثور عليه",
+      notificationsFound: "إشعارات تم العثور عليها",
+      noNotificationsFound: "لم يتم العثور على إشعارات",
+      noNotificationsYet: "لا توجد إشعارات بعد",
+      searchAdjust: "حاول تغيير كلمات البحث أو خيارات التصفية للعثور على ما تبحث عنه.",
+      systemNotifications: "ستظهر إشعارات النظام هنا بمجرد إنشائها.",
+      message: "الرسالة",
+      type: "النوع",
+      createdBy: "أنشئت بواسطة",
+      recipients: "المستلمون",
+      date: "التاريخ",
+      actions: "الإجراءات",
+      viewDetails: "عرض التفاصيل ←",
+      system: "النظام",
+      users: "مستخدمين",
+      delete: "حذف",
+      loadingNotifications: "جاري تحميل الإشعارات...",
+      pleaseWait: "يرجى الانتظار بينما نقوم بجلب إشعاراتك...",
+      confirmDeleteTitle: "حذف الإشعار؟",
+      confirmDeleteHtml: "أنت على وشك حذف:",
+      confirmDeleteWarning: "لا يمكن التراجع عن هذا الإجراء!",
+      yesDelete: "نعم، قم بالحذف!",
+      cancel: "إلغاء",
+      deleteSuccess: "🗑️ تم حذف الإشعار بنجاح!",
+      deleteFailed: "❌ فشل حذف الإشعار",
+      refreshFailed: "❌ فشل تحديث الإشعارات",
+      uniqueTypes: "الأنواع الفريدة"
+    },
+    en: {
+      notificationManagement: "Notification Management",
+      manageNotifications: "View and manage all system notifications",
+      totalNotifications: "Total Notifications",
+      totalRecipients: "Total Recipients",
+      notificationTypes: "Notification Types",
+      activeRate: "Active Rate",
+      searchPlaceholder: "Search notifications by message, type, or creator...",
+      allTypes: "All Types",
+      notificationFound: "notification found",
+      notificationsFound: "notifications found",
+      noNotificationsFound: "No notifications found",
+      noNotificationsYet: "No notifications yet",
+      searchAdjust: "Try adjusting your search or filter terms to find what you're looking for.",
+      systemNotifications: "System notifications will appear here once they are generated.",
+      message: "Message",
+      type: "Type",
+      createdBy: "Created By",
+      recipients: "Recipients",
+      date: "Date",
+      actions: "Actions",
+      viewDetails: "View Details →",
+      system: "System",
+      users: "users",
+      delete: "Delete",
+      loadingNotifications: "Loading Notifications...",
+      pleaseWait: "Please wait while we fetch your notifications",
+      confirmDeleteTitle: "Delete Notification?",
+      confirmDeleteHtml: "You are about to delete:",
+      confirmDeleteWarning: "This action cannot be undone!",
+      yesDelete: "Yes, Delete It!",
+      cancel: "Cancel",
+      deleteSuccess: "🗑️ Notification deleted successfully!",
+      deleteFailed: "Failed to delete notification",
+      refreshFailed: "Failed to refresh notifications",
+      uniqueTypes: "Unique Types"
+    }
+  };
+  const currentT = isRTL ? localT.ar : localT.en;
+
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState("all");
 
   useEffect(() => {
-    document.title = `Notifications | Admin Dashboard`;
-  }, []);
+    document.title = isRTL ? "الإشعارات | لوحة التحكم" : `Notifications | Admin Dashboard`;
+  }, [isRTL]);
 
   useEffect(() => {
     if (status === "loading") return;
@@ -49,7 +131,7 @@ export default function NotificationsTable() {
 
   useEffect(() => {
     fetchNotifications();
-  }, []);
+  }, [isRTL]);
 
   const fetchNotifications = async () => {
     try {
@@ -63,21 +145,21 @@ export default function NotificationsTable() {
 
   const deleteNotification = async (id, message) => {
     const result = await Swal.fire({
-      title: "Delete Notification?",
+      title: currentT.confirmDeleteTitle,
       html: `
-        <div class="text-center">
+        <div class="text-center" dir="${isRTL ? "rtl" : "ltr"}">
           <div class="text-6xl text-red-500 mb-4">🗑️</div>
-          <p class="text-lg font-semibold mb-2">You are about to delete:</p>
+          <p class="text-lg font-semibold mb-2">${currentT.confirmDeleteHtml}</p>
           <p class="text-xl text-primary font-bold line-clamp-2">${message}</p>
-          <p class="text-gray-600 mt-2">This action cannot be undone!</p>
+          <p class="text-gray-600 mt-2">${currentT.confirmDeleteWarning}</p>
         </div>
       `,
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#ef4444",
       cancelButtonColor: "#6b7280",
-      confirmButtonText: "Yes, Delete It!",
-      cancelButtonText: "Cancel",
+      confirmButtonText: currentT.yesDelete,
+      cancelButtonText: currentT.cancel,
 
       customClass: {
         popup: "rounded-2xl",
@@ -89,10 +171,10 @@ export default function NotificationsTable() {
     if (result.isConfirmed) {
       try {
         await axios.delete(`/api/admin/notifications/${id}`);
-        toast.success("🗑️ Notification deleted successfully!");
+        toast.success(currentT.deleteSuccess);
         setNotifications((prev) => prev.filter((n) => n._id !== id));
       } catch (error) {
-        toast.error("❌ Failed to delete notification");
+        toast.error(currentT.deleteFailed);
       }
     }
   };
@@ -102,9 +184,9 @@ export default function NotificationsTable() {
     try {
       const { data } = await axios.get("/api/admin/notifications");
       setNotifications(data);
-      toast.info("Notifications refreshed!");
+      toast.info(isRTL ? "تم تحديث الإشعارات!" : "Notifications refreshed!");
     } catch (error) {
-      toast.error("❌ Failed to refresh notifications");
+      toast.error(currentT.refreshFailed);
     } finally {
       setLoading(false);
     }
@@ -133,15 +215,15 @@ export default function NotificationsTable() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-base-100 to-base-200 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-base-100 to-base-200 flex items-center justify-center" dir={isRTL ? "rtl" : "ltr"}>
         <div className="text-center">
           <FaSpinner className="text-8xl text-primary animate-spin mx-auto mb-6" />
-          <div className="flex items-center gap-3 text-2xl font-semibold text-gray-700">
+          <div className="flex items-center gap-3 text-2xl font-semibold text-gray-700 justify-center">
             <FaBell className="text-primary" />
-            <span>Loading Notifications...</span>
+            <span>{currentT.loadingNotifications}</span>
           </div>
           <p className="text-gray-500 mt-2">
-            Please wait while we fetch your notifications
+            {currentT.pleaseWait}
           </p>
         </div>
       </div>
@@ -149,7 +231,7 @@ export default function NotificationsTable() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-base-100 to-base-200 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-base-100 to-base-200 p-6" dir={isRTL ? "rtl" : "ltr"}>
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-8">
@@ -159,11 +241,11 @@ export default function NotificationsTable() {
               </div>
               <div>
                 <h1 className="text-4xl font-bold text-gray-800">
-                  Notification Management
+                  {currentT.notificationManagement}
                 </h1>
                 <p className="text-gray-600 mt-2 flex items-center gap-2">
                   <FaEye className="text-primary" />
-                  View and manage all system notifications
+                  {currentT.manageNotifications}
                 </p>
               </div>
             </div>
@@ -179,7 +261,7 @@ export default function NotificationsTable() {
                   {notifications.length}
                 </span>
               </div>
-              <p className="text-gray-600 font-semibold">Total Notifications</p>
+              <p className="text-gray-600 font-semibold">{currentT.totalNotifications}</p>
             </div>
 
             <div className="bg-base-100 rounded-2xl p-6 shadow-lg border border-base-300 text-center">
@@ -189,7 +271,7 @@ export default function NotificationsTable() {
                   {totalRecipients}
                 </span>
               </div>
-              <p className="text-gray-600 font-semibold">Total Recipients</p>
+              <p className="text-gray-600 font-semibold">{currentT.totalRecipients}</p>
             </div>
 
             <div className="bg-base-100 rounded-2xl p-6 shadow-lg border border-base-300 text-center">
@@ -199,7 +281,7 @@ export default function NotificationsTable() {
                   {notificationTypes.length}
                 </span>
               </div>
-              <p className="text-gray-600 font-semibold">Notification Types</p>
+              <p className="text-gray-600 font-semibold">{currentT.notificationTypes}</p>
             </div>
 
             <div className="bg-base-100 rounded-2xl p-6 shadow-lg border border-base-300 text-center">
@@ -217,7 +299,7 @@ export default function NotificationsTable() {
                   %
                 </span>
               </div>
-              <p className="text-gray-600 font-semibold">Active Rate</p>
+              <p className="text-gray-600 font-semibold">{currentT.activeRate}</p>
             </div>
           </div>
 
@@ -225,13 +307,13 @@ export default function NotificationsTable() {
             <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
               <div className="flex-1 w-full">
                 <div className="relative">
-                  <FaSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-lg" />
+                  <FaSearch className={`absolute ${isRTL ? "right-4" : "left-4"} top-1/2 transform -translate-y-1/2 text-gray-400 text-lg`} />
                   <input
                     type="text"
-                    placeholder="Search notifications by message, type, or creator..."
+                    placeholder={currentT.searchPlaceholder}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="input input-bordered input-lg w-full pl-12 pr-4 rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20"
+                    className={`input input-bordered input-lg w-full ${isRTL ? "pr-12 pl-4" : "pl-12 pr-4"} rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20`}
                   />
                 </div>
               </div>
@@ -244,7 +326,7 @@ export default function NotificationsTable() {
                     onChange={(e) => setFilterType(e.target.value)}
                     className="select select-bordered select-lg rounded-xl"
                   >
-                    <option value="all">All Types</option>
+                    <option value="all">{currentT.allTypes}</option>
                     {notificationTypes.map((type) => (
                       <option key={type} value={type}>
                         {type}
@@ -258,9 +340,8 @@ export default function NotificationsTable() {
                   <span>
                     {filteredNotifications.length}{" "}
                     {filteredNotifications.length === 1
-                      ? "notification"
-                      : "notifications"}{" "}
-                    found
+                      ? currentT.notificationFound
+                      : currentT.notificationsFound}
                   </span>
                 </div>
               </div>
@@ -288,23 +369,23 @@ export default function NotificationsTable() {
               <table className="table w-full">
                 <thead className="bg-base-200">
                   <tr>
-                    <th className="py-4 px-6 text-left font-semibold text-gray-700">
-                      Message
+                    <th className={`py-4 px-6 ${isRTL ? "text-right" : "text-left"} font-semibold text-gray-700`}>
+                      {currentT.message}
                     </th>
-                    <th className="py-4 px-6 text-left font-semibold text-gray-700">
-                      Type
+                    <th className={`py-4 px-6 ${isRTL ? "text-right" : "text-left"} font-semibold text-gray-700`}>
+                      {currentT.type}
                     </th>
-                    <th className="py-4 px-6 text-left font-semibold text-gray-700">
-                      Created By
+                    <th className={`py-4 px-6 ${isRTL ? "text-right" : "text-left"} font-semibold text-gray-700`}>
+                      {currentT.createdBy}
                     </th>
-                    <th className="py-4 px-6 text-left font-semibold text-gray-700">
-                      Recipients
+                    <th className={`py-4 px-6 ${isRTL ? "text-right" : "text-left"} font-semibold text-gray-700`}>
+                      {currentT.recipients}
                     </th>
-                    <th className="py-4 px-6 text-left font-semibold text-gray-700">
-                      Date
+                    <th className={`py-4 px-6 ${isRTL ? "text-right" : "text-left"} font-semibold text-gray-700`}>
+                      {currentT.date}
                     </th>
-                    <th className="py-4 px-6 text-left font-semibold text-gray-700">
-                      Actions
+                    <th className={`py-4 px-6 ${isRTL ? "text-right" : "text-left"} font-semibold text-gray-700`}>
+                      {currentT.actions}
                     </th>
                   </tr>
                 </thead>
@@ -321,7 +402,7 @@ export default function NotificationsTable() {
                         <div className="flex items-start gap-3 max-w-md">
                           <FaComment className="text-gray-400 mt-1 flex-shrink-0" />
                           <div>
-                            <p className="font-medium text-gray-800 line-clamp-2 hover:line-clamp-none transition-all cursor-help">
+                            <p className="font-medium text-gray-800 line-clamp-2 hover:line-clamp-none transition-all cursor-help leading-relaxed">
                               {notification.message}
                             </p>
                             {notification.link && (
@@ -330,7 +411,7 @@ export default function NotificationsTable() {
                                   href={notification.link}
                                   className="hover:underline"
                                 >
-                                  View Details →
+                                  {currentT.viewDetails}
                                 </a>
                               </p>
                             )}
@@ -339,7 +420,7 @@ export default function NotificationsTable() {
                       </td>
 
                       <td className="py-4 px-6">
-                        <div className="badge badge-lg capitalize">
+                        <div className="badge badge-lg capitalize font-bold">
                           {notification.type}
                         </div>
                       </td>
@@ -348,7 +429,7 @@ export default function NotificationsTable() {
                         <div className="flex items-center gap-2">
                           <FaUser className="text-gray-400" />
                           <span className="font-medium">
-                            {notification.createdBy?.name || "System"}
+                            {notification.createdBy?.name || currentT.system}
                           </span>
                         </div>
                       </td>
@@ -359,7 +440,7 @@ export default function NotificationsTable() {
                           <span className="font-bold text-gray-800">
                             {notification.recipients?.length || 0}
                           </span>
-                          <span className="text-sm text-gray-500">users</span>
+                          <span className="text-sm text-gray-500">{currentT.users}</span>
                         </div>
                       </td>
 
@@ -367,12 +448,12 @@ export default function NotificationsTable() {
                         <div className="text-sm text-gray-600">
                           {new Date(
                             notification.createdAt
-                          ).toLocaleDateString()}
+                          ).toLocaleDateString(isRTL ? "ar-EG" : "en-US")}
                         </div>
                         <div className="text-xs text-gray-400">
                           {new Date(
                             notification.createdAt
-                          ).toLocaleTimeString()}
+                          ).toLocaleTimeString(isRTL ? "ar-EG" : "en-US")}
                         </div>
                       </td>
 
@@ -384,10 +465,10 @@ export default function NotificationsTable() {
                               notification.message
                             )
                           }
-                          className="btn btn-error btn-sm flex items-center gap-2 px-4 rounded-lg transition-all duration-200 hover:scale-105"
+                          className="btn btn-error btn-sm flex items-center justify-center gap-2 px-4 rounded-lg transition-all duration-200 hover:scale-105 text-white"
                         >
                           <FaTrash className="text-sm" />
-                          Delete
+                          {currentT.delete}
                         </button>
                       </td>
                     </tr>
@@ -409,7 +490,7 @@ export default function NotificationsTable() {
                   <p className="text-2xl font-bold text-gray-800">
                     {notifications.length}
                   </p>
-                  <p className="text-sm text-gray-600">Total Notifications</p>
+                  <p className="text-sm text-gray-600">{currentT.totalNotifications}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
@@ -420,7 +501,7 @@ export default function NotificationsTable() {
                   <p className="text-2xl font-bold text-gray-800">
                     {totalRecipients}
                   </p>
-                  <p className="text-sm text-gray-600">Total Recipients</p>
+                  <p className="text-sm text-gray-600">{currentT.totalRecipients}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
@@ -431,7 +512,7 @@ export default function NotificationsTable() {
                   <p className="text-2xl font-bold text-gray-800">
                     {notificationTypes.length}
                   </p>
-                  <p className="text-sm text-gray-600">Unique Types</p>
+                  <p className="text-sm text-gray-600">{currentT.uniqueTypes}</p>
                 </div>
               </div>
             </div>

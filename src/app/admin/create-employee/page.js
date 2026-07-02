@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import Swal from "sweetalert2";
 import { useSession } from "next-auth/react";
+import { useTranslation } from "react-i18next";
 import {
   FaUser,
   FaBriefcase,
@@ -21,8 +22,74 @@ import {
 } from "react-icons/fa";
 
 export default function CreateEmployee() {
+  const { t, i18n } = useTranslation();
+  const isRTL = i18n.language === "ar";
   const { data: session, status } = useSession();
   const router = useRouter();
+
+  const localT = {
+    ar: {
+      addTeamMember: "إضافة عضو فريق",
+      createProfile: "إنشاء ملف تعريفي جديد لعضو الفريق",
+      fullName: "الاسم الكامل",
+      rolePosition: "الدور / الوظيفة",
+      bioComment: "نبذة / تعليق",
+      facebookUrl: "رابط فيسبوك",
+      linkedinUrl: "رابط لينكدان",
+      profileImage: "صورة الملف الشخصي",
+      chooseImage: "اختر صورة",
+      supportedFormat: "PNG أو JPG أو WEBP حتى 5 ميجابايت",
+      imagePreview: "معاينة الصورة",
+      selectedImage: "الصورة المحددة",
+      cancel: "إلغاء",
+      createTeamMember: "إنشاء عضو الفريق",
+      creating: "جاري الإنشاء...",
+      placeholderName: "أدخل الاسم الكامل",
+      placeholderRole: "مثال: مهندس برمجيات، مدير تسويق",
+      placeholderBio: "اكتب وصفاً موجزاً عن عضو الفريق...",
+      placeholderFb: "https://facebook.com/username",
+      placeholderLi: "https://linkedin.com/in/username",
+      invalidImageFile: "يرجى اختيار ملف صورة صالح",
+      imageSizeTooLarge: "يجب أن يكون حجم الصورة أقل من 5 ميجابايت",
+      imageSelected: "تم اختيار صورة الملف الشخصي",
+      fillRequiredFields: "يرجى ملء جميع الحقول المطلوبة",
+      selectProfileImage: "يرجى اختيار صورة الملف الشخصي",
+      memberCreatedSuccess: "🎉 تم إنشاء عضو الفريق بنجاح!",
+      failedCreateMember: "فشل إنشاء عضو الفريق",
+      cancelConfirm: "هل أنت متأكد أنك تريد الإلغاء؟ سيتم فقدان جميع التغييرات غير المحفوظة."
+    },
+    en: {
+      addTeamMember: "Add Team Member",
+      createProfile: "Create a new team member profile",
+      fullName: "Full Name",
+      rolePosition: "Role/Position",
+      bioComment: "Bio/Comment",
+      facebookUrl: "Facebook URL",
+      linkedinUrl: "LinkedIn URL",
+      profileImage: "Profile Image",
+      chooseImage: "Choose Image",
+      supportedFormat: "PNG, JPG, WEBP up to 5MB",
+      imagePreview: "Image Preview",
+      selectedImage: "Selected Image",
+      cancel: "Cancel",
+      createTeamMember: "Create Team Member",
+      creating: "Creating...",
+      placeholderName: "Enter full name",
+      placeholderRole: "e.g., Software Engineer, Marketing Manager",
+      placeholderBio: "Write a brief description about this team member...",
+      placeholderFb: "https://facebook.com/username",
+      placeholderLi: "https://linkedin.com/in/username",
+      invalidImageFile: "Please select a valid image file",
+      imageSizeTooLarge: "Image size should be less than 5MB",
+      imageSelected: "Profile image selected",
+      fillRequiredFields: "Please fill in all required fields",
+      selectProfileImage: "Please select a profile image",
+      memberCreatedSuccess: "🎉 Team member created successfully!",
+      failedCreateMember: "Failed to create team member",
+      cancelConfirm: "Are you sure you want to cancel? All unsaved changes will be lost."
+    }
+  };
+  const currentT = isRTL ? localT.ar : localT.en;
   const [formData, setFormData] = useState({
     name: "",
     role: "",
@@ -58,16 +125,16 @@ export default function CreateEmployee() {
     const file = e.target.files[0];
     if (file) {
       if (!file.type.startsWith("image/")) {
-        toast.error("Please select a valid image file");
+        toast.error(currentT.invalidImageFile);
         return;
       }
       if (file.size > 5 * 1024 * 1024) {
-        toast.error("Image size should be less than 5MB");
+        toast.error(currentT.imageSizeTooLarge);
         return;
       }
       setFormData((prev) => ({ ...prev, image: file }));
       setImagePreview(URL.createObjectURL(file));
-      toast.info("Profile image selected");
+      toast.info(currentT.imageSelected);
     }
   };
 
@@ -79,12 +146,12 @@ export default function CreateEmployee() {
       !formData.role.trim() ||
       !formData.comment.trim()
     ) {
-      toast.error("Please fill in all required fields");
+      toast.error(currentT.fillRequiredFields);
       return;
     }
 
     if (!formData.image) {
-      toast.error("Please select a profile image");
+      toast.error(currentT.selectProfileImage);
       return;
     }
 
@@ -106,10 +173,10 @@ export default function CreateEmployee() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to create team member");
+        throw new Error(errorData.message || currentT.failedCreateMember);
       }
 
-      toast.success("🎉 Team member created successfully!");
+      toast.success(currentT.memberCreatedSuccess);
 
       setTimeout(() => {
         router.push("/admin/ourTeams");
@@ -124,9 +191,7 @@ export default function CreateEmployee() {
   const handleCancel = () => {
     if (formData.name || formData.role || formData.comment || formData.image) {
       if (
-        confirm(
-          "Are you sure you want to cancel? All unsaved changes will be lost."
-        )
+        confirm(currentT.cancelConfirm)
       ) {
         router.back();
       }
@@ -136,14 +201,14 @@ export default function CreateEmployee() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-base-100 to-base-200 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-base-100 to-base-200 py-8" dir={isRTL ? "rtl" : "ltr"}>
       <div className="max-w-4xl mx-auto px-4">
         <div className="flex items-center gap-4 mb-8">
           <button
             onClick={handleCancel}
             className="btn btn-ghost btn-circle hover:bg-base-300 transition-colors"
           >
-            <FaArrowLeft className="text-md" />
+            <FaArrowLeft className={`text-md ${isRTL ? "rotate-180" : ""}`} />
           </button>
           <div className="flex items-center gap-3">
             <div className="p-3 bg-primary rounded-2xl shadow-lg">
@@ -151,10 +216,10 @@ export default function CreateEmployee() {
             </div>
             <div>
               <h1 className="text-3xl font-bold text-gray-800">
-                Add Team Member
+                {currentT.addTeamMember}
               </h1>
               <p className="text-gray-600 mt-1">
-                Create a new team member profile
+                {currentT.createProfile}
               </p>
             </div>
           </div>
@@ -167,7 +232,7 @@ export default function CreateEmployee() {
                 <label className="label flex items-center gap-2 mb-3">
                   <FaUser className="text-primary text-md" />
                   <span className="label-text text-md font-semibold text-gray-700">
-                    Full Name
+                    {currentT.fullName}
                   </span>
                   <span className="text-red-500">*</span>
                 </label>
@@ -177,11 +242,11 @@ export default function CreateEmployee() {
                   value={formData.name}
                   onChange={handleChange}
                   className="input input-bordered input-primary w-full text-md py-3"
-                  placeholder="Enter full name"
+                  placeholder={currentT.placeholderName}
                   required
                   maxLength={100}
                 />
-                <div className="text-right text-sm text-gray-500 mt-1">
+                <div className={`text-sm text-gray-500 mt-1 ${isRTL ? "text-left" : "text-right"}`}>
                   {formData.name.length}/100
                 </div>
               </div>
@@ -190,7 +255,7 @@ export default function CreateEmployee() {
                 <label className="label flex items-center gap-2 mb-3">
                   <FaBriefcase className="text-primary text-md" />
                   <span className="label-text text-md font-semibold text-gray-700">
-                    Role/Position
+                    {currentT.rolePosition}
                   </span>
                   <span className="text-red-500">*</span>
                 </label>
@@ -200,11 +265,11 @@ export default function CreateEmployee() {
                   value={formData.role}
                   onChange={handleChange}
                   className="input input-bordered input-primary w-full text-md py-3"
-                  placeholder="e.g., Software Engineer, Marketing Manager"
+                  placeholder={currentT.placeholderRole}
                   required
                   maxLength={100}
                 />
-                <div className="text-right text-sm text-gray-500 mt-1">
+                <div className={`text-sm text-gray-500 mt-1 ${isRTL ? "text-left" : "text-right"}`}>
                   {formData.role.length}/100
                 </div>
               </div>
@@ -214,7 +279,7 @@ export default function CreateEmployee() {
               <label className="label flex items-center gap-2 mb-3">
                 <FaComment className="text-primary text-md" />
                 <span className="label-text text-md font-semibold text-gray-700">
-                  Bio/Comment
+                  {currentT.bioComment}
                 </span>
                 <span className="text-red-500">*</span>
               </label>
@@ -223,11 +288,11 @@ export default function CreateEmployee() {
                 value={formData.comment}
                 onChange={handleChange}
                 className="textarea textarea-bordered textarea-primary w-full text-md py-3 min-h-32"
-                placeholder="Write a brief description about this team member..."
+                placeholder={currentT.placeholderBio}
                 required
                 maxLength={500}
               />
-              <div className="text-right text-sm text-gray-500 mt-1">
+              <div className={`text-sm text-gray-500 mt-1 ${isRTL ? "text-left" : "text-right"}`}>
                 {formData.comment.length}/500
               </div>
             </div>
@@ -237,7 +302,7 @@ export default function CreateEmployee() {
                 <label className="label flex items-center gap-2 mb-3">
                   <FaFacebook className="text-emerald-600 text-md" />
                   <span className="label-text text-md font-semibold text-gray-700">
-                    Facebook URL
+                    {currentT.facebookUrl}
                   </span>
                 </label>
                 <input
@@ -246,7 +311,7 @@ export default function CreateEmployee() {
                   value={formData.facebook}
                   onChange={handleChange}
                   className="input input-bordered input-primary w-full text-md py-3"
-                  placeholder="https://facebook.com/username"
+                  placeholder={currentT.placeholderFb}
                 />
               </div>
 
@@ -254,7 +319,7 @@ export default function CreateEmployee() {
                 <label className="label flex items-center gap-2 mb-3">
                   <FaLinkedin className="text-emerald-700 text-md" />
                   <span className="label-text text-md font-semibold text-gray-700">
-                    LinkedIn URL
+                    {currentT.linkedinUrl}
                   </span>
                 </label>
                 <input
@@ -263,7 +328,7 @@ export default function CreateEmployee() {
                   value={formData.twitter}
                   onChange={handleChange}
                   className="input input-bordered input-primary w-full text-md py-3"
-                  placeholder="https://linkedin.com/in/username"
+                  placeholder={currentT.placeholderLi}
                 />
               </div>
             </div>
@@ -272,15 +337,15 @@ export default function CreateEmployee() {
               <label className="label flex items-center gap-2 mb-3">
                 <FaImage className="text-primary text-md" />
                 <span className="label-text text-md font-semibold text-gray-700">
-                  Profile Image
+                  {currentT.profileImage}
                 </span>
                 <span className="text-red-500">*</span>
               </label>
 
               <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center mb-4">
-                <label className="btn btn-primary btn-outline cursor-pointer flex items-center gap-2">
+                <label className="btn btn-primary btn-outline cursor-pointer flex items-center gap-2 font-bold">
                   <FaUpload />
-                  Choose Image
+                  {currentT.chooseImage}
                   <input
                     type="file"
                     name="image"
@@ -292,7 +357,7 @@ export default function CreateEmployee() {
                 </label>
 
                 <span className="text-sm text-gray-500">
-                  PNG, JPG, WEBP up to 5MB
+                  {currentT.supportedFormat}
                 </span>
               </div>
 
@@ -300,7 +365,7 @@ export default function CreateEmployee() {
                 <div className="mt-4 p-4 border-2 border-dashed border-success rounded-lg bg-success/10">
                   <p className="font-semibold text-success mb-3 flex items-center gap-2">
                     <FaEye />
-                    Image Preview
+                    {currentT.imagePreview}
                   </p>
                   <div className="flex items-center gap-4">
                     <div className="w-24 h-24 bg-white rounded-xl shadow-md p-2">
@@ -312,7 +377,7 @@ export default function CreateEmployee() {
                     </div>
                     <div>
                       <p className="font-semibold text-gray-800">
-                        Selected Image
+                        {currentT.selectedImage}
                       </p>
                       <p className="text-sm text-gray-600">
                         {formData.image?.name}
@@ -330,27 +395,27 @@ export default function CreateEmployee() {
               <button
                 type="button"
                 onClick={handleCancel}
-                className="btn flex-1 text-md py-3"
+                className="btn flex-1 text-md py-3 font-bold"
                 disabled={isSubmitting}
               >
-                <FaTimes className="mr-2" />
-                Cancel
+                <FaTimes className={`${isRTL ? "ml-2" : "mr-2"}`} />
+                {currentT.cancel}
               </button>
 
               <button
                 type="submit"
-                className="btn btn-primary flex-1 text-md py-3 flex items-center gap-2"
+                className="btn btn-primary flex-1 text-md py-3 flex items-center justify-center gap-2 font-bold text-white"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? (
                   <>
                     <FaSpinner className="animate-spin" />
-                    Creating...
+                    {currentT.creating}
                   </>
                 ) : (
                   <>
                     <FaSave />
-                    Create Team Member
+                    {currentT.createTeamMember}
                   </>
                 )}
               </button>

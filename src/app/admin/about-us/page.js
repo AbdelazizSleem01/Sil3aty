@@ -3,6 +3,8 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import { useSession } from "next-auth/react";
+import { useTranslation } from "react-i18next";
+import "../../../../i18n";
 import {
   FaEdit,
   FaSave,
@@ -35,6 +37,223 @@ import {
 } from "react-icons/fa";
 
 export default function AdminAboutUs() {
+  const { t, i18n } = useTranslation();
+  const isRTL = i18n.language === "ar";
+  const localT = {
+    ar: {
+      aboutUsEditor: "محرر صفحة من نحن",
+      customizeAboutUs: "صمم وخصص أقسام ومحتوى صفحة من نحن لمتجرك",
+      saveChanges: "حفظ التغييرات",
+      saving: "جاري الحفظ...",
+      previewPage: "معاينة الصفحة",
+      statsTeam: "أعضاء الفريق",
+      statsTimeline: "أحداث الجدول الزمني",
+      statsValues: "القيم الأساسية",
+      statsStats: "الإحصائيات الواردة",
+      tabHero: "الرئيسية",
+      tabMission: "الرؤية والرسالة",
+      tabTimeline: "الجدول الزمني",
+      tabTeam: "فريق العمل",
+      tabValues: "قيمنا",
+      tabCTA: "دعوة للتفاعل",
+      tabSEO: "محركات البحث SEO",
+      loadingEditor: "جاري تحميل المحرر...",
+      pleaseWait: "يرجى الانتظار بينما نجهز بيانات صفحة من نحن...",
+      saveSuccess: "🎉 تم حفظ محتوى صفحة من نحن بنجاح!",
+      saveFailed: "فشل حفظ بيانات الصفحة",
+      fetchFailed: "فشل جلب بيانات صفحة من نحن",
+
+      heroSection: "قسم الواجهة الرئيسية (Hero)",
+      heroSectionDesc: "الانطباع الأول هو الأهم. اجعله مميزًا!",
+      mainTitle: "العنوان الرئيسي",
+      enterTitlePlaceholder: "أدخل عنوانًا جذابًا",
+      subtitle: "العنوان الفرعي",
+      enterSubtitlePlaceholder: "رسالة داعمة تجذب الانتباه",
+      heroTips: "نصائح قسم الواجهة الرئيسية",
+      heroTip1: "✨ حافظ على العنوان قصيرًا ومؤثرًا",
+      heroTip2: "🚀 استخدم لغة تعبر عن التفاعل والحركة",
+      heroTip3: "💫 سلط الضوء على قيمتك الفريدة المقترحة",
+      heroTip4: "🎯 اجعلها لا تُنسى وسهلة المشاركة",
+
+      missionVision: "الرسالة والرؤية",
+      shareMission: "شارك أهدافك وإنجازاتك",
+      badgeText: "نص الشارة",
+      sectionTitle: "عنوان القسم",
+      whatDrivesUs: "ما الذي يدفعنا للأمام",
+      description: "الوصف",
+      tellStory: "اخبرنا بقصتك ورسالتك...",
+      missionImage: "صورة قسم الرسالة",
+      imagePreview: "معاينة الصورة",
+      enterImageUrl: "أدخل رابط صورة صالحًا لمعاينتها",
+      copyUrl: "نسخ الرابط",
+      urlCopied: "📋 تم نسخ الرابط!",
+      upload: "تحميل",
+      keyStats: "الإحصائيات الرئيسية",
+      addStat: "إضافة إحصائية",
+      statValuePlaceholder: "مثال: 1.5M+",
+      statLabelPlaceholder: "مثال: مستخدم نشط",
+
+      timelineSection: "قسم الجدول الزمني",
+      timelineSectionDesc: "اعرض مسيرتك وأهم المحطات التاريخية",
+      timelineItems: "أحداث الجدول الزمني",
+      addTimelineItem: "إضافة حدث للجدول الزمني",
+      year: "السنة",
+      eventTitle: "عنوان الحدث",
+      describeEvent: "صف هذا الحدث الهام...",
+
+      teamMembers: "أعضاء الفريق",
+      teamMembersDesc: "عرّف الجمهور بفريقك الرائع",
+      addTeamMember: "إضافة عضو فريق",
+      fullName: "الاسم الكامل",
+      positionRole: "المنصب/الدور",
+      profileImageUrl: "رابط صورة الملف الشخصي",
+      briefDescriptionMember: "وصف موجز لعضو الفريق...",
+      socialMediaLinks: "روابط شبكات التواصل الاجتماعي",
+      facebookUrl: "رابط فيسبوك",
+      linkedinUrl: "رابط لينكد إن",
+      instagramUrl: "رابط إنستغرام",
+
+      coreValues: "القيم الأساسية",
+      coreValuesDesc: "حدّد ما يجعل شركتك فريدة",
+      valueItems: "القيم",
+      addValue: "إضافة قيمة",
+      valueTitle: "عنوان القيمة",
+      valueDescription: "وصف القيمة",
+      colorStyle: "نمط اللون",
+      primary: "أساسي",
+      secondary: "ثانوي",
+      accent: "متميز",
+
+      callToAction: "دعوة للتفاعل",
+      ctaDesc: "شجع الزوار على اتخاذ الخطوة التالية",
+      ctaTitle: "عنوان الدعوة للتفاعل",
+      ctaSubtitle: "العنوان الفرعي للدعوة",
+      ctaButtons: "أزرار الدعوة للتفاعل",
+      addButton: "إضافة زر",
+      buttonText: "نص الزر",
+      buttonUrl: "رابط الزر",
+      buttonStyle: "نمط الزر",
+      outline: "مفرغ",
+
+      seoSettings: "إعدادات محركات البحث (SEO)",
+      seoDesc: "حسن صفحتك لتظهر في نتائج محركات البحث",
+      pageTitle: "عنوان الصفحة",
+      metaDescription: "الوصف التعريفي (Meta Description)",
+      seoRecommendation: "موصى به: 150-160 حرفًا",
+
+      readyToPublish: "هل أنت جاهز لنشر التغييرات؟",
+      dontForgetSave: "لا تنسَ حفظ التحديثات الخاصة بك",
+      saveAllChanges: "حفظ جميع التغييرات",
+      livePreview: "معاينة حية"
+    },
+    en: {
+      aboutUsEditor: "About Us Editor",
+      customizeAboutUs: "Design and customize your About Us page",
+      saveChanges: "Save Changes",
+      saving: "Saving...",
+      previewPage: "Preview Page",
+      statsTeam: "Team Members",
+      statsTimeline: "Timeline Items",
+      statsValues: "Core Values",
+      statsStats: "Statistics",
+      tabHero: "Hero",
+      tabMission: "Mission",
+      tabTimeline: "Timeline",
+      tabTeam: "Team",
+      tabValues: "Values",
+      tabCTA: "Call to Action",
+      tabSEO: "SEO",
+      loadingEditor: "Loading Editor...",
+      pleaseWait: "Preparing your About Us content...",
+      saveSuccess: "🎉 About Us content saved successfully!",
+      saveFailed: "Failed to save about us data",
+      fetchFailed: "Failed to fetch about us data",
+
+      heroSection: "Hero Section",
+      heroSectionDesc: "First impression matters. Make it count!",
+      mainTitle: "Main Title",
+      enterTitlePlaceholder: "Enter your compelling headline",
+      subtitle: "Subtitle",
+      enterSubtitlePlaceholder: "Supporting message that captures attention",
+      heroTips: "Hero Section Tips",
+      heroTip1: "✨ Keep title short and impactful",
+      heroTip2: "🚀 Use action-oriented language",
+      heroTip3: "💫 Highlight your unique value proposition",
+      heroTip4: "🎯 Make it memorable and shareable",
+
+      missionVision: "Mission & Vision",
+      shareMission: "Share your purpose and achievements",
+      badgeText: "Badge Text",
+      sectionTitle: "Section Title",
+      whatDrivesUs: "What drives us forward",
+      description: "Description",
+      tellStory: "Tell your story and mission...",
+      missionImage: "Mission Image",
+      imagePreview: "Image Preview",
+      enterImageUrl: "Enter a valid image URL to see preview",
+      copyUrl: "Copy URL",
+      urlCopied: "📋 URL copied to clipboard!",
+      upload: "Upload",
+      keyStats: "Key Statistics",
+      addStat: "Add Stat",
+      statValuePlaceholder: "e.g., 1.5M+",
+      statLabelPlaceholder: "e.g., Active Users",
+
+      timelineSection: "Timeline Section",
+      timelineSectionDesc: "Showcase your journey and milestones",
+      timelineItems: "Timeline Items",
+      addTimelineItem: "Add Timeline Item",
+      year: "Year",
+      eventTitle: "Event Title",
+      describeEvent: "Describe this important event...",
+
+      teamMembers: "Team Members",
+      teamMembersDesc: "Introduce your amazing team",
+      addTeamMember: "Add Team Member",
+      fullName: "Full Name",
+      positionRole: "Position/Role",
+      profileImageUrl: "Profile image URL",
+      briefDescriptionMember: "Brief description about this team member...",
+      socialMediaLinks: "Social Media Links",
+      facebookUrl: "Facebook URL",
+      linkedinUrl: "LinkedIn URL",
+      instagramUrl: "Instagram URL",
+
+      coreValues: "Core Values",
+      coreValuesDesc: "Define what makes your company unique",
+      valueItems: "Value Items",
+      addValue: "Add Value",
+      valueTitle: "Value title",
+      valueDescription: "Value description",
+      colorStyle: "Color Style",
+      primary: "Primary",
+      secondary: "Secondary",
+      accent: "Accent",
+
+      callToAction: "Call to Action",
+      ctaDesc: "Encourage visitors to take the next step",
+      ctaTitle: "CTA Title",
+      ctaSubtitle: "CTA Subtitle",
+      ctaButtons: "CTA Buttons",
+      addButton: "Add Button",
+      buttonText: "Button Text",
+      buttonUrl: "Button URL",
+      buttonStyle: "Button Style",
+      outline: "Outline",
+
+      seoSettings: "SEO Settings",
+      seoDesc: "Optimize your page for search engines",
+      pageTitle: "Page Title",
+      metaDescription: "Meta Description",
+      seoRecommendation: "Recommended: 150-160 characters",
+
+      readyToPublish: "Ready to publish changes?",
+      dontForgetSave: "Don't forget to save your updates",
+      saveAllChanges: "Save All Changes",
+      livePreview: "Live Preview"
+    }
+  };
+  const currentT = isRTL ? localT.ar : localT.en;
   const { data: session, status } = useSession();
   const router = useRouter();
   const [aboutUsData, setAboutUsData] = useState(null);
@@ -66,7 +285,7 @@ export default function AdminAboutUs() {
   const fetchAboutUsData = async () => {
     try {
       const response = await fetch("/api/admin/about-us");
-      if (!response.ok) throw new Error("Failed to fetch about us data");
+      if (!response.ok) throw new Error(currentT.fetchFailed);
       const data = await response.json();
       setAboutUsData(data);
     } catch (err) {
@@ -92,10 +311,10 @@ export default function AdminAboutUs() {
         }
       );
 
-      if (!response.ok) throw new Error("Failed to save about us data");
+      if (!response.ok) throw new Error(currentT.saveFailed);
       const savedData = await response.json();
       setAboutUsData(savedData);
-      toast.success("🎉 About Us content saved successfully!");
+      toast.success(currentT.saveSuccess);
     } catch (err) {
       toast.error(`❌ ${err.message}`);
     } finally {
@@ -222,11 +441,11 @@ export default function AdminAboutUs() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-green-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-green-50 flex items-center justify-center" dir={isRTL ? "rtl" : "ltr"}>
         <div className="text-center">
           <div className="animate-spin rounded-full h-20 w-20 border-b-2 border-primary mx-auto mb-6"></div>
           <div className="text-2xl font-bold bg-gradient-to-r from-primary to-emerald-600 bg-clip-text text-transparent">
-            Loading Editor...
+            {currentT.loadingEditor}
           </div>
           <p className="text-gray-600 mt-2">Preparing your About Us content</p>
         </div>
@@ -237,50 +456,50 @@ export default function AdminAboutUs() {
   const tabs = [
     {
       id: "hero",
-      label: "Hero",
+      label: currentT.tabHero,
       icon: FaRocket,
       color: "from-green-500 to-emerald-500",
     },
     {
       id: "mission",
-      label: "Mission",
+      label: currentT.tabMission,
       icon: FaTrophy,
       color: "from-emerald-500 to-cyan-500",
     },
     {
       id: "timeline",
-      label: "Timeline",
+      label: currentT.tabTimeline,
       icon: FaClock,
       color: "from-green-500 to-emerald-500",
     },
     {
       id: "team",
-      label: "Team",
+      label: currentT.tabTeam,
       icon: FaUsers,
       color: "from-orange-500 to-red-500",
     },
     {
       id: "values",
-      label: "Values",
+      label: currentT.tabValues,
       icon: FaHeart,
       color: "from-emerald-500 to-green-500",
     },
     {
       id: "cta",
-      label: "Call to Action",
+      label: currentT.tabCTA,
       icon: FaHandshake,
       color: "from-teal-500 to-emerald-500",
     },
     {
       id: "seo",
-      label: "SEO",
+      label: currentT.tabSEO,
       icon: FaGlobe,
       color: "from-gray-500 to-slate-600",
     },
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-green-50 p-4 lg:p-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-green-50 p-4 lg:p-6" dir={isRTL ? "rtl" : "ltr"}>
       <div className="max-w-7xl mx-auto">
         {/* Enhanced Header */}
         <div className="mb-8">
@@ -295,7 +514,7 @@ export default function AdminAboutUs() {
                 </h1>
                 <p className="text-gray-600 mt-2 flex items-center gap-2">
                   <FaMagic className="text-primary animate-pulse" />
-                  Design and customize your About Us page
+                  {currentT.customizeAboutUs}
                 </p>
               </div>
             </div>
@@ -310,10 +529,10 @@ export default function AdminAboutUs() {
                 {saving ? (
                   <>
                     <span className="loading loading-spinner loading-sm"></span>
-                    Saving...
+                    {currentT.saving}
                   </>
                 ) : (
-                  "Save Changes"
+                  "{currentT.saveChanges}"
                 )}
               </button>
               <button
@@ -321,7 +540,7 @@ export default function AdminAboutUs() {
                 className="btn btn-lg shadow-xl hover:shadow-2xl transition-all duration-300 flex items-center gap-3 px-8 rounded-2xl bg-gradient-to-r from-emerald-500 to-cyan-600 border-0 text-white hover:scale-105 transform hover:-translate-y-1"
               >
                 <FaEye />
-                Preview Page
+                {currentT.previewPage}
                 <FaExternalLinkAlt className="text-sm" />
               </button>
             </div>
@@ -333,25 +552,25 @@ export default function AdminAboutUs() {
               <div className="text-2xl font-bold text-primary">
                 {aboutUsData.team.members.length}
               </div>
-              <div className="text-sm text-gray-600">Team Members</div>
+              <div className="text-sm text-gray-600">{currentT.statsTeam}</div>
             </div>
             <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 shadow-lg border border-white/20 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
               <div className="text-2xl font-bold text-emerald-600">
                 {aboutUsData.timeline.items.length}
               </div>
-              <div className="text-sm text-gray-600">Timeline Items</div>
+              <div className="text-sm text-gray-600">{currentT.statsTimeline}</div>
             </div>
             <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 shadow-lg border border-white/20 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
               <div className="text-2xl font-bold text-green-600">
                 {aboutUsData.values.items.length}
               </div>
-              <div className="text-sm text-gray-600">Core Values</div>
+              <div className="text-sm text-gray-600">{currentT.statsValues}</div>
             </div>
             <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 shadow-lg border border-white/20 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
               <div className="text-2xl font-bold text-green-600">
                 {aboutUsData.mission.stats.length}
               </div>
-              <div className="text-sm text-gray-600">Statistics</div>
+              <div className="text-sm text-gray-600">{currentT.statsStats}</div>
             </div>
           </div>
         </div>
@@ -391,7 +610,7 @@ export default function AdminAboutUs() {
                       Hero Section
                     </h2>
                     <p className="text-gray-600">
-                      First impression matters. Make it count!
+                      {currentT.heroSectionDesc}
                     </p>
                   </div>
                 </div>
@@ -401,7 +620,7 @@ export default function AdminAboutUs() {
                     <div>
                       <label className="block text-sm font-bold mb-3 flex items-center gap-2">
                         <FaPalette className="text-green-500" />
-                        Main Title
+                        {currentT.mainTitle}
                       </label>
                       <input
                         type="text"
@@ -413,13 +632,13 @@ export default function AdminAboutUs() {
                           })
                         }
                         className="input input-bordered input-lg w-full bg-white/50 backdrop-blur-sm border-2 border-gray-200 focus:border-primary transition-all duration-300"
-                        placeholder="Enter your compelling headline"
+                        placeholder={currentT.enterTitlePlaceholder}
                       />
                     </div>
                     <div>
                       <label className="block text-sm font-bold mb-3 flex items-center gap-2">
                         <FaPalette className="text-emerald-500" />
-                        Subtitle
+                        {currentT.subtitle}
                       </label>
                       <input
                         type="text"
@@ -431,7 +650,7 @@ export default function AdminAboutUs() {
                           })
                         }
                         className="input input-bordered input-lg w-full bg-white/50 backdrop-blur-sm border-2 border-gray-200 focus:border-primary transition-all duration-300"
-                        placeholder="Supporting message that captures attention"
+                        placeholder={currentT.enterSubtitlePlaceholder}
                       />
                     </div>
                   </div>
@@ -439,20 +658,20 @@ export default function AdminAboutUs() {
                   <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-6 border-2 border-dashed border-green-200">
                     <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
                       <FaLightbulb className="text-green-500" />
-                      Hero Section Tips
+                      {currentT.heroTips}
                     </h3>
                     <ul className="space-y-2 text-sm text-gray-600">
                       <li className="flex items-center gap-2">
-                        ✨ Keep title short and impactful
+                        {currentT.heroTip1}
                       </li>
                       <li className="flex items-center gap-2">
-                        🚀 Use action-oriented language
+                        {currentT.heroTip2}
                       </li>
                       <li className="flex items-center gap-2">
-                        💫 Highlight your unique value proposition
+                        {currentT.heroTip3}
                       </li>
                       <li className="flex items-center gap-2">
-                        🎯 Make it memorable and shareable
+                        {currentT.heroTip4}
                       </li>
                     </ul>
                   </div>
@@ -472,7 +691,7 @@ export default function AdminAboutUs() {
                       Mission & Vision
                     </h2>
                     <p className="text-gray-600">
-                      Share your purpose and achievements
+                      {currentT.shareMission}
                     </p>
                   </div>
                 </div>
@@ -482,7 +701,7 @@ export default function AdminAboutUs() {
                     <div className="grid md:grid-cols-3 gap-4">
                       <div>
                         <label className="block text-sm font-bold mb-2">
-                          Badge Text
+                          {currentT.badgeText}
                         </label>
                         <input
                           type="text"
@@ -499,7 +718,7 @@ export default function AdminAboutUs() {
                       </div>
                       <div className="md:col-span-2">
                         <label className="block text-sm font-bold mb-2">
-                          Section Title
+                          {currentT.sectionTitle}
                         </label>
                         <input
                           type="text"
@@ -511,14 +730,14 @@ export default function AdminAboutUs() {
                             })
                           }
                           className="input input-bordered w-full bg-white/50 backdrop-blur-sm border-2 border-gray-200 focus:border-primary"
-                          placeholder="What drives us forward"
+                          placeholder={currentT.whatDrivesUs}
                         />
                       </div>
                     </div>
 
                     <div>
                       <label className="block text-sm font-bold mb-2">
-                        Description
+                        {currentT.description}
                       </label>
                       <textarea
                         value={aboutUsData.mission.description}
@@ -529,7 +748,7 @@ export default function AdminAboutUs() {
                           })
                         }
                         className="textarea textarea-bordered w-full h-32 bg-white/50 backdrop-blur-sm border-2 border-gray-200 focus:border-primary"
-                        placeholder="Tell your story and mission..."
+                        placeholder={currentT.tellStory}
                       />
                     </div>
 
@@ -537,7 +756,7 @@ export default function AdminAboutUs() {
                     <div>
                       <label className="block text-sm font-bold mb-3 flex items-center gap-2">
                         <FaImage className="text-green-500" />
-                        Mission Image
+                        {currentT.missionImage}
                       </label>
                       <div className="space-y-3">
                         <input
@@ -565,17 +784,17 @@ export default function AdminAboutUs() {
                             ) : (
                               <FaCopy />
                             )}
-                            Copy URL
+                            {currentT.copyUrl}
                           </button>
                           <button className="btn btn-sm btn-outline flex items-center gap-2 hover:scale-105 transition-transform">
                             <FaCloudUploadAlt />
-                            Upload
+                            {currentT.upload}
                           </button>
                         </div>
                         {aboutUsData.mission.image && (
                           <div className="mt-4">
                             <label className="block text-sm font-semibold mb-2">
-                              Image Preview
+                              {currentT.imagePreview}
                             </label>
                             <div className="border-2 border-dashed border-gray-300 rounded-2xl p-4 bg-white/50 backdrop-blur-sm">
                               <img
@@ -591,7 +810,7 @@ export default function AdminAboutUs() {
                               ) && (
                                 <div className="text-center text-gray-500 py-8">
                                   <FaImage className="text-4xl mx-auto mb-2 opacity-50" />
-                                  <p>Enter a valid image URL to see preview</p>
+                                  <p>{currentT.enterImageUrl}</p>
                                 </div>
                               )}
                             </div>
@@ -605,7 +824,7 @@ export default function AdminAboutUs() {
                   <div className="space-y-6">
                     <div className="flex items-center justify-between">
                       <label className="block text-sm font-bold">
-                        Key Statistics
+                        {currentT.keyStats}
                       </label>
                       <button
                         onClick={() =>
@@ -618,7 +837,7 @@ export default function AdminAboutUs() {
                         className="btn btn-sm btn-primary flex items-center gap-2 hover:scale-105 transition-transform"
                       >
                         <FaPlus />
-                        Add Stat
+                        {currentT.addStat}
                       </button>
                     </div>
 
@@ -666,7 +885,7 @@ export default function AdminAboutUs() {
                                     })
                                   }
                                   className="input input-bordered input-sm bg-white"
-                                  placeholder="1.5M+"
+                                  placeholder={currentT.statValuePlaceholder}
                                 />
                                 <input
                                   type="text"
@@ -678,7 +897,7 @@ export default function AdminAboutUs() {
                                     })
                                   }
                                   className="input input-bordered input-sm bg-white"
-                                  placeholder="Active Users"
+                                  placeholder={currentT.statLabelPlaceholder}
                                 />
                               </div>
                               <button
@@ -724,7 +943,7 @@ export default function AdminAboutUs() {
                       Timeline Section
                     </h2>
                     <p className="text-gray-600">
-                      Showcase your journey and milestones
+                      {currentT.timelineSectionDesc}
                     </p>
                   </div>
                 </div>
@@ -732,7 +951,7 @@ export default function AdminAboutUs() {
                 <div>
                   <div className="mb-6">
                     <label className="block text-sm font-bold mb-2">
-                      Section Title
+                      {currentT.sectionTitle}
                     </label>
                     <input
                       type="text"
@@ -751,7 +970,7 @@ export default function AdminAboutUs() {
                   <div>
                     <div className="flex items-center justify-between mb-4">
                       <label className="block text-sm font-bold">
-                        Timeline Items
+                        {currentT.timelineItems}
                       </label>
                       <button
                         onClick={() =>
@@ -763,7 +982,7 @@ export default function AdminAboutUs() {
                         }
                         className="btn btn-sm btn-primary flex items-center gap-2 hover:scale-105 transition-transform"
                       >
-                        <FaPlus /> Add Timeline Item
+                        <FaPlus /> {currentT.addTimelineItem}
                       </button>
                     </div>
 
@@ -776,7 +995,7 @@ export default function AdminAboutUs() {
                           <div className="flex flex-col lg:flex-row lg:items-end gap-4 mb-4">
                             <div className="flex-1">
                               <label className="block text-xs font-semibold mb-2 text-gray-600">
-                                Year
+                                {currentT.year}
                               </label>
                               <input
                                 type="text"
@@ -793,7 +1012,7 @@ export default function AdminAboutUs() {
                             </div>
                             <div className="flex-1">
                               <label className="block text-xs font-semibold mb-2 text-gray-600">
-                                Event Title
+                                {currentT.eventTitle}
                               </label>
                               <input
                                 type="text"
@@ -819,7 +1038,7 @@ export default function AdminAboutUs() {
                           </div>
                           <div>
                             <label className="block text-xs font-semibold mb-2 text-gray-600">
-                              Description
+                              {currentT.description}
                             </label>
                             <textarea
                               value={item.content}
@@ -830,7 +1049,7 @@ export default function AdminAboutUs() {
                                 })
                               }
                               className="textarea textarea-bordered w-full bg-white"
-                              placeholder="Describe this important event..."
+                              placeholder={currentT.describeEvent}
                               rows="3"
                             />
                           </div>
@@ -853,7 +1072,7 @@ export default function AdminAboutUs() {
                     <h2 className="text-3xl font-black text-gray-800">
                       Team Members
                     </h2>
-                    <p className="text-gray-600">Introduce your amazing team</p>
+                    <p className="text-gray-600">{currentT.teamMembersDesc}</p>
                   </div>
                 </div>
 
@@ -861,7 +1080,7 @@ export default function AdminAboutUs() {
                   <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
                     <div>
                       <label className="block text-sm font-bold mb-2">
-                        Section Title
+                        {currentT.sectionTitle}
                       </label>
                       <input
                         type="text"
@@ -891,7 +1110,7 @@ export default function AdminAboutUs() {
                       className="btn btn-primary btn-lg flex items-center gap-3 hover:scale-105 transition-transform"
                     >
                       <FaPlus />
-                      Add Team Member
+                      {currentT.addTeamMember}
                     </button>
                   </div>
 
@@ -901,7 +1120,7 @@ export default function AdminAboutUs() {
                         key={index}
                         className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-2 group"
                       >
-                        {/* Image Preview */}
+                        {/* {currentT.imagePreview} */}
                         <div className="relative h-48 bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
                           {member.image ? (
                             <>
@@ -948,7 +1167,7 @@ export default function AdminAboutUs() {
                                 })
                               }
                               className="input input-bordered input-sm w-full font-bold text-lg bg-white/50 backdrop-blur-sm"
-                              placeholder="Full Name"
+                              placeholder={currentT.fullName}
                             />
                             <input
                               type="text"
@@ -960,7 +1179,7 @@ export default function AdminAboutUs() {
                                 })
                               }
                               className="input input-bordered input-sm w-full bg-white/50 backdrop-blur-sm"
-                              placeholder="Position/Role"
+                              placeholder={currentT.positionRole}
                             />
                           </div>
 
@@ -979,12 +1198,12 @@ export default function AdminAboutUs() {
                                   })
                                 }
                                 className="input input-bordered input-sm flex-1 bg-white/50 backdrop-blur-sm"
-                                placeholder="Profile image URL"
+                                placeholder={currentT.profileImageUrl}
                               />
                               <button
                                 onClick={() => copyToClipboard(member.image)}
                                 className="btn btn-sm btn-outline hover:scale-105 transition-transform"
-                                title="Copy URL"
+                                title="{currentT.copyUrl}"
                               >
                                 {copiedUrl === member.image ? (
                                   <FaCheck className="text-green-500" />
@@ -1004,14 +1223,14 @@ export default function AdminAboutUs() {
                               })
                             }
                             className="textarea textarea-bordered textarea-sm w-full h-20 bg-white/50 backdrop-blur-sm"
-                            placeholder="Brief description about this team member..."
+                            placeholder={currentT.briefDescriptionMember}
                           />
 
                           {/* Social Links */}
                           <div className="pt-4 border-t border-gray-200">
                             <label className="block text-xs font-semibold mb-3 text-gray-600 flex items-center gap-2">
                               <FaLink className="text-emerald-500" />
-                              Social Media Links
+                              {currentT.socialMediaLinks}
                             </label>
                             <div className="space-y-2">
                               <div className="flex items-center gap-2">
@@ -1030,7 +1249,7 @@ export default function AdminAboutUs() {
                                     })
                                   }
                                   className="input input-bordered input-sm flex-1 bg-white/50 backdrop-blur-sm"
-                                  placeholder="Facebook URL"
+                                  placeholder={currentT.facebookUrl}
                                 />
                               </div>
                               <div className="flex items-center gap-2">
@@ -1049,7 +1268,7 @@ export default function AdminAboutUs() {
                                     })
                                   }
                                   className="input input-bordered input-sm flex-1 bg-white/50 backdrop-blur-sm"
-                                  placeholder="LinkedIn URL"
+                                  placeholder={currentT.linkedinUrl}
                                 />
                               </div>
                               <div className="flex items-center gap-2">
@@ -1068,7 +1287,7 @@ export default function AdminAboutUs() {
                                     })
                                   }
                                   className="input input-bordered input-sm flex-1 bg-white/50 backdrop-blur-sm"
-                                  placeholder="Instagram URL"
+                                  placeholder={currentT.instagramUrl}
                                 />
                               </div>
                             </div>
@@ -1093,7 +1312,7 @@ export default function AdminAboutUs() {
                       Core Values
                     </h2>
                     <p className="text-gray-600">
-                      Define what makes your company unique
+                      {currentT.coreValuesDesc}
                     </p>
                   </div>
                 </div>
@@ -1101,7 +1320,7 @@ export default function AdminAboutUs() {
                 <div>
                   <div className="mb-6">
                     <label className="block text-sm font-bold mb-2">
-                      Section Title
+                      {currentT.sectionTitle}
                     </label>
                     <input
                       type="text"
@@ -1120,7 +1339,7 @@ export default function AdminAboutUs() {
                   <div>
                     <div className="flex items-center justify-between mb-4">
                       <label className="block text-sm font-bold">
-                        Value Items
+                        {currentT.valueItems}
                       </label>
                       <button
                         onClick={() =>
@@ -1133,7 +1352,7 @@ export default function AdminAboutUs() {
                         }
                         className="btn btn-sm btn-primary flex items-center gap-2 hover:scale-105 transition-transform"
                       >
-                        <FaPlus /> Add Value
+                        <FaPlus /> {currentT.addValue}
                       </button>
                     </div>
 
@@ -1200,7 +1419,7 @@ export default function AdminAboutUs() {
                                     })
                                   }
                                   className="input input-bordered input-lg w-full bg-white"
-                                  placeholder="Value title"
+                                  placeholder={currentT.valueTitle}
                                 />
                               </div>
                               <div>
@@ -1214,9 +1433,9 @@ export default function AdminAboutUs() {
                                   }
                                   className="select select-bordered w-full bg-white"
                                 >
-                                  <option value="primary">Primary</option>
-                                  <option value="secondary">Secondary</option>
-                                  <option value="accent">Accent</option>
+                                  <option value="primary">{currentT.primary}</option>
+                                  <option value="secondary">{currentT.secondary}</option>
+                                  <option value="accent">{currentT.accent}</option>
                                 </select>
                               </div>
                               <textarea
@@ -1228,7 +1447,7 @@ export default function AdminAboutUs() {
                                   })
                                 }
                                 className="textarea textarea-bordered w-full bg-white"
-                                placeholder="Value description"
+                                placeholder={currentT.valueDescription}
                                 rows="3"
                               />
                             </div>
@@ -1253,7 +1472,7 @@ export default function AdminAboutUs() {
                       Call to Action
                     </h2>
                     <p className="text-gray-600">
-                      Encourage visitors to take the next step
+                      {currentT.ctaDesc}
                     </p>
                   </div>
                 </div>
@@ -1262,7 +1481,7 @@ export default function AdminAboutUs() {
                   <div className="grid md:grid-cols-2 gap-6">
                     <div>
                       <label className="block text-sm font-bold mb-2">
-                        CTA Title
+                        {currentT.ctaTitle}
                       </label>
                       <input
                         type="text"
@@ -1279,7 +1498,7 @@ export default function AdminAboutUs() {
                     </div>
                     <div>
                       <label className="block text-sm font-bold mb-2">
-                        CTA Subtitle
+                        CTA {currentT.subtitle}
                       </label>
                       <input
                         type="text"
@@ -1299,7 +1518,7 @@ export default function AdminAboutUs() {
                   <div>
                     <div className="flex items-center justify-between mb-4">
                       <label className="block text-sm font-bold">
-                        CTA Buttons
+                        {currentT.ctaButtons}
                       </label>
                       <button
                         onClick={() =>
@@ -1311,7 +1530,7 @@ export default function AdminAboutUs() {
                         }
                         className="btn btn-sm btn-primary flex items-center gap-2 hover:scale-105 transition-transform"
                       >
-                        <FaPlus /> Add Button
+                        <FaPlus /> {currentT.addButton}
                       </button>
                     </div>
 
@@ -1324,7 +1543,7 @@ export default function AdminAboutUs() {
                           <div className="flex flex-col lg:flex-row gap-4 items-end">
                             <div className="flex-1">
                               <label className="block text-xs font-semibold mb-2 text-gray-600">
-                                Button Text
+                                {currentT.buttonText}
                               </label>
                               <input
                                 type="text"
@@ -1341,7 +1560,7 @@ export default function AdminAboutUs() {
                             </div>
                             <div className="flex-1">
                               <label className="block text-xs font-semibold mb-2 text-gray-600">
-                                Button URL
+                                {currentT.buttonUrl}
                               </label>
                               <input
                                 type="text"
@@ -1358,7 +1577,7 @@ export default function AdminAboutUs() {
                             </div>
                             <div className="flex-1">
                               <label className="block text-xs font-semibold mb-2 text-gray-600">
-                                Button Style
+                                {currentT.buttonStyle}
                               </label>
                               <select
                                 value={button.variant}
@@ -1370,9 +1589,9 @@ export default function AdminAboutUs() {
                                 }
                                 className="select select-bordered w-full bg-white"
                               >
-                                <option value="primary">Primary</option>
-                                <option value="outline">Outline</option>
-                                <option value="secondary">Secondary</option>
+                                <option value="primary">{currentT.primary}</option>
+                                <option value="outline">{currentT.outline}</option>
+                                <option value="secondary">{currentT.secondary}</option>
                               </select>
                             </div>
                             <button
@@ -1404,7 +1623,7 @@ export default function AdminAboutUs() {
                       SEO Settings
                     </h2>
                     <p className="text-gray-600">
-                      Optimize your page for search engines
+                      {currentT.seoDesc}
                     </p>
                   </div>
                 </div>
@@ -1412,7 +1631,7 @@ export default function AdminAboutUs() {
                 <div className="grid gap-6">
                   <div>
                     <label className="block text-sm font-bold mb-2">
-                      Page Title
+                      {currentT.pageTitle}
                     </label>
                     <input
                       type="text"
@@ -1429,7 +1648,7 @@ export default function AdminAboutUs() {
                   </div>
                   <div>
                     <label className="block text-sm font-bold mb-2">
-                      Meta Description
+                      Meta {currentT.description}
                     </label>
                     <textarea
                       value={aboutUsData.seo.description}
@@ -1444,7 +1663,7 @@ export default function AdminAboutUs() {
                       rows="4"
                     />
                     <p className="text-xs text-gray-500 mt-2">
-                      Recommended: 150-160 characters
+                      {currentT.seoRecommendation}
                     </p>
                   </div>
                 </div>
@@ -1458,10 +1677,10 @@ export default function AdminAboutUs() {
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
             <div>
               <h3 className="font-bold text-gray-800">
-                Ready to publish changes?
+                {currentT.readyToPublish}
               </h3>
               <p className="text-gray-600 text-sm">
-                Don't forget to save your updates
+                {currentT.dontForgetSave}
               </p>
             </div>
             <div className="flex gap-3">
@@ -1471,14 +1690,14 @@ export default function AdminAboutUs() {
                 className="btn btn-primary btn-lg flex items-center gap-3 px-8 hover:scale-105 transition-transform"
               >
                 <FaSave />
-                {saving ? "Saving..." : "Save All Changes"}
+                {saving ? currentT.saving : currentT.saveAllChanges}
               </button>
               <button
                 onClick={() => router.push("/about-us")}
                 className="btn btn-outline btn-lg flex items-center gap-3 px-8 hover:scale-105 transition-transform"
               >
                 <FaEye />
-                Live Preview
+                {currentT.livePreview}
               </button>
             </div>
           </div>
