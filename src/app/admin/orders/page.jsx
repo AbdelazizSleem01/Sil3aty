@@ -59,6 +59,62 @@ export default function AdminOrdersPage() {
     setExpandedOrders(prev => ({ ...prev, [orderId]: !prev[orderId] }));
   };
 
+  const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false);
+  const [selectedOrderForInvoice, setSelectedOrderForInvoice] = useState(null);
+  const [invoiceLang, setInvoiceLang] = useState("en");
+  const [customLogo, setCustomLogo] = useState(null);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const savedLogo = localStorage.getItem("storeLogo");
+      if (savedLogo) {
+        setCustomLogo(savedLogo);
+      }
+      setInvoiceLang(isRTL ? "ar" : "en");
+    }
+  }, [isRTL]);
+
+  const handleLogoUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result;
+        setCustomLogo(base64String);
+        localStorage.setItem("storeLogo", base64String);
+        toast.success(invoiceLang === "ar" ? "✅ تم حفظ الشعار بنجاح" : "✅ Logo saved successfully");
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveLogo = () => {
+    setCustomLogo(null);
+    localStorage.removeItem("storeLogo");
+    toast.success(invoiceLang === "ar" ? "✅ تم استعادة الشعار الافتراضي" : "✅ Default logo restored");
+  };
+
+  const getLogoBase64 = async () => {
+    if (customLogo) return customLogo;
+    try {
+      const res = await fetch("/images/logo.png");
+      const blob = await res.blob();
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.readAsDataURL(blob);
+      });
+    } catch (e) {
+      return null;
+    }
+  };
+
+  const openInvoiceModal = (order) => {
+    setSelectedOrderForInvoice(order);
+    setInvoiceLang(isRTL ? "ar" : "en");
+    setIsInvoiceModalOpen(true);
+  };
+
   useEffect(() => {
     if (status === "loading") return;
 
@@ -171,46 +227,79 @@ export default function AdminOrdersPage() {
     }
   };
 
-  const generateInvoicePDF = (order) => {
+  const generateInvoicePDF = async (order) => {
     const doc = new jsPDF({
       orientation: "portrait",
       unit: "mm",
       format: "a4",
     });
 
-    const primaryColor = [79, 70, 229]; // Indigo-600
+    const isAr = invoiceLang === "ar";
+    const primaryColor = [22, 163, 74]; // Brand Green #16a34a
     const secondaryColor = [107, 114, 128]; // Gray-500
-    const successColor = [16, 185, 129]; // Emerald-500
+    const successColor = [22, 163, 74]; // Brand Green
     const darkSlate = [15, 23, 42]; // Slate-900
+
+    const labels = {
+      invoice: isAr ? "INVOICE (FATOORAH)" : "INVOICE",
+      invoiceId: isAr ? "Invoice ID / raqm al-fatoorah" : "Invoice ID",
+      date: isAr ? "Date / al-tareekh" : "Date",
+      summary: isAr ? "ORDER SUMMARY / mulakhass al-talab" : "ORDER SUMMARY",
+      status: isAr ? "Order Status / halat al-talab" : "Order Status",
+      payment: isAr ? "Payment / halat al-daf'" : "Payment Status",
+      billTo: isAr ? "BILL TO / ila al-'ameel" : "BILL TO",
+      shipTo: isAr ? "SHIP TO / 'unwan al-shahn" : "SHIP TO",
+      product: isAr ? "Product / al-muntaj" : "Product",
+      details: isAr ? "Details / al-tafaseel" : "Details",
+      price: isAr ? "Price / al-si'r" : "Price",
+      qty: isAr ? "Qty / al-kamiyah" : "Qty",
+      total: isAr ? "Total / al-ijmali" : "Total",
+      subtotal: isAr ? "Subtotal" : "Subtotal",
+      discount: isAr ? "Discount" : "Discount",
+      shipping: isAr ? "Shipping" : "Shipping Cost",
+      finalTotal: isAr ? "Total Amount" : "Total Amount",
+    };
 
     // Top primary accent bar
     doc.setFillColor(...primaryColor);
     doc.rect(0, 0, 210, 4, "F");
 
+    // Logo image rendering
+    const logoData = await getLogoBase64();
+    let textStartX = 15;
+    if (logoData) {
+      try {
+        doc.addImage(logoData, "PNG", 15, 10, 15, 15);
+        textStartX = 35;
+      } catch (err) {
+        console.error("Error rendering PDF logo", err);
+      }
+    }
+
     // Header Company Name
     doc.setTextColor(...darkSlate);
     doc.setFontSize(22);
     doc.setFont("helvetica", "bold");
-    doc.text("Sil3aty Store", 15, 20);
+    doc.text("Sil3aty Store", textStartX, 18);
 
     // Company Meta
     doc.setFontSize(8);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(...secondaryColor);
-    doc.text("https://sil3aty.vercel.app/", 15, 25);
-    doc.text("support@sil3aty-store.com", 15, 29);
+    doc.text("https://sil3aty.vercel.app/", textStartX, 23);
+    doc.text("support@sil3aty-store.com", textStartX, 27);
 
     // Invoice Label on right
     doc.setTextColor(...primaryColor);
     doc.setFontSize(24);
     doc.setFont("helvetica", "bold");
-    doc.text("INVOICE", 195, 20, { align: "right" });
+    doc.text(labels.invoice, 195, 20, { align: "right" });
 
     doc.setTextColor(...darkSlate);
-    doc.setFontSize(8);
+    doc.setFontSize(7.5);
     doc.setFont("helvetica", "normal");
-    doc.text(`Invoice ID: Sil3aty-${order._id.substring(18).toUpperCase()}`, 195, 25, { align: "right" });
-    doc.text(`Date: ${new Date(order.createdAt).toLocaleDateString()}`, 195, 29, { align: "right" });
+    doc.text(`${labels.invoiceId}: Sil3aty-${order._id.substring(18).toUpperCase()}`, 195, 26, { align: "right" });
+    doc.text(`${labels.date}: ${new Date(order.createdAt).toLocaleDateString()}`, 195, 30, { align: "right" });
 
     // Horizontal Separator Line
     doc.setDrawColor(229, 231, 235);
@@ -225,36 +314,36 @@ export default function AdminOrdersPage() {
     doc.setTextColor(...darkSlate);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(9);
-    doc.text("ORDER SUMMARY", 20, 47);
+    doc.text(labels.summary, 20, 46);
 
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8);
     doc.setTextColor(...secondaryColor);
-    doc.text(`Order Status:`, 20, 52);
-    doc.text(`Payment Status:`, 100, 52);
+    doc.text(`${labels.status}:`, 20, 52);
+    doc.text(`${labels.payment}:`, 100, 52);
 
     doc.setFont("helvetica", "bold");
     doc.setTextColor(...darkSlate);
-    doc.text(order.status.toUpperCase(), 42, 52);
+    doc.text(order.status.toUpperCase(), 58, 52);
     
     if (order.isPaid) {
       doc.setTextColor(...successColor);
-      doc.text("PAID", 125, 52);
+      doc.text("PAID", 132, 52);
       if (order.paidAt) {
         doc.setFont("helvetica", "normal");
         doc.setTextColor(...secondaryColor);
-        doc.text(` (On ${new Date(order.paidAt).toLocaleDateString()})`, 135, 52);
+        doc.text(` (On ${new Date(order.paidAt).toLocaleDateString()})`, 142, 52);
       }
     } else {
       doc.setTextColor(239, 68, 68); // Red-500
-      doc.text("UNPAID / PENDING", 125, 52);
+      doc.text("UNPAID / PENDING", 132, 52);
     }
 
     // Customer Billing/Shipping info
     const customerInfo = [
       [
         {
-          content: "BILL TO",
+          content: labels.billTo,
           styles: {
             fontStyle: "bold",
             fontSize: 8.5,
@@ -263,7 +352,7 @@ export default function AdminOrdersPage() {
           },
         },
         {
-          content: "SHIP TO",
+          content: labels.shipTo,
           styles: {
             fontStyle: "bold",
             fontSize: 8.5,
@@ -297,7 +386,7 @@ export default function AdminOrdersPage() {
     });
 
     // Items list
-    const tableColumn = ["Product", "Details", "Price", "Qty", "Total"];
+    const tableColumn = [labels.product, labels.details, labels.price, labels.qty, labels.total];
     const tableRows = order.orderItems.map((item) => [
       item.name,
       `${item.color || "N/A"} / ${item.size || "N/A"}`,
@@ -345,21 +434,21 @@ export default function AdminOrdersPage() {
     
     // Subtotal
     doc.setFont("helvetica", "normal");
-    doc.text("Subtotal:", 129, finalY + 6);
+    doc.text(`${labels.subtotal}:`, 129, finalY + 6);
     doc.text(`$${(order.subTotal || order.totalPrice).toFixed(2)}`, 191, finalY + 6, { align: "right" });
 
     // Discount
     let offset = 0;
     if (order.discountAmount > 0) {
       doc.setTextColor(...successColor);
-      doc.text(`Discount (${order.discountCode}):`, 129, finalY + 12);
+      doc.text(`${labels.discount} (${order.discountCode}):`, 129, finalY + 12);
       doc.text(`-$${order.discountAmount.toFixed(2)}`, 191, finalY + 12, { align: "right" });
       doc.setTextColor(...darkSlate);
       offset = 6;
     }
 
     // Shipping
-    doc.text("Shipping Cost:", 129, finalY + 12 + offset);
+    doc.text(`${labels.shipping}:`, 129, finalY + 12 + offset);
     const shipping = order.shippingCost || 0;
     doc.text(`$${shipping.toFixed(2)}`, 191, finalY + 12 + offset, { align: "right" });
 
@@ -370,7 +459,7 @@ export default function AdminOrdersPage() {
     doc.setFont("helvetica", "bold");
     doc.setFontSize(9);
     doc.setTextColor(...primaryColor);
-    doc.text("Total:", 129, finalY + 24 + offset);
+    doc.text(`${labels.finalTotal}:`, 129, finalY + 24 + offset);
     doc.text(`$${(order.finalTotal || order.totalPrice).toFixed(2)}`, 191, finalY + 24 + offset, { align: "right" });
 
     // Footer
@@ -381,7 +470,7 @@ export default function AdminOrdersPage() {
     doc.setFontSize(7.5);
     doc.setTextColor(...secondaryColor);
     doc.setFont("helvetica", "normal");
-    doc.text("Thank you for shopping with Sil3aty Store!", 15, footerY + 5);
+    doc.text(isAr ? "Thank you for shopping with Sil3aty Store!" : "Thank you for shopping with Sil3aty Store!", 15, footerY + 5);
     doc.text("For support: support@sil3aty-store.com | +20 1012105407", 15, footerY + 9);
     doc.text("All sales are subject to terms and return conditions.", 15, footerY + 13);
 
@@ -390,74 +479,85 @@ export default function AdminOrdersPage() {
     toast.success("📄 Invoice PDF downloaded successfully!");
   };
 
-  const generateCompactInvoice = (order) => {
+  const generateCompactInvoice = async (order) => {
     const doc = new jsPDF({
       orientation: "portrait",
       unit: "mm",
       format: [80, 180], // Extended height for items space
     });
 
-    const primaryColor = [79, 70, 229];
+    const isAr = invoiceLang === "ar";
+    const primaryColor = [22, 163, 74];
     const secondaryColor = [107, 114, 128];
-    const successColor = [16, 185, 129];
+    const successColor = [22, 163, 74];
     const darkSlate = [15, 23, 42];
 
     // Colored bar at the top
     doc.setFillColor(...primaryColor);
     doc.rect(0, 0, 80, 3, "F");
 
+    // Logo image rendering
+    const logoData = await getLogoBase64();
+    if (logoData) {
+      try {
+        doc.addImage(logoData, "PNG", 32, 5, 15, 15);
+      } catch (err) {
+        console.error("Error rendering receipt logo", err);
+      }
+    }
+
     // Centered Store Header
     doc.setTextColor(...darkSlate);
     doc.setFontSize(14);
     doc.setFont("helvetica", "bold");
-    doc.text("Sil3aty Store", 40, 10, { align: "center" });
+    doc.text("Sil3aty Store", 40, logoData ? 24 : 10, { align: "center" });
 
     doc.setFontSize(6.5);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(...secondaryColor);
-    doc.text("https://sil3aty.vercel.app/", 40, 13, { align: "center" });
-    doc.text("support@sil3aty-store.com", 40, 16, { align: "center" });
+    doc.text("https://sil3aty.vercel.app/", 40, logoData ? 27 : 13, { align: "center" });
+    doc.text("support@sil3aty-store.com", 40, logoData ? 30 : 16, { align: "center" });
 
     // Separator line
+    const sepY = logoData ? 33 : 19;
     doc.setDrawColor(229, 231, 235);
-    doc.line(5, 19, 75, 19);
+    doc.line(5, sepY, 75, sepY);
 
     // Receipt Meta
     doc.setTextColor(...darkSlate);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(7);
-    doc.text("RECEIPT DETAILS", 5, 24);
+    doc.text("RECEIPT DETAILS", 5, sepY + 5);
 
     doc.setFont("helvetica", "normal");
     doc.setFontSize(6);
     doc.setTextColor(...secondaryColor);
-    doc.text(`Receipt #: Sil3aty-${order._id.substring(18).toUpperCase()}`, 5, 28);
-    doc.text(`Date: ${new Date(order.createdAt).toLocaleDateString()}`, 5, 32);
-    doc.text(`Status: ${order.status.toUpperCase()}`, 5, 36);
+    doc.text(`Receipt #: Sil3aty-${order._id.substring(18).toUpperCase()}`, 5, sepY + 9);
+    doc.text(`Date: ${new Date(order.createdAt).toLocaleDateString()}`, 5, sepY + 13);
+    doc.text(`Status: ${order.status.toUpperCase()}`, 5, sepY + 17);
 
-    doc.text("BILL TO / SHIP TO:", 42, 28);
+    doc.text("BILL TO / SHIP TO:", 42, sepY + 9);
     const clientName = `${order.shippingAddress?.firstName || ""} ${order.shippingAddress?.lastName || ""}`;
-    doc.text(clientName.substring(0, 20), 42, 32);
-    doc.text(order.shippingAddress?.phone || "", 42, 36);
+    doc.text(clientName.substring(0, 20), 42, sepY + 13);
+    doc.text(order.shippingAddress?.phone || "", 42, sepY + 17);
 
     doc.setDrawColor(229, 231, 235);
-    doc.line(5, 40, 75, 40);
+    doc.line(5, sepY + 21, 75, sepY + 21);
 
     // Items Section
     doc.setTextColor(...darkSlate);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(7);
-    doc.text("ITEMS DESCRIPTION", 5, 45);
+    doc.text("ITEMS DESCRIPTION", 5, sepY + 26);
 
     doc.setDrawColor(241, 245, 249);
-    doc.line(5, 47, 75, 47);
+    doc.line(5, sepY + 28, 75, sepY + 28);
 
-    let yPos = 51;
+    let yPos = sepY + 32;
     order.orderItems.forEach((item) => {
       doc.setFont("helvetica", "bold");
       doc.setFontSize(6.5);
       doc.setTextColor(...darkSlate);
-      // Word wrap safety
       const name = item.name.length > 30 ? item.name.substring(0, 30) + "..." : item.name;
       doc.text(name, 5, yPos);
       yPos += 3.5;
@@ -515,7 +615,7 @@ export default function AdminOrdersPage() {
     doc.setFont("helvetica", "normal");
     doc.setFontSize(5.5);
     doc.setTextColor(...secondaryColor);
-    doc.text("Thank you for shopping with us!", 40, yPos, { align: "center" });
+    doc.text(isAr ? "Thank you for shopping with us!" : "Thank you for shopping with us!", 40, yPos, { align: "center" });
     doc.text("Please keep this receipt for your records.", 40, yPos + 3, { align: "center" });
 
     const fileName = `Sil3aty-Receipt-${order._id.substring(18).toUpperCase()}.pdf`;
@@ -523,11 +623,13 @@ export default function AdminOrdersPage() {
     toast.success("📄 Compact receipt downloaded!");
   };
 
-  const printInvoice = (order) => {
+  const printInvoice = async (order) => {
+    const logoData = await getLogoBase64();
+    const isAr = invoiceLang === "ar";
     const printWindow = window.open("", "_blank");
     const invoiceContent = `
       <!DOCTYPE html>
-      <html dir="${isRTL ? "rtl" : "ltr"}">
+      <html dir="${isAr ? "rtl" : "ltr"}">
       <head>
         <title>Invoice - ${order._id.substring(18).toUpperCase()}</title>
         <meta charset="utf-8">
@@ -559,11 +661,16 @@ export default function AdminOrdersPage() {
             padding-bottom: 24px;
             margin-bottom: 30px;
           }
+          .header-brand {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+          }
           .header h1 {
             margin: 0;
             font-size: 28px;
             font-weight: 800;
-            color: #4f46e5;
+            color: #16a34a;
           }
           .header p {
             margin: 4px 0 0 0;
@@ -598,7 +705,7 @@ export default function AdminOrdersPage() {
             margin: 0 0 12px 0;
             font-size: 12px;
             font-weight: 800;
-            color: #4f46e5;
+            color: #16a34a;
             text-transform: uppercase;
             letter-spacing: 0.05em;
           }
@@ -620,7 +727,7 @@ export default function AdminOrdersPage() {
             text-align: right;
           }
           .table th {
-            background: #4f46e5;
+            background: #16a34a;
             color: #ffffff;
             font-size: 12px;
             font-weight: 700;
@@ -679,7 +786,7 @@ export default function AdminOrdersPage() {
             color: #475569;
           }
           .summary-row.discount {
-            color: #10b981;
+            color: #16a34a;
             font-weight: 500;
           }
           .summary-row.total {
@@ -688,7 +795,7 @@ export default function AdminOrdersPage() {
             border-top: 2px solid #e2e8f0;
             font-size: 18px;
             font-weight: 800;
-            color: #4f46e5;
+            color: #16a34a;
           }
           .footer {
             text-align: center;
@@ -714,12 +821,12 @@ export default function AdminOrdersPage() {
             transition: all 0.2s;
           }
           .btn-primary {
-            background: #4f46e5;
+            background: #16a34a;
             color: #ffffff;
-            box-shadow: 0 4px 6px -1px rgb(79 70 229 / 0.2);
+            box-shadow: 0 4px 6px -1px rgb(22 163 74 / 0.2);
           }
           .btn-primary:hover {
-            background: #4338ca;
+            background: #15803d;
             transform: translateY(-1px);
           }
           .btn-secondary {
@@ -749,32 +856,35 @@ export default function AdminOrdersPage() {
       <body>
         <div class="container">
           <div class="header">
-            <div>
-              <h1>Sil3aty Store</h1>
-              <p>https://sil3aty.vercel.app/</p>
-              <p>support@sil3aty-store.com</p>
+            <div class="header-brand">
+              ${logoData ? `<img src="${logoData}" alt="Logo" style="height: 60px; width: auto; object-fit: contain;" />` : ""}
+              <div>
+                <h1>Sil3aty Store</h1>
+                <p>https://sil3aty.vercel.app/</p>
+                <p>support@sil3aty-store.com</p>
+              </div>
             </div>
             <div class="invoice-label">
-              <h2>${isRTL ? "فاتورة شراء" : "INVOICE"}</h2>
-              <p><strong>${isRTL ? "رقم الفاتورة" : "Invoice ID"}:</strong> Sil3aty-${order._id.substring(18).toUpperCase()}</p>
-              <p><strong>${isRTL ? "التاريخ" : "Date"}:</strong> ${new Date(order.createdAt).toLocaleDateString(isRTL ? "ar-EG" : "en-US")}</p>
+              <h2>${isAr ? "فاتورة شراء" : "INVOICE"}</h2>
+              <p><strong>${isAr ? "رقم الفاتورة" : "Invoice ID"}:</strong> Sil3aty-${order._id.substring(18).toUpperCase()}</p>
+              <p><strong>${isAr ? "التاريخ" : "Date"}:</strong> ${new Date(order.createdAt).toLocaleDateString(isAr ? "ar-EG" : "en-US")}</p>
             </div>
           </div>
 
           <div class="info-grid">
             <div class="info-card">
-              <h3>${isRTL ? "بيانات الشحن والتوصيل" : "SHIP TO"}</h3>
-              <p><strong>${isRTL ? "الاسم" : "Name"}:</strong> ${order.shippingAddress?.firstName} ${order.shippingAddress?.lastName}</p>
-              <p><strong>${isRTL ? "الهاتف" : "Phone"}:</strong> ${order.shippingAddress?.phone}</p>
-              <p><strong>${isRTL ? "البريد الإلكتروني" : "Email"}:</strong> ${order.shippingAddress?.email}</p>
+              <h3>${isAr ? "بيانات الشحن والتوصيل" : "SHIP TO"}</h3>
+              <p><strong>${isAr ? "الاسم" : "Name"}:</strong> ${order.shippingAddress?.firstName} ${order.shippingAddress?.lastName}</p>
+              <p><strong>${isAr ? "الهاتف" : "Phone"}:</strong> ${order.shippingAddress?.phone}</p>
+              <p><strong>${isAr ? "البريد الإلكتروني" : "Email"}:</strong> ${order.shippingAddress?.email}</p>
             </div>
             <div class="info-card">
-              <h3>${isRTL ? "تفاصيل الطلب والدفع" : "ORDER & PAYMENT"}</h3>
-              <p><strong>${isRTL ? "عنوان التوصيل" : "Address"}:</strong> ${order.shippingAddress?.address}</p>
-              <p><strong>${isRTL ? "البلد / المدينة" : "City/Country"}:</strong> ${order.shippingAddress?.city}, ${order.shippingAddress?.country}</p>
-              <p><strong>${isRTL ? "حالة الدفع" : "Payment Status"}:</strong> 
-                <span style="font-weight: 700; color: ${order.isPaid ? "#10b981" : "#ef4444"}">
-                  ${order.isPaid ? (isRTL ? "مدفوع" : "PAID") : (isRTL ? "قيد الانتظار" : "PENDING")}
+              <h3>${isAr ? "تفاصيل الطلب والدفع" : "ORDER & PAYMENT"}</h3>
+              <p><strong>${isAr ? "عنوان التوصيل" : "Address"}:</strong> ${order.shippingAddress?.address}</p>
+              <p><strong>${isAr ? "البلد / المدينة" : "City/Country"}:</strong> ${order.shippingAddress?.city}, ${order.shippingAddress?.country}</p>
+              <p><strong>${isAr ? "حالة الدفع" : "Payment Status"}:</strong> 
+                <span style="font-weight: 700; color: ${order.isPaid ? "#16a34a" : "#ef4444"}">
+                  ${order.isPaid ? (isAr ? "مدفوع" : "PAID") : (isAr ? "قيد الانتظار" : "PENDING")}
                 </span>
               </p>
             </div>
@@ -784,11 +894,11 @@ export default function AdminOrdersPage() {
             <table class="table">
               <thead>
                 <tr>
-                  <th>${isRTL ? "المنتج" : "Product"}</th>
-                  <th>${isRTL ? "المواصفات" : "Details"}</th>
-                  <th style="text-align: right;">${isRTL ? "السعر" : "Price"}</th>
-                  <th style="text-align: center;">${isRTL ? "الكمية" : "Qty"}</th>
-                  <th style="text-align: right;">${isRTL ? "الإجمالي" : "Total"}</th>
+                  <th>${isAr ? "المنتج" : "Product"}</th>
+                  <th>${isAr ? "المواصفات" : "Details"}</th>
+                  <th style="text-align: right;">${isAr ? "السعر" : "Price"}</th>
+                  <th style="text-align: center;">${isAr ? "الكمية" : "Qty"}</th>
+                  <th style="text-align: right;">${isAr ? "الإجمالي" : "Total"}</th>
                 </tr>
               </thead>
               <tbody>
@@ -800,7 +910,7 @@ export default function AdminOrdersPage() {
                     <td>${item.color || "N/A"} / ${item.size || "N/A"}</td>
                     <td style="text-align: right;">$${item.price.toFixed(2)}</td>
                     <td style="text-align: center; font-weight: 600;">${item.qty}</td>
-                    <td style="text-align: right; font-weight: 700; color: #4f46e5;">$${(item.price * item.qty).toFixed(2)}</td>
+                    <td style="text-align: right; font-weight: 700; color: #16a34a;">$${(item.price * item.qty).toFixed(2)}</td>
                   </tr>
                 `
                   )
@@ -812,39 +922,39 @@ export default function AdminOrdersPage() {
           <div class="summary-container">
             <div class="summary-box">
               <div class="summary-row">
-                <span>${isRTL ? "المجموع الفرعي" : "Subtotal"}:</span>
+                <span>${isAr ? "المجموع الفرعي" : "Subtotal"}:</span>
                 <span>$${(order.subTotal || order.totalPrice).toFixed(2)}</span>
               </div>
               ${
                 order.discountAmount > 0
                   ? `
                 <div class="summary-row discount">
-                  <span>${isRTL ? "الخصم" : "Discount"} (${order.discountCode}):</span>
+                  <span>${isAr ? "الخصم" : "Discount"} (${order.discountCode}):</span>
                   <span>-$${order.discountAmount.toFixed(2)}</span>
                 </div>
               `
                   : ""
               }
               <div class="summary-row">
-                <span>${isRTL ? "مصاريف الشحن" : "Shipping"}:</span>
+                <span>${isAr ? "مصاريف الشحن" : "Shipping"}:</span>
                 <span>$${(order.shippingCost || 0).toFixed(2)}</span>
               </div>
               <div class="summary-row total">
-                <span>${isRTL ? "الإجمالي النهائي" : "Total"}:</span>
+                <span>${isAr ? "الإجمالي النهائي" : "Total"}:</span>
                 <span>$${(order.finalTotal || order.totalPrice).toFixed(2)}</span>
               </div>
             </div>
           </div>
 
           <div class="footer">
-            <p>${isRTL ? "شكراً لتسوقكم من متجر سلعتي!" : "Thank you for shopping with Sil3aty Store!"}</p>
+            <p>${isAr ? "شكراً لتسوقكم من متجر سلعتي!" : "Thank you for shopping with Sil3aty Store!"}</p>
             <p>https://sil3aty.vercel.app/ | support@sil3aty-store.com</p>
           </div>
         </div>
 
         <div class="btn-container no-print">
-          <button class="btn btn-primary" onclick="window.print()">${isRTL ? "طباعة الفاتورة" : "Print Invoice"}</button>
-          <button class="btn btn-secondary" onclick="window.close()">${isRTL ? "إغلاق" : "Close"}</button>
+          <button class="btn btn-primary" onclick="window.print()">${isAr ? "طباعة الفاتورة" : "Print Invoice"}</button>
+          <button class="btn btn-secondary" onclick="window.close()">${isAr ? "إغلاق" : "Close"}</button>
         </div>
       </body>
       </html>
@@ -1427,35 +1537,13 @@ export default function AdminOrdersPage() {
                         </div>
 
                         <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
-                          <div className="dropdown dropdown-top w-full md:w-auto">
-                            <label
-                              tabIndex={0}
-                              className="btn btn-outline btn-sm rounded-xl gap-2 w-full md:w-auto border-base-300"
-                            >
-                              <FileText className="w-4 h-4 text-gray-500" />
-                              {t("adminOrders.invoiceOptions")}
-                            </label>
-                            <ul
-                              tabIndex={0}
-                              className="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52 z-50 border border-base-300"
-                            >
-                              <li>
-                                <a onClick={() => generateInvoicePDF(order)} className="cursor-pointer">
-                                  📄 {t("adminOrders.invoiceStandard")}
-                                </a>
-                              </li>
-                              <li>
-                                <a onClick={() => generateCompactInvoice(order)} className="cursor-pointer">
-                                  📦 {t("adminOrders.invoiceCompact")}
-                                </a>
-                              </li>
-                              <li>
-                                <a onClick={() => printInvoice(order)} className="cursor-pointer">
-                                  🖨️ {t("adminOrders.invoicePrint")}
-                                </a>
-                              </li>
-                            </ul>
-                          </div>
+                          <button
+                            onClick={() => openInvoiceModal(order)}
+                            className="btn btn-outline btn-sm rounded-xl gap-2 w-full md:w-auto border-base-300"
+                          >
+                            <FileText className="w-4 h-4 text-gray-500" />
+                            {t("adminOrders.invoiceOptions")}
+                          </button>
 
                           <button
                             onClick={() => handlePaymentStatusChange(order._id, !order.isPaid)}
@@ -1550,6 +1638,144 @@ export default function AdminOrdersPage() {
               >
                 <ChevronsRight className="w-4 h-4" />
               </button>
+            </div>
+          </div>
+        )}
+        {/* Invoice Modal Overlay */}
+        {isInvoiceModalOpen && selectedOrderForInvoice && (
+          <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-sm z-[999] flex items-center justify-center p-4" dir={isRTL ? "rtl" : "ltr"}>
+            <div className="bg-white border border-base-300 rounded-3xl w-full max-w-md shadow-2xl overflow-hidden relative animate-in fade-in zoom-in-95 duration-200 p-6 space-y-6">
+              {/* Modal Header */}
+              <div className="flex justify-between items-start border-b border-base-200 pb-4">
+                <div>
+                  <h2 className="text-xl font-bold text-gray-900">
+                    {isRTL ? "إعدادات وتوليد الفاتورة" : "Invoice Generator Settings"}
+                  </h2>
+                  <p className="text-xs text-gray-400 mt-1">
+                    {isRTL 
+                      ? `طلب رقم: #${selectedOrderForInvoice._id.substring(18).toUpperCase()}` 
+                      : `Order: #${selectedOrderForInvoice._id.substring(18).toUpperCase()}`
+                    }
+                  </p>
+                </div>
+                <button 
+                  onClick={() => setIsInvoiceModalOpen(false)}
+                  className="btn btn-ghost btn-sm btn-circle"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Lang select */}
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-gray-400 uppercase tracking-wider block">
+                  {isRTL ? "لغة الفاتورة" : "Invoice Language"}
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => setInvoiceLang("ar")}
+                    className={`btn btn-sm rounded-xl border border-base-300 font-semibold gap-2 ${
+                      invoiceLang === "ar" ? "btn-primary text-white" : "btn-ghost"
+                    }`}
+                  >
+                    🇸🇦 العربية (Arabic)
+                  </button>
+                  <button
+                    onClick={() => setInvoiceLang("en")}
+                    className={`btn btn-sm rounded-xl border border-base-300 font-semibold gap-2 ${
+                      invoiceLang === "en" ? "btn-primary text-white" : "btn-ghost"
+                    }`}
+                  >
+                    🇺🇸 English (الإنجليزية)
+                  </button>
+                </div>
+              </div>
+
+              {/* Custom Logo Upload */}
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-gray-400 uppercase tracking-wider block">
+                  {isRTL ? "شعار المتجر (الفاتورة)" : "Invoice Store Logo"}
+                </label>
+                <div className="flex items-center gap-4 bg-slate-50 border border-dashed border-base-300 rounded-2xl p-4">
+                  <div className="w-16 h-16 rounded-xl border border-base-200 overflow-hidden bg-white flex items-center justify-center flex-shrink-0 relative group">
+                    <img 
+                      src={customLogo || "/images/logo.png"} 
+                      alt="Store Logo" 
+                      className="object-contain w-full h-full p-1"
+                    />
+                  </div>
+                  <div className="flex-1 space-y-1.5">
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      id="logo-file-input" 
+                      className="hidden" 
+                      onChange={handleLogoUpload}
+                    />
+                    <div className="flex gap-2">
+                      <label 
+                        htmlFor="logo-file-input"
+                        className="btn btn-xs btn-primary text-white rounded-lg cursor-pointer"
+                      >
+                        {isRTL ? "رفع شعار" : "Upload Logo"}
+                      </label>
+                      {customLogo && (
+                        <button 
+                          onClick={handleRemoveLogo}
+                          className="btn btn-xs btn-error btn-outline rounded-lg"
+                        >
+                          {isRTL ? "حذف" : "Remove"}
+                        </button>
+                      )}
+                    </div>
+                    <p className="text-[10px] text-gray-400 leading-tight">
+                      {isRTL 
+                        ? "يفضل رفع صورة مربعة بخلفية شفافة (PNG)" 
+                        : "Prefer square transparent PNG image"
+                      }
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="space-y-3 pt-2">
+                <button
+                  onClick={async () => {
+                    await generateInvoicePDF(selectedOrderForInvoice);
+                  }}
+                  className="btn btn-primary w-full rounded-xl gap-2 font-bold justify-center text-white"
+                >
+                  <FileText className="w-4 h-4" />
+                  {isRTL ? "تحميل الفاتورة القياسية (PDF)" : "Download Standard PDF Invoice"}
+                </button>
+                <button
+                  onClick={async () => {
+                    await generateCompactInvoice(selectedOrderForInvoice);
+                  }}
+                  className="btn btn-outline btn-primary w-full rounded-xl gap-2 font-bold justify-center"
+                >
+                  <Printer className="w-4 h-4" />
+                  {isRTL ? "تحميل إيصال الكاشير المصغر (PDF)" : "Download Compact Receipt PDF"}
+                </button>
+                <button
+                  onClick={() => printInvoice(selectedOrderForInvoice)}
+                  className="btn btn-ghost border border-base-300 w-full rounded-xl gap-2 font-bold justify-center text-gray-700 hover:bg-slate-50"
+                >
+                  <Globe className="w-4 h-4" />
+                  {isRTL ? "طباعة الفاتورة للعميل" : "Print Invoice for Customer"}
+                </button>
+              </div>
+
+              {/* PDF Warning */}
+              {invoiceLang === "ar" && (
+                <div className="p-3 bg-amber-50 border border-amber-200/50 rounded-xl text-[10px] text-amber-800 leading-normal flex items-start gap-2">
+                  <span className="font-bold flex-shrink-0">⚠️ ملاحظة:</span>
+                  <span>
+                    ملفات الـ PDF تدعم النصوص اللاتينية. للحصول على فاتورة باللغة العربية، يرجى استخدام خيار <strong>"طباعة الفاتورة للعميل"</strong> وحفظها كملف PDF من نافذة الطباعة.
+                  </span>
+                </div>
+              )}
             </div>
           </div>
         )}
