@@ -883,8 +883,8 @@ export default function AdminOrdersPage() {
 
         {/* Filters and Search */}
         <div className="bg-white/70 backdrop-blur-md border border-base-300 rounded-2xl p-6 shadow-sm">
-          <div className="flex flex-col lg:flex-row gap-4">
-            <div className="flex-1">
+          <div className="flex flex-col md:flex-row gap-4 items-center w-full">
+            <div className="flex-1 w-full">
               <div className="relative">
                 <Search className="w-5 h-5 text-gray-400 absolute left-4 top-1/2 transform -translate-y-1/2" />
                 <input
@@ -897,11 +897,11 @@ export default function AdminOrdersPage() {
               </div>
             </div>
 
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-row gap-3 w-full md:w-auto">
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="select select-bordered rounded-xl border-base-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm h-12"
+                className="select select-bordered rounded-xl border-base-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm h-12 flex-1 md:flex-initial md:w-44"
               >
                 <option value="all">{t("adminOrders.allStatus")}</option>
                 <option value="processing">{t("adminOrders.processing")}</option>
@@ -913,7 +913,7 @@ export default function AdminOrdersPage() {
               <select
                 value={itemsPerPage}
                 onChange={(e) => setItemsPerPage(Number(e.target.value))}
-                className="select select-bordered rounded-xl border-base-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm h-12"
+                className="select select-bordered rounded-xl border-base-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm h-12 flex-1 md:flex-initial md:w-36"
               >
                 <option value={5}>{t("adminOrders.perPage", { count: 5 })}</option>
                 <option value={10}>{t("adminOrders.perPage", { count: 10 })}</option>
