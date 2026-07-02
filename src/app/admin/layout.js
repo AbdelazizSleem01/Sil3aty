@@ -65,48 +65,48 @@ export default function AdminLayout({ children }) {
 
   const menuItems = [
     {
-      group: t("navigation") || (isRTL ? "لوحة التحكم" : "Navigation"),
+      group: t("sidebar.navigation"),
       items: [
-        { title: t("adminDashboard") || "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
-        { title: t("comprehensiveStatistics") || "Statistics", href: "/admin/statistics", icon: BarChart3 },
+        { title: t("sidebar.dashboard"), href: "/admin/dashboard", icon: LayoutDashboard },
+        { title: t("sidebar.statistics"), href: "/admin/statistics", icon: BarChart3 },
       ]
     },
     {
-      group: t("storeManagement") || (isRTL ? "إدارة المتجر" : "Store Management"),
+      group: t("sidebar.storeManagement"),
       items: [
-        { title: t("products") || "Products", href: "/admin/products", icon: Package },
-        { title: t("categories") || "Categories", href: "/admin/categories", icon: Tags },
-        { title: t("brands") || "Brands", href: "/admin/brands", icon: Factory },
+        { title: t("sidebar.products"), href: "/admin/products", icon: Package },
+        { title: t("sidebar.categories"), href: "/admin/categories", icon: Tags },
+        { title: t("sidebar.brands"), href: "/admin/brands", icon: Factory },
       ]
     },
     {
-      group: t("sales") || (isRTL ? "المبيعات" : "Sales"),
+      group: t("sidebar.sales"),
       items: [
-        { title: t("orders") || "Orders", href: "/admin/orders", icon: ListChecks },
-        { title: t("coupons") || "Coupons", href: "/admin/coupons", icon: Ticket },
+        { title: t("sidebar.orders"), href: "/admin/orders", icon: ListChecks },
+        { title: t("sidebar.coupons"), href: "/admin/coupons", icon: Ticket },
       ]
     },
     {
-      group: t("customersTeam") || (isRTL ? "العملاء والفريق" : "Customers & Team"),
+      group: t("sidebar.customersTeam"),
       items: [
-        { title: t("users") || "Users", href: "/admin/users", icon: Users },
-        { title: t("team") || "Team", href: "/admin/ourTeams", icon: UserCog },
+        { title: t("sidebar.users"), href: "/admin/users", icon: Users },
+        { title: t("sidebar.team"), href: "/admin/ourTeams", icon: UserCog },
       ]
     },
     {
-      group: t("communications") || (isRTL ? "التواصل" : "Communications"),
+      group: t("sidebar.communications"),
       items: [
-        { title: t("subscribers") || "Subscribers", href: "/admin/subscribers", icon: Mail },
-        { title: t("reviews") || "Reviews", href: "/admin/reviews", icon: Star },
-        { title: t("contacts") || "Contacts", href: "/admin/contacts", icon: MessageSquare },
-        { title: t("feedback") || "Feedback", href: "/admin/feedback", icon: MessageSquare },
-        { title: t("notifications.title") || "Notifications", href: "/admin/notifications", icon: Bell },
+        { title: t("sidebar.subscribers"), href: "/admin/subscribers", icon: Mail },
+        { title: t("sidebar.reviews"), href: "/admin/reviews", icon: Star },
+        { title: t("sidebar.contacts"), href: "/admin/contacts", icon: MessageSquare },
+        { title: t("sidebar.feedback"), href: "/admin/feedback", icon: MessageSquare },
+        { title: t("sidebar.notifications"), href: "/admin/notifications", icon: Bell },
       ]
     },
     {
-      group: t("pages") || (isRTL ? "الصفحات" : "Pages"),
+      group: t("sidebar.pages"),
       items: [
-        { title: t("aboutUsSections") || "About Us", href: "/admin/about-us", icon: Info },
+        { title: t("sidebar.aboutUs"), href: "/admin/about-us", icon: Info },
       ]
     }
   ];

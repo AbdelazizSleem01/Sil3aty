@@ -5,12 +5,12 @@ import Link from "next/link";
 import Swal from "sweetalert2";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { useTranslation } from "react-i18next";
 import {
   FaPlus,
   FaEdit,
   FaTrash,
   FaSpinner,
-  FaEye,
   FaIndustry,
   FaSearch,
   FaBox,
@@ -18,6 +18,8 @@ import {
 } from "react-icons/fa";
 
 export default function BrandsPage() {
+  const { t, i18n } = useTranslation();
+  const isRTL = i18n.language === "ar";
   const { data: session, status } = useSession();
   const router = useRouter();
   const [brands, setBrands] = useState([]);
@@ -38,10 +40,6 @@ export default function BrandsPage() {
     }
   }, [session, status, router]);
 
-  useEffect(() => {
-    fetchBrands();
-  }, []);
-
   const fetchBrands = async () => {
     try {
       const response = await fetch("/api/brands");
@@ -49,8 +47,8 @@ export default function BrandsPage() {
       setBrands(data);
     } catch (error) {
       Swal.fire({
-        title: "Error!",
-        text: "Failed to load brands",
+        title: isRTL ? "خطأ!" : "Error!",
+        text: isRTL ? "فشل في تحميل العلامات التجارية" : "Failed to load brands",
         icon: "error",
         confirmButtonColor: "#ef4444",
       });
@@ -59,23 +57,29 @@ export default function BrandsPage() {
     }
   };
 
+  useEffect(() => {
+    if (session?.user?.isAdmin) {
+      fetchBrands();
+    }
+  }, [session]);
+
   const handleDelete = async (id, brandName) => {
     const result = await Swal.fire({
-      title: "Delete Brand?",
+      title: t("brandsAdmin.deleteConfirmTitle"),
       html: `
         <div class="text-center">
           <div class="text-6xl text-red-500 mb-4">🗑️</div>
-          <p class="text-lg font-semibold mb-2">You are about to delete:</p>
+          <p class="text-lg font-semibold mb-2">${t("brandsAdmin.deleteConfirmBody")}</p>
           <p class="text-xl text-primary font-bold">${brandName}</p>
-          <p class="text-gray-600 mt-2">This action cannot be undone!</p>
+          <p class="text-gray-600 mt-2">${isRTL ? "هذا الإجراء لا يمكن التراجع عنه!" : "This action cannot be undone!"}</p>
         </div>
       `,
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#ef4444",
       cancelButtonColor: "#6b7280",
-      confirmButtonText: "Yes, Delete It!",
-      cancelButtonText: "Cancel",
+      confirmButtonText: isRTL ? "نعم، احذفه!" : "Yes, Delete It!",
+      cancelButtonText: isRTL ? "إلغاء" : "Cancel",
 
       customClass: {
         popup: "rounded-2xl",
@@ -95,8 +99,10 @@ export default function BrandsPage() {
         }
 
         await Swal.fire({
-          title: "Deleted!",
-          text: `${brandName} has been deleted successfully.`,
+          title: isRTL ? "تم الحذف!" : "Deleted!",
+          text: isRTL 
+            ? `تم حذف ${brandName} بنجاح.` 
+            : `${brandName} has been deleted successfully.`,
           icon: "success",
           confirmButtonColor: "#10b981",
 
@@ -108,8 +114,8 @@ export default function BrandsPage() {
         fetchBrands();
       } catch (error) {
         Swal.fire({
-          title: "Error!",
-          text: "Failed to delete the brand",
+          title: isRTL ? "خطأ!" : "Error!",
+          text: t("brandsAdmin.deleteFailed"),
           icon: "error",
           confirmButtonColor: "#ef4444",
 
@@ -134,10 +140,10 @@ export default function BrandsPage() {
           <FaSpinner className="text-8xl text-primary animate-spin mx-auto mb-6" />
           <div className="flex items-center gap-3 text-2xl font-semibold text-gray-700">
             <FaIndustry className="text-primary" />
-            <span>Loading Brands...</span>
+            <span>{t("brandsAdmin.loading")}</span>
           </div>
           <p className="text-gray-500 mt-2">
-            Please wait while we fetch your brands
+            {isRTL ? "يرجى الانتظار أثناء جلب العلامات التجارية" : "Please wait while we fetch your brands"}
           </p>
         </div>
       </div>
@@ -145,7 +151,7 @@ export default function BrandsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-base-100 to-base-200 p-6">
+    <div dir={isRTL ? "rtl" : "ltr"} className={`min-h-screen bg-gradient-to-br from-base-100 to-base-200 p-6 ${isRTL ? "font-arabic" : ""}`}>
       <div className="max-w-7xl mx-auto">
         {/* Header Section */}
         <div className="mb-8">
@@ -156,11 +162,11 @@ export default function BrandsPage() {
               </div>
               <div>
                 <h1 className="text-4xl font-bold text-gray-800">
-                  Brand Management
+                  {t("brandsAdmin.title")}
                 </h1>
                 <p className="text-gray-600 mt-2 flex items-center gap-2">
                   <FaBox className="text-primary" />
-                  Manage your product brands and categories
+                  {t("brandsAdmin.subtitle")}
                 </p>
               </div>
             </div>
@@ -170,7 +176,7 @@ export default function BrandsPage() {
               className="btn btn-primary btn-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 flex items-center gap-3 px-8 rounded-xl"
             >
               <FaPlus className="text-lg" />
-              Add New Brand
+              {t("brandsAdmin.addBrand")}
             </Link>
           </div>
 
@@ -179,21 +185,24 @@ export default function BrandsPage() {
             <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
               <div className="flex-1 w-full">
                 <div className="relative">
-                  <FaSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-lg" />
+                  <FaSearch className={`absolute ${isRTL ? "right-4" : "left-4"} top-1/2 transform -translate-y-1/2 text-gray-400 text-lg`} />
                   <input
                     type="text"
-                    placeholder="Search brands by name or description..."
+                    placeholder={t("brandsAdmin.searchPlaceholder")}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="input input-bordered input-lg w-full pl-12 pr-4 rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20"
+                    className={`input input-bordered input-lg w-full ${isRTL ? "pr-12 pl-4" : "pl-12 pr-4"} rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20`}
                   />
                 </div>
               </div>
-              <div className="flex items-center gap-2 text-sm text-gray-500">
+              <div className="flex items-center gap-2 text-sm text-gray-500 font-medium">
                 <FaBox className="text-primary" />
                 <span>
                   {filteredBrands.length}{" "}
-                  {filteredBrands.length === 1 ? "brand" : "brands"} found
+                  {filteredBrands.length === 1 
+                    ? (isRTL ? "علامة تجارية" : "brand") 
+                    : (isRTL ? "علامات تجارية" : "brands")}{" "}
+                  {isRTL ? "تم العثور عليها" : "found"}
                 </span>
               </div>
             </div>
@@ -206,12 +215,12 @@ export default function BrandsPage() {
             <div className="text-center py-16">
               <FaExclamationCircle className="text-6xl text-gray-300 mx-auto mb-4" />
               <h3 className="text-2xl font-semibold text-gray-600 mb-2">
-                {searchTerm ? "No brands found" : "No brands available"}
+                {searchTerm ? t("brandsAdmin.noBrands") : (isRTL ? "لا توجد علامات تجارية بعد" : "No brands available")}
               </h3>
               <p className="text-gray-500 max-w-md mx-auto mb-6">
                 {searchTerm
-                  ? "Try adjusting your search terms to find what you're looking for."
-                  : "Get started by adding your first brand to the system."}
+                  ? (isRTL ? "جرب تعديل مصطلحات البحث للعثور على ما تبحث عنه." : "Try adjusting your search terms to find what you're looking for.")
+                  : t("brandsAdmin.getStarted")}
               </p>
               {!searchTerm && (
                 <Link
@@ -219,7 +228,7 @@ export default function BrandsPage() {
                   className="btn btn-primary btn-lg flex items-center gap-2 mx-auto"
                 >
                   <FaPlus />
-                  Add Your First Brand
+                  {t("brandsAdmin.addFirst")}
                 </Link>
               )}
             </div>
@@ -229,17 +238,17 @@ export default function BrandsPage() {
                 {/* Table Header */}
                 <thead className="bg-base-200">
                   <tr>
-                    <th className="py-4 px-6 text-left font-semibold text-gray-700">
-                      Logo
+                    <th className={`py-4 px-6 ${isRTL ? "text-right" : "text-left"} font-semibold text-gray-700`}>
+                      {t("brandsAdmin.logo")}
                     </th>
-                    <th className="py-4 px-6 text-left font-semibold text-gray-700">
-                      Brand Name
+                    <th className={`py-4 px-6 ${isRTL ? "text-right" : "text-left"} font-semibold text-gray-700`}>
+                      {t("brandsAdmin.name")}
                     </th>
-                    <th className="py-4 px-6 text-left font-semibold text-gray-700">
-                      Description
+                    <th className={`py-4 px-6 ${isRTL ? "text-right" : "text-left"} font-semibold text-gray-700`}>
+                      {t("brandsAdmin.desc")}
                     </th>
-                    <th className="py-4 px-6 text-left font-semibold text-gray-700">
-                      Actions
+                    <th className={`py-4 px-6 ${isRTL ? "text-right" : "text-left"} font-semibold text-gray-700`}>
+                      {t("brandsAdmin.actions")}
                     </th>
                   </tr>
                 </thead>
@@ -249,8 +258,9 @@ export default function BrandsPage() {
                   {filteredBrands.map((brand, index) => (
                     <tr
                       key={brand._id}
-                      className={`border-b border-base-300 transition-all duration-200 hover:bg-base-200/50 ${index % 2 === 0 ? "bg-base-100" : "bg-base-50"
-                        }`}
+                      className={`border-b border-base-300 transition-all duration-200 hover:bg-base-200/50 ${
+                        index % 2 === 0 ? "bg-base-100" : "bg-base-50"
+                      }`}
                     >
                       {/* Brand Logo */}
                       <td className="py-4 px-6">
@@ -277,7 +287,6 @@ export default function BrandsPage() {
                           <h3 className="font-bold text-lg text-gray-800">
                             {brand.name}
                           </h3>
-
                         </div>
                       </td>
 
@@ -296,14 +305,14 @@ export default function BrandsPage() {
                             className="btn btn-warning btn-sm flex items-center gap-2 px-4 rounded-lg transition-all duration-200 hover:scale-105"
                           >
                             <FaEdit className="text-sm" />
-                            Edit
+                            {t("edit") || "Edit"}
                           </Link>
                           <button
                             onClick={() => handleDelete(brand._id, brand.name)}
                             className="btn btn-error btn-sm flex items-center gap-2 px-4 rounded-lg transition-all duration-200 hover:scale-105"
                           >
                             <FaTrash className="text-sm" />
-                            Delete
+                            {t("delete") || "Delete"}
                           </button>
                         </div>
                       </td>
@@ -327,7 +336,9 @@ export default function BrandsPage() {
                   <p className="text-2xl font-bold text-gray-800">
                     {brands.length}
                   </p>
-                  <p className="text-sm text-gray-600">Total Brands</p>
+                  <p className="text-sm text-gray-600">
+                    {isRTL ? "إجمالي العلامات التجارية" : "Total Brands"}
+                  </p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
@@ -338,7 +349,9 @@ export default function BrandsPage() {
                   <p className="text-2xl font-bold text-gray-800">
                     {filteredBrands.length}
                   </p>
-                  <p className="text-sm text-gray-600">Displayed Brands</p>
+                  <p className="text-sm text-gray-600">
+                    {isRTL ? "العلامات المعروضة" : "Displayed Brands"}
+                  </p>
                 </div>
               </div>
             </div>
