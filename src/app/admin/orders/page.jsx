@@ -783,14 +783,25 @@ export default function AdminOrdersPage() {
     );
   }
 
+  const formatRevenue = (value) => {
+    if (value >= 1.0e9) {
+      return `$${(value / 1.0e9).toFixed(2)}B`;
+    } else if (value >= 1.0e6) {
+      return `$${(value / 1.0e6).toFixed(2)}M`;
+    } else if (value >= 1.0e3) {
+      return `$${(value / 1.0e3).toFixed(1)}K`;
+    }
+    return `$${value.toFixed(2)}`;
+  };
+
   return (
     <div dir={isRTL ? "rtl" : "ltr"} className={`min-h-screen bg-slate-50/50 p-4 lg:p-8 ${isRTL ? "font-arabic" : ""}`}>
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Header */}
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 bg-white/70 backdrop-blur-md border border-base-300 rounded-3xl p-6 shadow-sm">
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 bg-gradient-to-r from-white via-slate-50/80 to-indigo-50/20 border border-base-300 rounded-3xl p-6 shadow-sm">
           <div className="flex items-center gap-4">
-            <div className="p-4 bg-primary/10 rounded-2xl">
-              <ShoppingCart className="w-8 h-8 text-primary" />
+            <div className="p-4 bg-gradient-to-tr from-primary to-indigo-500 text-white rounded-2xl shadow-lg shadow-primary/20">
+              <ShoppingCart className="w-8 h-8" />
             </div>
             <div>
               <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">
@@ -805,7 +816,7 @@ export default function AdminOrdersPage() {
           <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
             <button
               onClick={exportToExcel}
-              className="btn btn-primary gap-2 shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 rounded-xl"
+              className="btn bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white border-none shadow-md shadow-emerald-500/20 hover:shadow-lg hover:shadow-emerald-500/30 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 rounded-xl px-5 py-3 h-auto font-bold flex items-center gap-2"
             >
               <Download className="w-4 h-4" />
               {t("adminOrders.exportExcel")}
@@ -833,7 +844,9 @@ export default function AdminOrdersPage() {
             <div className="flex items-center justify-between relative z-10">
               <div className="space-y-1 min-w-0">
                 <p className="text-xs font-bold text-gray-400 uppercase tracking-wider truncate">{isRTL ? "إجمالي المبيعات" : "Total Revenue"}</p>
-                <p className="text-2xl font-extrabold text-success mt-1 truncate">${stats.revenue.toFixed(2)}</p>
+                <p className="text-2xl font-extrabold text-success mt-1 truncate" title={`$${stats.revenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}>
+                  {formatRevenue(stats.revenue)}
+                </p>
               </div>
               <div className="p-3 bg-success/10 text-success rounded-xl flex-shrink-0">
                 <DollarSign className="w-6 h-6" />
