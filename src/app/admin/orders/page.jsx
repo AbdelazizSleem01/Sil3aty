@@ -814,68 +814,68 @@ export default function AdminOrdersPage() {
         </div>
 
         {/* Statistics Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
           <div className="bg-white/80 border border-base-300 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden group">
             <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full translate-x-8 -translate-y-8 group-hover:scale-110 transition-transform duration-500" />
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-primary/10 text-primary rounded-xl">
+            <div className="flex items-center justify-between relative z-10">
+              <div className="space-y-1 min-w-0">
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-wider truncate">{t("adminOrders.total")}</p>
+                <p className="text-2xl font-extrabold text-gray-900 mt-1">{stats.total}</p>
+              </div>
+              <div className="p-3 bg-primary/10 text-primary rounded-xl flex-shrink-0">
                 <ShoppingCart className="w-6 h-6" />
               </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">{t("adminOrders.total")}</p>
-                <p className="text-2xl font-bold text-gray-900 mt-1">{stats.total}</p>
-              </div>
             </div>
           </div>
 
           <div className="bg-white/80 border border-base-300 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden group">
             <div className="absolute top-0 right-0 w-24 h-24 bg-success/5 rounded-full translate-x-8 -translate-y-8 group-hover:scale-110 transition-transform duration-500" />
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-success/10 text-success rounded-xl">
+            <div className="flex items-center justify-between relative z-10">
+              <div className="space-y-1 min-w-0">
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-wider truncate">{isRTL ? "إجمالي المبيعات" : "Total Revenue"}</p>
+                <p className="text-2xl font-extrabold text-success mt-1 truncate">${stats.revenue.toFixed(2)}</p>
+              </div>
+              <div className="p-3 bg-success/10 text-success rounded-xl flex-shrink-0">
                 <DollarSign className="w-6 h-6" />
               </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">{isRTL ? "إجمالي المبيعات" : "Total Revenue"}</p>
-                <p className="text-2xl font-bold text-success mt-1">${stats.revenue.toFixed(2)}</p>
-              </div>
             </div>
           </div>
 
           <div className="bg-white/80 border border-base-300 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden group">
             <div className="absolute top-0 right-0 w-24 h-24 bg-success/5 rounded-full translate-x-8 -translate-y-8 group-hover:scale-110 transition-transform duration-500" />
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-success/10 text-success rounded-xl">
-                <CheckCircle className="w-6 h-6" />
+            <div className="flex items-center justify-between relative z-10">
+              <div className="space-y-1 min-w-0">
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-wider truncate">{t("adminOrders.paid")}</p>
+                <p className="text-2xl font-extrabold text-gray-900 mt-1">{stats.paid}</p>
               </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">{t("adminOrders.paid")}</p>
-                <p className="text-2xl font-bold text-gray-900 mt-1">{stats.paid}</p>
+              <div className="p-3 bg-success/10 text-success rounded-xl flex-shrink-0">
+                <CheckCircle className="w-6 h-6" />
               </div>
             </div>
           </div>
 
           <div className="bg-white/80 border border-base-300 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden group">
             <div className="absolute top-0 right-0 w-24 h-24 bg-warning/5 rounded-full translate-x-8 -translate-y-8 group-hover:scale-110 transition-transform duration-500" />
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-warning/10 text-warning rounded-xl">
-                <Clock className="w-6 h-6" />
+            <div className="flex items-center justify-between relative z-10">
+              <div className="space-y-1 min-w-0">
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-wider truncate">{t("adminOrders.pending")}</p>
+                <p className="text-2xl font-extrabold text-gray-900 mt-1">{stats.pending}</p>
               </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">{t("adminOrders.pending")}</p>
-                <p className="text-2xl font-bold text-gray-900 mt-1">{stats.pending}</p>
+              <div className="p-3 bg-warning/10 text-warning rounded-xl flex-shrink-0">
+                <Clock className="w-6 h-6" />
               </div>
             </div>
           </div>
 
           <div className="bg-white/80 border border-base-300 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden group">
             <div className="absolute top-0 right-0 w-24 h-24 bg-info/5 rounded-full translate-x-8 -translate-y-8 group-hover:scale-110 transition-transform duration-500" />
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-info/10 text-info rounded-xl">
-                <Truck className="w-6 h-6" />
+            <div className="flex items-center justify-between relative z-10">
+              <div className="space-y-1 min-w-0">
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-wider truncate">{t("adminOrders.delivered")}</p>
+                <p className="text-2xl font-extrabold text-gray-900 mt-1">{stats.delivered}</p>
               </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">{t("adminOrders.delivered")}</p>
-                <p className="text-2xl font-bold text-gray-900 mt-1">{stats.delivered}</p>
+              <div className="p-3 bg-info/10 text-info rounded-xl flex-shrink-0">
+                <Truck className="w-6 h-6" />
               </div>
             </div>
           </div>
@@ -1109,7 +1109,7 @@ export default function AdminOrdersPage() {
                                       </div>
                                       <div>
                                         <div className="font-bold text-gray-800">{item.name}</div>
-                                        <span className="text-xs text-gray-400 font-mono">({item.product})</span>
+                                        <span className="text-xs text-gray-400 font-mono">({item.product?._id || item.product})</span>
                                       </div>
                                     </div>
                                   </td>
