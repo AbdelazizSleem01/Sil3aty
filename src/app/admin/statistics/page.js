@@ -153,16 +153,6 @@ export default function StatisticsPage() {
             </p>
           )}
         </div>
-
-        <div className="flex flex-wrap gap-2">
-          <button
-            onClick={fetchStats}
-            className="px-4 py-2 bg-white text-gray-700 rounded-lg shadow-sm hover:shadow-md transition-all flex items-center gap-2 border border-gray-200 hover:bg-gray-50"
-          >
-            <RefreshCw className="w-4 h-4" />
-            {t("refresh")}
-          </button>
-        </div>
       </div>
 
       <div className="space-y-8">
@@ -176,47 +166,47 @@ export default function StatisticsPage() {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <StatCard
-              icon={<Users className="w-8 h-8" />}
-              title={t("totalUsers")}
-              value={stats.generalStats.totalUsers}
-              subtitle={`${stats.generalStats.totalAdmins} ${t("admins")}, ${
-                stats.generalStats.totalRegularUsers
-              } ${t("regularUsers")}`}
-              color="bg-blue-100 text-blue-600"
-              trend={12.5}
-            />
-            <StatCard
-              icon={<Package className="w-8 h-8" />}
-              title={t("totalProducts")}
-              value={stats.generalStats.totalProducts}
-              subtitle={`${stats.generalStats.totalCategories} ${t(
-                "categories"
-              )}, ${stats.generalStats.totalBrands} ${t("brands")}`}
-              color="bg-green-100 text-green-600"
-              trend={8.3}
-            />
-            <StatCard
-              icon={<ShoppingCart className="w-8 h-8" />}
-              title={t("totalOrders")}
-              value={stats.generalStats.totalOrders}
-              subtitle={`${stats.generalStats.orderStatuses.successful} ${t(
-                "successful"
-              )}, ${stats.generalStats.orderStatuses.delivered} ${t(
-                "delivered"
-              )}`}
-              color="bg-purple-100 text-purple-600"
-              trend={15.2}
-            />
-            <StatCard
-              icon={<MessageSquare className="w-8 h-8" />}
-              title={t("totalContacts")}
-              value={stats.generalStats.totalContacts}
-              subtitle={`${stats.generalStats.totalFeedbacks} ${t(
-                "feedbacks"
-              )}, ${stats.generalStats.totalSubscribers} ${t("subscribers")}`}
-              color="bg-orange-100 text-orange-600"
-              trend={5.7}
-            />
+               icon={<Users className="w-8 h-8" />}
+               title={t("totalUsers")}
+               value={stats.generalStats.totalUsers}
+               subtitle={`${stats.generalStats.totalAdmins} ${t("admins")}, ${
+                 stats.generalStats.totalRegularUsers
+               } ${t("regularUsers")}`}
+               color="bg-blue-100 text-blue-600"
+               trend={stats.generalStats.usersGrowth !== undefined ? parseFloat(stats.generalStats.usersGrowth.toFixed(1)) : 0}
+             />
+             <StatCard
+               icon={<Package className="w-8 h-8" />}
+               title={t("totalProducts")}
+               value={stats.generalStats.totalProducts}
+               subtitle={`${stats.generalStats.totalCategories} ${t(
+                 "categories"
+               )}, ${stats.generalStats.totalBrands} ${t("brands")}`}
+               color="bg-green-100 text-green-600"
+               trend={stats.generalStats.productsGrowth !== undefined ? parseFloat(stats.generalStats.productsGrowth.toFixed(1)) : 0}
+             />
+             <StatCard
+               icon={<ShoppingCart className="w-8 h-8" />}
+               title={t("totalOrders")}
+               value={stats.generalStats.totalOrders}
+               subtitle={`${stats.generalStats.orderStatuses.successful} ${t(
+                 "successful"
+               )}, ${stats.generalStats.orderStatuses.delivered} ${t(
+                 "delivered"
+               )}`}
+               color="bg-purple-100 text-purple-600"
+               trend={stats.generalStats.ordersGrowth !== undefined ? parseFloat(stats.generalStats.ordersGrowth.toFixed(1)) : 0}
+             />
+             <StatCard
+               icon={<MessageSquare className="w-8 h-8" />}
+               title={t("totalContacts")}
+               value={stats.generalStats.totalContacts}
+               subtitle={`${stats.generalStats.totalFeedbacks} ${t(
+                 "feedbacks"
+               )}, ${stats.generalStats.totalSubscribers} ${t("subscribers")}`}
+               color="bg-orange-100 text-orange-600"
+               trend={stats.generalStats.contactsGrowth !== undefined ? parseFloat(stats.generalStats.contactsGrowth.toFixed(1)) : 0}
+             />
           </div>
         </div>
 
@@ -656,7 +646,7 @@ function StatCard({ icon, title, value, subtitle, color, trend }) {
     <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 hover:shadow-md transition-all duration-300 transform hover:-translate-y-1">
       <div className="flex items-center justify-between mb-4">
         <div className={`rounded-xl p-3 ${color} shadow-sm`}>{icon}</div>
-        {trend && (
+        {trend !== undefined && trend !== null && (
           <div
             className={`flex items-center text-sm ${
               trend >= 0 ? "text-green-600" : "text-red-600"

@@ -34,6 +34,9 @@ export async function GET() {
       feedbacksCount,
       subscriptionsCount,
       reviewsCount,
+      prevUsersCount,
+      prevProductsCount,
+      prevContactsCount,
 
       // Revenue data
       dailyOrders,
@@ -68,6 +71,9 @@ export async function GET() {
       Feedback.countDocuments(),
       Subscription.countDocuments(),
       Review.countDocuments(),
+      User.countDocuments({ createdAt: { $lt: startOfMonth } }),
+      Product.countDocuments({ createdAt: { $lt: startOfMonth } }),
+      Contact.countDocuments({ createdAt: { $lt: startOfMonth } }),
 
       // Revenue data
       Order.find({ createdAt: { $gte: startOfDay } }).select('totalPrice'),
@@ -153,6 +159,15 @@ export async function GET() {
 
     const revenueGrowth = lastMonthRevenue > 0 ? ((monthlyRevenue - lastMonthRevenue) / lastMonthRevenue) * 100 : 0;
 
+    // Calculate growths
+    const lastMonthOrdersCount = lastMonthOrders.length;
+    const currentMonthOrdersCount = monthlyOrders.length;
+
+    const usersGrowth = prevUsersCount > 0 ? ((usersCount - prevUsersCount) / prevUsersCount) * 100 : (usersCount > 0 ? 100 : 0);
+    const productsGrowth = prevProductsCount > 0 ? ((productsCount - prevProductsCount) / prevProductsCount) * 100 : (productsCount > 0 ? 100 : 0);
+    const contactsGrowth = prevContactsCount > 0 ? ((contactsCount - prevContactsCount) / prevContactsCount) * 100 : (contactsCount > 0 ? 100 : 0);
+    const ordersGrowth = lastMonthOrdersCount > 0 ? ((currentMonthOrdersCount - lastMonthOrdersCount) / lastMonthOrdersCount) * 100 : (currentMonthOrdersCount > 0 ? 100 : 0);
+
     // User insights calculations
     const totalOrdersCount = allOrders.length;
     const averageOrderValue = totalOrdersCount > 0 ? allOrders.reduce((sum, order) => sum + (order.totalPrice || 0), 0) / totalOrdersCount : 0;
@@ -203,7 +218,11 @@ export async function GET() {
         totalContacts: contactsCount,
         totalFeedbacks: feedbacksCount,
         totalSubscribers: subscriptionsCount,
-        totalReviews: reviewsCount
+        totalReviews: reviewsCount,
+        usersGrowth,
+        productsGrowth,
+        ordersGrowth,
+        contactsGrowth
       },
 
       // Sales & Revenue

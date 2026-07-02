@@ -798,7 +798,11 @@ i18n.use(initReactI18next).init({
         },
 
         // === Statistics Page ===
-        comprehensiveStatistics: " Statistics",
+        comprehensiveStatistics: "Comprehensive Statistics",
+        totalContacts: "Total Contacts",
+        feedbacks: "Feedbacks",
+        unitsSold: "Units Sold",
+        lastUpdated: "Last Updated",
         loadingStats: "Loading statistics...",
         failedToLoadStats: "Failed to load statistics",
         errorLoadingStats: "Error loading statistics",
@@ -2008,7 +2012,11 @@ i18n.use(initReactI18next).init({
         },
 
         // === Statistics Page ===
-        comprehensiveStatistics: "إحصائيات ",
+        comprehensiveStatistics: "إحصائيات شاملة",
+        totalContacts: "إجمالي جهات الاتصال",
+        feedbacks: "الآراء والمقترحات",
+        unitsSold: "وحدة مباعة",
+        lastUpdated: "آخر تحديث",
 
         brandsAdmin: {
           title: "إدارة العلامات التجارية",
