@@ -14,7 +14,7 @@ import {
   FaTag,
   FaFileAlt
 } from "react-icons/fa";
-import { compressImage } from "../../../lib/imageCompressor";
+import { compressImage } from "../../../../lib/imageCompressor";
 
 export default function NewBrandPage() {
   const { t, i18n } = useTranslation();
