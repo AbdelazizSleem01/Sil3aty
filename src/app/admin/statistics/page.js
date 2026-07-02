@@ -135,6 +135,16 @@ export default function StatisticsPage() {
 
   const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8"];
 
+  const translatedChartData = stats.salesRevenue.revenueChartData.map((item) => ({
+    ...item,
+    name: t(item.name.toLowerCase()) || item.name,
+  }));
+
+  const translatedPieData = stats.salesRevenue.orderStatusChartData.map((item) => ({
+    ...item,
+    name: t(item.name.toLowerCase()) || item.name,
+  }));
+
   return (
     <div
       dir={isRTL ? "rtl" : "ltr"}
@@ -268,7 +278,7 @@ export default function StatisticsPage() {
               </h3>
               <div className="bg-gradient-to-b from-white to-gray-50 p-4 rounded-xl border border-gray-200">
                 <ResponsiveContainer width="100%" height={300}>
-                  <AreaChart data={stats.salesRevenue.revenueChartData}>
+                  <AreaChart data={translatedChartData}>
                     <defs>
                       <linearGradient
                         id="colorRevenue"
@@ -330,7 +340,7 @@ export default function StatisticsPage() {
               <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
                   <Pie
-                    data={stats.salesRevenue.orderStatusChartData}
+                    data={translatedPieData}
                     cx="50%"
                     cy="50%"
                     labelLine={false}
@@ -341,7 +351,7 @@ export default function StatisticsPage() {
                     fill="#8884d8"
                     dataKey="value"
                   >
-                    {stats.salesRevenue.orderStatusChartData.map(
+                    {translatedPieData.map(
                       (entry, index) => (
                         <Cell
                           key={`cell-${index}`}
@@ -404,9 +414,16 @@ export default function StatisticsPage() {
                 ${stats.userInsights.averageOrderValue.toFixed(2)}
               </div>
               <p className="text-gray-600">{t("averageValuePerOrder")}</p>
-              <div className="mt-4 flex items-center text-green-600">
-                <TrendingUp className="w-5 h-5 mx-1" />
-                <span className="text-sm">+5.2% from last month</span>
+              <div className={`mt-4 flex items-center ${stats.userInsights.averageOrderValueGrowth >= 0 ? "text-green-600" : "text-red-600"}`}>
+                {stats.userInsights.averageOrderValueGrowth >= 0 ? (
+                  <TrendingUp className="w-5 h-5 mx-1" />
+                ) : (
+                  <TrendingDown className="w-5 h-5 mx-1" />
+                )}
+                <span className="text-sm font-semibold">
+                  {stats.userInsights.averageOrderValueGrowth >= 0 ? "+" : ""}
+                  {stats.userInsights.averageOrderValueGrowth.toFixed(1)}% {t("fromLastMonth")}
+                </span>
               </div>
             </div>
             <div>
@@ -516,11 +533,10 @@ export default function StatisticsPage() {
               icon={<Ticket className="w-8 h-8" />}
               title={t("totalCoupons")}
               value={stats.coupons.totalCoupons}
-              subtitle={`${stats.coupons.activeCoupons} ${t("active")}, ${
+              subtitle={`${stats.coupons.activeCoupons} ${t("active") || "Active"}, ${
                 stats.coupons.expiredCoupons
-              } ${t("expired")}`}
+              } ${t("expired") || "Expired"}`}
               color="bg-pink-100 text-pink-600"
-              trend={3.2}
             />
             <StatCard
               icon={<TrendingUp className="w-8 h-8" />}
@@ -528,7 +544,6 @@ export default function StatisticsPage() {
               value={stats.coupons.totalUsage}
               subtitle={t("couponUsages")}
               color="bg-blue-100 text-blue-600"
-              trend={18.7}
             />
             <StatCard
               icon={<DollarSign className="w-8 h-8" />}
@@ -536,7 +551,6 @@ export default function StatisticsPage() {
               value={`$${stats.coupons.totalRevenue.toFixed(2)}`}
               subtitle={t("fromCoupons")}
               color="bg-green-100 text-green-600"
-              trend={22.4}
             />
             <StatCard
               icon={<BarChart3 className="w-8 h-8" />}
@@ -550,7 +564,6 @@ export default function StatisticsPage() {
               }
               subtitle={t("perUsage")}
               color="bg-purple-100 text-purple-600"
-              trend={-2.1}
             />
           </div>
         </div>

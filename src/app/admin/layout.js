@@ -4,6 +4,7 @@ import { useSession } from "next-auth/react";
 import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import useSWR from "swr";
 import Link from "next/link";
 import {
   LayoutDashboard,
@@ -35,6 +36,13 @@ export default function AdminLayout({ children }) {
   const pathname = usePathname();
   const { t, i18n } = useTranslation();
   const isRTL = i18n.language === "ar";
+
+  const { data: profileData } = useSWR(session?.user ? "/api/profile" : null);
+  const user = {
+    name: profileData?.name || session?.user?.name || "",
+    email: profileData?.email || session?.user?.email || "",
+    profilePicture: profileData?.profilePicture || session?.user?.image || "",
+  };
 
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -124,7 +132,7 @@ export default function AdminLayout({ children }) {
   };
 
   const renderSidebarContent = (collapsedState) => (
-    <div className="flex flex-col h-full bg-base-100">
+    <div className="flex flex-col h-full bg-base-100 overflow-x-hidden">
       {/* Brand Header */}
       <div className="h-16 flex items-center justify-between px-4 border-b border-base-300">
         {!collapsedState ? (
@@ -157,7 +165,7 @@ export default function AdminLayout({ children }) {
       </div>
 
       {/* Nav Items */}
-      <nav className="flex-1 overflow-y-auto py-6 space-y-6 scrollbar-thin scrollbar-thumb-base-300">
+      <nav className="flex-1 overflow-y-auto overflow-x-hidden py-6 space-y-6 scrollbar-thin scrollbar-thumb-base-300">
         {menuItems.map((group, groupIdx) => (
           <div key={groupIdx} className="space-y-1">
             {!collapsedState && (
@@ -190,15 +198,23 @@ export default function AdminLayout({ children }) {
 
       {/* Admin Profile Footer */}
       <div className="p-4 border-t border-base-300 bg-base-50 flex items-center gap-3">
-        <div className="avatar placeholder flex-shrink-0">
-          <div className="bg-primary/20 text-primary rounded-xl w-10 h-10 flex items-center justify-center font-bold">
-            {session.user.name?.[0]?.toUpperCase() || "A"}
-          </div>
+        <div className="flex-shrink-0">
+          {user.profilePicture ? (
+            <img
+              src={user.profilePicture}
+              alt="Profile"
+              className="w-10 h-10 rounded-xl object-cover border border-base-300"
+            />
+          ) : (
+            <div className="bg-primary/20 text-primary rounded-xl w-10 h-10 flex items-center justify-center font-bold">
+              {user.name?.[0]?.toUpperCase() || "A"}
+            </div>
+          )}
         </div>
         {!collapsedState && (
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold truncate text-gray-800">{session.user.name}</p>
-            <p className="text-xs text-gray-500 truncate">{session.user.email}</p>
+            <p className="text-sm font-semibold truncate text-gray-800">{user.name}</p>
+            <p className="text-xs text-gray-500 truncate">{user.email}</p>
           </div>
         )}
       </div>

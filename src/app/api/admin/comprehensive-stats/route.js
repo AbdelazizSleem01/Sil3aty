@@ -171,6 +171,10 @@ export async function GET() {
     // User insights calculations
     const totalOrdersCount = allOrders.length;
     const averageOrderValue = totalOrdersCount > 0 ? allOrders.reduce((sum, order) => sum + (order.totalPrice || 0), 0) / totalOrdersCount : 0;
+    
+    const lastMonthTotalSpent = lastMonthOrders.reduce((sum, order) => sum + (order.totalPrice || 0), 0);
+    const lastMonthAverageOrderValue = lastMonthOrdersCount > 0 ? lastMonthTotalSpent / lastMonthOrdersCount : 0;
+    const averageOrderValueGrowth = lastMonthAverageOrderValue > 0 ? ((averageOrderValue - lastMonthAverageOrderValue) / lastMonthAverageOrderValue) * 100 : (averageOrderValue > 0 ? 100 : 0);
 
     // Coupon statistics
     const activeCoupons = couponsData.filter(coupon => coupon.active && new Date(coupon.expiryDate) > now).length;
@@ -239,6 +243,7 @@ export async function GET() {
       userInsights: {
         ordersPerUser: userOrderStats,
         averageOrderValue,
+        averageOrderValueGrowth,
         topActiveUsers: topActiveUsers.slice(0, 5)
       },
 
