@@ -1573,7 +1573,7 @@ i18n.use(initReactI18next).init({
         subscribe: "اشترك",
         ourLocation: "القاهرة، مصر",
         support247: "دعم على مدار 24/7",
-        madeWithLoveBy: "مطور بواسطة love",
+        madeWithLoveBy: "تم التطوير بكل حب بواسطة",
         allRightsReserved: "جميع الحقوق محفوظة.",
 
         // === Top Sellers ===
