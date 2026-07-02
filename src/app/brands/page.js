@@ -15,7 +15,8 @@ import Image from "next/image";
 import useSWR from "swr";
 
 export default function BrandsPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isRTL = i18n.language === "ar";
   const router = useRouter();
 
   const { data: brandsData, error: brandsError } = useSWR("/api/brands");
@@ -23,6 +24,26 @@ export default function BrandsPage() {
   const brands = brandsData || [];
   const loading = !brandsData && !brandsError;
   const error = brandsError ? brandsError.message : "";
+
+  // Helper to translate labels in the description dynamically
+  const translateDescription = (desc) => {
+    if (!desc) return "";
+    if (isRTL) {
+      return desc
+        .replace(/Brand Identity:/gi, "هوية العلامة التجارية:")
+        .replace(/Target Audience:/gi, "الجمهور المستهدف:");
+    }
+    return desc;
+  };
+
+  // Repeat brands to ensure smooth infinite loop
+  const repeatedBrands = [];
+  const repeatCount = 6; // Repeat 6 times to have plenty of items for any screen size
+  if (brands.length > 0) {
+    for (let i = 0; i < repeatCount; i++) {
+      repeatedBrands.push(...brands);
+    }
+  }
 
   if (error) {
     return (
@@ -62,14 +83,14 @@ export default function BrandsPage() {
                 </h2>
               </div>
 
-              <div className="relative overflow-hidden py-8">
+              <div className="relative overflow-hidden py-8" dir="ltr">
                 <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-white via-white/80 to-transparent z-10 pointer-events-none"></div>
                 <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-white via-white/80 to-transparent z-10 pointer-events-none"></div>
 
-                <div className="flex animate-scroll-left gap-6 items-center hover:pause-scroll">
-                  {[...brands, ...brands].map((brand, index) => (
+                <div className="flex animate-brands-marquee gap-6 items-center hover:pause-scroll">
+                  {repeatedBrands.map((brand, index) => (
                     <Link
-                      key={brand._id + index}
+                      key={brand._id + "-" + index}
                       href={`/product?brand=${brand._id}`}
                       className="group flex-shrink-0 w-80 bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 p-6 border border-gray-100 hover:border-emerald-200 hover:scale-105"
                     >
@@ -92,7 +113,7 @@ export default function BrandsPage() {
                         </h3>
 
                         <p className="text-gray-600 text-sm line-clamp-2 mb-3 leading-relaxed">
-                          {brand.description}
+                          {translateDescription(brand.description)}
                         </p>
 
                         <div className="flex items-center gap-2 text-sm text-emerald-600 font-semibold opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-y-2 group-hover:translate-y-0">
@@ -134,7 +155,7 @@ export default function BrandsPage() {
                         {brand.name}
                       </h3>
                       <p className="text-gray-600 text-xs line-clamp-2">
-                        {brand.description}
+                        {translateDescription(brand.description)}
                       </p>
                     </div>
                   </Link>
@@ -154,6 +175,25 @@ export default function BrandsPage() {
           </div>
         )}
       </div>
+
+      <style jsx>{`
+        @keyframes scrollBrands {
+          0% {
+            transform: translateX(0);
+          }
+          100% {
+            transform: translateX(-${100 / repeatCount}%);
+          }
+        }
+        .animate-brands-marquee {
+          display: flex;
+          width: max-content;
+          animation: scrollBrands 35s linear infinite;
+        }
+        .hover\\:pause-scroll:hover {
+          animation-play-state: paused;
+        }
+      `}</style>
     </div>
   );
 }
