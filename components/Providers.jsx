@@ -2,6 +2,7 @@
 import { SessionProvider } from 'next-auth/react';
 import { CartProvider } from './CartContext';
 import { CompareProvider } from './CompareContext';
+import { WishlistProvider } from './WishlistContext';
 import CompareBar from './CompareBar';
 import LanguageSync from './LanguageSync';
 import I18nProvider from './I18nProvider';
@@ -29,11 +30,13 @@ export default function Providers({ children, session }) {
           dedupingInterval: 5000,
         }}>
           <CartProvider>
-            <CompareProvider>
-              <LanguageSync />
-              {children}
-              <CompareBar />
-            </CompareProvider>
+            <WishlistProvider>
+              <CompareProvider>
+                <LanguageSync />
+                {children}
+                <CompareBar />
+              </CompareProvider>
+            </WishlistProvider>
           </CartProvider>
         </SWRConfig>
       </I18nProvider>

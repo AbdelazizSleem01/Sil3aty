@@ -12,6 +12,7 @@ import SignOutButton from "./SignOutButton";
 import NotificationBell from "./NotificationBell";
 import useSWR from "swr";
 import { useCart } from "./CartContext";
+import { useWishlist } from "./WishlistContext";
 import {
   FiHome,
   FiInfo,
@@ -35,6 +36,7 @@ export default function Navbar() {
   const { t, i18n } = useTranslation();
   const { data: session, status } = useSession();
   const { cartItemsCount } = useCart();
+  const { wishlistCount } = useWishlist();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -236,6 +238,11 @@ export default function Navbar() {
                   title={t("yourWishlist") || "My Wishlist"}
                 >
                   <FiHeart size={20} />
+                  {wishlistCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center">
+                      {wishlistCount}
+                    </span>
+                  )}
                 </Link>
 
                 <Link
@@ -361,6 +368,7 @@ function MobileMenu({
   i18n,
   changeLanguage,
 }) {
+  const { wishlistCount } = useWishlist();
   return (
     <div
       className={`fixed inset-y-0 ${
@@ -563,6 +571,11 @@ function MobileMenu({
                 <FiHeart size={18} />
                 <span className="font-medium">{t("yourWishlist") || "My Wishlist"}</span>
               </div>
+              {wishlistCount > 0 && (
+                <span className="bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                  {wishlistCount}
+                </span>
+              )}
             </Link>
 
             <Link

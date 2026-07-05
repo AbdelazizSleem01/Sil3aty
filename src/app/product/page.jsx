@@ -20,6 +20,7 @@ import {
 import Image from "next/image";
 import { useCart } from "../../../components/CartContext";
 import { useCompare } from "../../../components/CompareContext";
+import { useWishlist } from "../../../components/WishlistContext";
 import { FiGrid, FiHeart } from "react-icons/fi";
 import { useSession } from "next-auth/react";
 import axios from "axios";
@@ -30,41 +31,7 @@ function AllProductsPageContent() {
   const { data: session } = useSession();
   const { updateCartCount } = useCart();
   const { addToCompare, removeFromCompare, isInCompare } = useCompare();
-  const [wishlist, setWishlist] = useState([]);
-
-  useEffect(() => {
-    const fetchWishlist = async () => {
-      try {
-        const { data } = await axios.get("/api/wishlist");
-        setWishlist(data.products?.map((p) => p._id) || []);
-      } catch (error) {
-        console.error("Error loading wishlist:", error);
-      }
-    };
-    if (session) {
-      fetchWishlist();
-    }
-  }, [session]);
-
-  const handleWishlist = async (productId) => {
-    if (!session) {
-      toast.error(t("pleaseSignInToAddToWishlist") || "Please sign in to add to wishlist");
-      return;
-    }
-    try {
-      if (wishlist.includes(productId)) {
-        await axios.delete(`/api/wishlist/${productId}`);
-        setWishlist(wishlist.filter((id) => id !== productId));
-        toast.success(t("removedFromWishlist") || "Removed from wishlist");
-      } else {
-        await axios.post("/api/wishlist", { productId });
-        setWishlist([...wishlist, productId]);
-        toast.success(t("addedToWishlist") || "Added to wishlist");
-      }
-    } catch (error) {
-      toast.error(t("failedToUpdateWishlist") || "Failed to update wishlist");
-    }
-  };
+  const { toggleWishlist, isInWishlist } = useWishlist();
   const [products, setProducts] = useState([]);
   const [brands, setBrands] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -694,16 +661,16 @@ function AllProductsPageContent() {
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
-                      handleWishlist(product._id);
+                      toggleWishlist(product);
                     }}
                     className={`absolute bottom-14 right-3 z-10 p-2 rounded-full transition-all duration-300 shadow-md ${
-                      wishlist.includes(product._id)
+                      isInWishlist(product._id)
                         ? "bg-red-500 text-white scale-110"
                         : "bg-white/80 backdrop-blur-sm text-gray-500 hover:text-red-500 hover:bg-white hover:scale-105"
                     }`}
                     title={t("wishlist")}
                   >
-                    <FiHeart size={16} className={wishlist.includes(product._id) ? "fill-current" : ""} />
+                    <FiHeart size={16} className={isInWishlist(product._id) ? "fill-current" : ""} />
                   </button>
 
                   <button
