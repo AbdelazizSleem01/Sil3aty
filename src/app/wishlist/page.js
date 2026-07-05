@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useTranslation } from "react-i18next";
 import { useCart } from "../../../components/CartContext";
+import { useWishlist } from "../../../components/WishlistContext";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import { toast } from "react-toastify";
@@ -12,39 +13,16 @@ import { FiTrash2, FiShoppingCart, FiHeart, FiArrowLeft, FiStar } from "react-ic
 import "../../../i18n";
 
 export default function WishlistPage() {
-  const { data: session, status: sessionStatus } = useSession();
+  const { status: sessionStatus } = useSession();
   const { t, i18n } = useTranslation();
   const router = useRouter();
   const { updateCartCount } = useCart();
+  const { wishlistItems, toggleWishlist, loading } = useWishlist();
   const isRTL = i18n.language === "ar";
-
-  const [wishlistProducts, setWishlistProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     document.title = `${t("name") || "Sil3aty"} | ${t("yourWishlist") || "My Wishlist"}`;
   }, [t]);
-
-  useEffect(() => {
-    const fetchWishlist = async () => {
-      try {
-        const { data } = await axios.get("/api/wishlist");
-        setWishlistProducts(data.products || []);
-      } catch (error) {
-        if (error.response?.status !== 401) {
-          toast.error(t("failedToFetchWishlist") || "Failed to fetch wishlist");
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (sessionStatus === "authenticated") {
-      fetchWishlist();
-    } else if (sessionStatus === "unauthenticated") {
-      setLoading(false);
-    }
-  }, [sessionStatus, t]);
 
   const handleAddToCart = async (product) => {
     try {
@@ -67,15 +45,7 @@ export default function WishlistPage() {
   };
 
   const handleRemoveFromWishlist = async (productId) => {
-    try {
-      const response = await axios.delete(`/api/wishlist/${productId}`);
-      if (response.status === 200) {
-        setWishlistProducts((prev) => prev.filter((p) => p._id !== productId));
-        toast.success(t("removedFromWishlist") || "Removed from wishlist successfully");
-      }
-    } catch (error) {
-      toast.error(t("failedToUpdateWishlist") || "Failed to remove from wishlist");
-    }
+    await toggleWishlist(productId);
   };
 
   if (sessionStatus === "loading" || loading) {
@@ -118,7 +88,7 @@ export default function WishlistPage() {
     );
   }
 
-  if (wishlistProducts.length === 0) {
+  if (wishlistItems.length === 0) {
     return (
       <div 
         className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-green-50 flex items-center justify-center p-6"
@@ -170,7 +140,7 @@ export default function WishlistPage() {
                 {t("yourWishlist") || "My Wishlist"}
               </h1>
               <p className="text-gray-500 text-sm">
-                {(isRTL ? "لديك " : "You have ") + wishlistProducts.length + (isRTL ? " منتجات في المفضلة" : " products in your wishlist")}
+                {(isRTL ? "لديك " : "You have ") + wishlistItems.length + (isRTL ? " منتجات في المفضلة" : " products in your wishlist")}
               </p>
             </div>
           </div>
@@ -178,7 +148,8 @@ export default function WishlistPage() {
 
         {/* Responsive grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {wishlistProducts.map((product) => {
+          {wishlistItems.map((product) => {
+            if (!product) return null;
             const hasDiscount =
               product.isOnSale &&
               product.discountPrice &&

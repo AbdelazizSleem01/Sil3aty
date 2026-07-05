@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import { useCart } from "../../../../components/CartContext";
 import { useCompare } from "../../../../components/CompareContext";
+import { useWishlist } from "../../../../components/WishlistContext";
 import { FiGrid } from "react-icons/fi";
 
 import "swiper/css";
@@ -42,6 +43,7 @@ export default function ProductPage() {
   const { data: session } = useSession();
   const { updateCartCount } = useCart();
   const { addToCompare, removeFromCompare, isInCompare } = useCompare();
+  const { toggleWishlist, isInWishlist } = useWishlist();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
@@ -56,7 +58,6 @@ export default function ProductPage() {
   const [relatedLoading, setRelatedLoading] = useState(false);
   const [recommendations, setRecommendations] = useState([]);
   const [recommendationsLoading, setRecommendationsLoading] = useState(false);
-  const [isWishlisted, setIsWishlisted] = useState(false);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -233,26 +234,6 @@ export default function ProductPage() {
     }
   };
 
-  const toggleWishlist = async () => {
-    if (!session) {
-      toast.error(t("pleaseSignInToAddToWishlist"));
-      return;
-    }
-
-    try {
-      if (isWishlisted) {
-        await axios.delete(`/api/wishlist/${product._id}`);
-        setIsWishlisted(false);
-        toast.success(t("removedFromWishlist"));
-      } else {
-        await axios.post("/api/wishlist", { productId: product._id });
-        setIsWishlisted(true);
-        toast.success(t("addedToWishlist"));
-      }
-    } catch (error) {
-      toast.error(t("failedToUpdateWishlist"));
-    }
-  };
 
   const renderUserAvatar = (review) => {
     const userImage = review.user?.profilePicture;
@@ -591,6 +572,18 @@ export default function ProductPage() {
                   <ShoppingCart size={24} />
                   {product.countInStock === 0 ? t("outOfStock") : t("addToCart")}
                 </button>
+                <button
+                  onClick={() => toggleWishlist(product)}
+                  className={`px-6 py-4 rounded-2xl font-bold border-2 transition-all duration-300 flex items-center justify-center gap-2 hover:scale-[1.02] ${
+                    isInWishlist(product._id)
+                      ? "bg-red-50 border-red-500 text-red-600 shadow-md"
+                      : "bg-white border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-red-500 hover:text-red-500"
+                  }`}
+                >
+                  <Heart size={22} className={isInWishlist(product._id) ? "fill-current text-red-500" : ""} />
+                  {isInWishlist(product._id) ? (isRTL ? "في المفضلة" : "In Wishlist") : (isRTL ? "إضافة للمفضلة" : "Add to Wishlist")}
+                </button>
+
                 <button
                   onClick={() => {
                     if (isInCompare(product._id)) {
