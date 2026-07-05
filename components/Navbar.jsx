@@ -28,6 +28,7 @@ import {
   FiShoppingCart,
   FiAward,
   FiLock,
+  FiHeart,
 } from "react-icons/fi";
 
 export default function Navbar() {
@@ -228,6 +229,14 @@ export default function Navbar() {
                 {session?.user?.isAdmin && (
                   <NotificationBell session={session} />
                 )}
+
+                <Link
+                  href="/wishlist"
+                  className="relative p-1.5 text-gray-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all"
+                  title={t("yourWishlist") || "My Wishlist"}
+                >
+                  <FiHeart size={20} />
+                </Link>
 
                 <Link
                   href="/cart"
@@ -545,6 +554,17 @@ function MobileMenu({
           )}
 
           <div className="pt-3 border-t border-gray-200 space-y-2">
+            <Link
+              href="/wishlist"
+              className="flex items-center justify-between px-3 py-2.5 bg-gray-50 hover:bg-gray-100 rounded-lg transition-all"
+              onClick={onClose}
+            >
+              <div className="flex items-center gap-2">
+                <FiHeart size={18} />
+                <span className="font-medium">{t("yourWishlist") || "My Wishlist"}</span>
+              </div>
+            </Link>
+
             <Link
               href="/cart"
               className="flex items-center justify-between px-3 py-2.5 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-all"
