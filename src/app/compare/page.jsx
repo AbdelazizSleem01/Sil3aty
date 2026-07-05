@@ -42,7 +42,7 @@ function ProductImageCarousel({ images, name }) {
             key={imgUrl}
             src={imgUrl}
             alt={name}
-            className={`absolute inset-0  w-full h-full object-contain p-4 transition-all duration-500 ease-in-out transform ${
+            className={`absolute inset-0 rounded-2xl w-full h-full object-contain p-4 transition-all duration-500 ease-in-out transform ${
               idx === currentIndex 
                 ? "opacity-100 scale-100 z-10" 
                 : "opacity-0 scale-95 z-0 pointer-events-none"
