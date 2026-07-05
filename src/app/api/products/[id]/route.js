@@ -10,11 +10,6 @@ export async function GET(req, { params }) {
   await dbConnect();
   const { id } = await params;
 
-    const session = await getServerSession(authOptions);
-  
-    if (!session || !session.user.isAdmin) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
 
   try {
     const product = await Product.findById(id)
@@ -111,6 +106,12 @@ export async function PUT(req, { params }) {
 
 export async function DELETE(req, { params }) {
   await dbConnect();
+  const session = await getServerSession(authOptions);
+
+  if (!session || !session.user.isAdmin) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  }
+
   const { id } = await params;
 
   try {
