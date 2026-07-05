@@ -6,6 +6,7 @@ import { useEffect, useState, Suspense } from "react";
 import { useTranslation } from "react-i18next";
 import useSWR from "swr";
 import { useCompare } from "./CompareContext";
+import { useWishlist } from "./WishlistContext";
 import { FiGrid } from "react-icons/fi";
 import {
   ArrowRight,
@@ -115,6 +116,7 @@ function CountdownTimer({ endDate, format = "hours" }) {
 function LimitedTimeOffersSection() {
   const { t } = useTranslation();
   const { addToCompare, removeFromCompare, isInCompare } = useCompare();
+  const { toggleWishlist, isInWishlist } = useWishlist();
 
   const { data: discountedData, error: discountedError } = useSWR("/api/products/discounted");
 
@@ -202,6 +204,22 @@ function LimitedTimeOffersSection() {
                   title={t("compare")}
                 >
                   <FiGrid size={14} />
+                </button>
+
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    toggleWishlist(product);
+                  }}
+                  className={`absolute top-12 left-2 z-10 p-2 rounded-full transition-all duration-300 shadow-md ${
+                    isInWishlist(product._id)
+                      ? "bg-red-500 text-white scale-110"
+                      : "bg-white/95 backdrop-blur-sm text-gray-500 hover:text-red-500 hover:bg-white hover:scale-105"
+                  }`}
+                  title={t("wishlist")}
+                >
+                  <Heart size={14} className={isInWishlist(product._id) ? "fill-current" : ""} />
                 </button>
 
                 <div className="relative h-48 bg-gray-100 rounded-lg overflow-hidden">

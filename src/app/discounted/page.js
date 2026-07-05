@@ -15,7 +15,8 @@ import {
 } from "lucide-react";
 import { useCart } from "../../../components/CartContext";
 import { useCompare } from "../../../components/CompareContext";
-import { FiGrid } from "react-icons/fi";
+import { useWishlist } from "../../../components/WishlistContext";
+import { FiGrid, FiHeart } from "react-icons/fi";
 import { useTranslation } from "react-i18next";
 import useSWR from "swr";
 
@@ -24,6 +25,7 @@ export default function DiscountedProductsPage() {
   const isRTL = i18n.language === "ar";
   const { updateCartCount } = useCart();
   const { addToCompare, removeFromCompare, isInCompare } = useCompare();
+  const { toggleWishlist, isInWishlist } = useWishlist();
   const [animatingProductId, setAnimatingProductId] = useState(null);
   const [sortBy, setSortBy] = useState("discountPercentage");
   const [filterBy, setFilterBy] = useState("");
@@ -317,6 +319,22 @@ export default function DiscountedProductsPage() {
                         </span>
                       </div>
                     )}
+
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        toggleWishlist(product);
+                      }}
+                      className={`absolute bottom-14 right-3 sm:bottom-16 sm:right-4 z-10 p-2.5 rounded-full transition-all duration-300 shadow-md ${
+                        isInWishlist(product._id)
+                          ? "bg-red-500 text-white scale-110"
+                          : "bg-white/95 backdrop-blur-sm text-gray-500 hover:text-red-500 hover:bg-white hover:scale-105"
+                      }`}
+                      title={t("wishlist")}
+                    >
+                      <FiHeart size={14} className={isInWishlist(product._id) ? "fill-current" : ""} />
+                    </button>
 
                     <button
                       onClick={(e) => {
