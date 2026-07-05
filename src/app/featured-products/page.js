@@ -5,6 +5,8 @@ import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import { ShoppingCart, Star, Zap, Clock, Tag } from "lucide-react";
 import { useCart } from "../../../components/CartContext";
+import { useCompare } from "../../../components/CompareContext";
+import { FiGrid } from "react-icons/fi";
 import { useTranslation } from "react-i18next";
 import useSWR from "swr";
 
@@ -12,6 +14,7 @@ export default function FeaturedProductsPage() {
   const { t, i18n } = useTranslation();
   const isRTL = i18n.language === "ar";
   const { updateCartCount } = useCart();
+  const { addToCompare, removeFromCompare, isInCompare } = useCompare();
   const [animatingProductId, setAnimatingProductId] = useState(null);
 
   const { data: featuredProductsData, error: productsError } = useSWR("/api/products/featured");
@@ -220,11 +223,31 @@ export default function FeaturedProductsPage() {
                     )}
 
                     {/* Featured Badge */}
-                    <div className="absolute top-4 right-4">
+                    <div className="absolute top-4 right-4 animate-scaleUp">
                       <div className="bg-gradient-to-r from-emerald-500 to-green-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
                         {t("featured")}
                       </div>
                     </div>
+
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (isInCompare(product._id)) {
+                          removeFromCompare(product._id);
+                        } else {
+                          addToCompare(product);
+                        }
+                      }}
+                      className={`absolute top-14 right-4 z-10 p-2.5 rounded-full transition-all duration-300 shadow-md ${
+                        isInCompare(product._id)
+                          ? "bg-emerald-500 text-white scale-110"
+                          : "bg-white/95 backdrop-blur-sm text-gray-500 hover:text-emerald-500 hover:bg-white hover:scale-105"
+                      }`}
+                      title={t("compare")}
+                    >
+                      <FiGrid size={14} />
+                    </button>
 
                     {product.category?.name && (
                       <div className="absolute bottom-4 left-4">

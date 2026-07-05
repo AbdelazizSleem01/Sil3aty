@@ -27,6 +27,8 @@ import {
   Trash2,
 } from "lucide-react";
 import { useCart } from "../../../../components/CartContext";
+import { useCompare } from "../../../../components/CompareContext";
+import { FiGrid } from "react-icons/fi";
 
 import "swiper/css";
 import "swiper/css/navigation";
@@ -39,6 +41,7 @@ export default function ProductPage() {
   const { id } = useParams();
   const { data: session } = useSession();
   const { updateCartCount } = useCart();
+  const { addToCompare, removeFromCompare, isInCompare } = useCompare();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
@@ -579,14 +582,33 @@ export default function ProductPage() {
             </div>
 
             <div className="space-y-4">
-              <button
-                onClick={handleAddToCart}
-                disabled={product.countInStock === 0}
-                className="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white py-4 rounded-2xl font-bold text-lg shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
-              >
-                <ShoppingCart size={24} />
-                {product.countInStock === 0 ? t("outOfStock") : t("addToCart")}
-              </button>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <button
+                  onClick={handleAddToCart}
+                  disabled={product.countInStock === 0}
+                  className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 text-white py-4 rounded-2xl font-bold text-lg shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
+                >
+                  <ShoppingCart size={24} />
+                  {product.countInStock === 0 ? t("outOfStock") : t("addToCart")}
+                </button>
+                <button
+                  onClick={() => {
+                    if (isInCompare(product._id)) {
+                      removeFromCompare(product._id);
+                    } else {
+                      addToCompare(product);
+                    }
+                  }}
+                  className={`px-6 py-4 rounded-2xl font-bold border-2 transition-all duration-300 flex items-center justify-center gap-2 hover:scale-[1.02] ${
+                    isInCompare(product._id)
+                      ? "bg-emerald-50 border-emerald-500 text-emerald-700 shadow-md"
+                      : "bg-white border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-emerald-500 hover:text-emerald-600"
+                  }`}
+                >
+                  <FiGrid size={22} />
+                  {isInCompare(product._id) ? t("removeFromCompare") : t("addToCompare")}
+                </button>
+              </div>
 
               <div className="grid grid-cols-3 gap-4">
                 <div className="bg-white rounded-2xl p-4 text-center border border-gray-100 shadow-sm">

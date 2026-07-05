@@ -5,6 +5,8 @@ import dynamic from "next/dynamic";
 import { useEffect, useState, Suspense } from "react";
 import { useTranslation } from "react-i18next";
 import useSWR from "swr";
+import { useCompare } from "./CompareContext";
+import { FiGrid } from "react-icons/fi";
 import {
   ArrowRight,
   Sparkles,
@@ -112,6 +114,7 @@ function CountdownTimer({ endDate, format = "hours" }) {
 
 function LimitedTimeOffersSection() {
   const { t } = useTranslation();
+  const { addToCompare, removeFromCompare, isInCompare } = useCompare();
 
   const { data: discountedData, error: discountedError } = useSWR("/api/products/discounted");
 
@@ -180,6 +183,26 @@ function LimitedTimeOffersSection() {
                   {discountPercent}
                   {t("off")}
                 </div>
+
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (isInCompare(product._id)) {
+                      removeFromCompare(product._id);
+                    } else {
+                      addToCompare(product);
+                    }
+                  }}
+                  className={`absolute top-2 left-2 z-10 p-2 rounded-full transition-all duration-300 shadow-md ${
+                    isInCompare(product._id)
+                      ? "bg-emerald-500 text-white scale-110"
+                      : "bg-white/95 backdrop-blur-sm text-gray-500 hover:text-emerald-500 hover:bg-white hover:scale-105"
+                  }`}
+                  title={t("compare")}
+                >
+                  <FiGrid size={14} />
+                </button>
 
                 <div className="relative h-48 bg-gray-100 rounded-lg overflow-hidden">
                   {product.images?.length > 0 ? (

@@ -19,11 +19,14 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { useCart } from "../../../components/CartContext";
+import { useCompare } from "../../../components/CompareContext";
+import { FiGrid } from "react-icons/fi";
 
 function AllProductsPageContent() {
   const { t, i18n } = useTranslation();
   const isRTL = i18n.language === "ar";
   const { updateCartCount } = useCart();
+  const { addToCompare, removeFromCompare, isInCompare } = useCompare();
   const [products, setProducts] = useState([]);
   const [brands, setBrands] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -648,6 +651,26 @@ function AllProductsPageContent() {
                       </Link>
                     </div>
                   )}
+
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      if (isInCompare(product._id)) {
+                        removeFromCompare(product._id);
+                      } else {
+                        addToCompare(product);
+                      }
+                    }}
+                    className={`absolute bottom-3 right-3 z-10 p-2 rounded-full transition-all duration-300 shadow-md ${
+                      isInCompare(product._id)
+                        ? "bg-emerald-500 text-white scale-110"
+                        : "bg-white/80 backdrop-blur-sm text-gray-500 hover:text-emerald-500 hover:bg-white hover:scale-105"
+                    }`}
+                    title={t("compare")}
+                  >
+                    <FiGrid size={16} />
+                  </button>
                 </div>
 
                 <div className="p-4">
