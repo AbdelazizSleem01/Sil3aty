@@ -65,7 +65,7 @@ export async function POST(request) {
       discountAmount = (orderTotal * coupon.amount) / 100;
     } else if (coupon.discountType === 'fixed') {
       discountAmount = coupon.amount;
-    } else if (coupon.discountType === 'shipping') {
+    } else if (coupon.discountType === 'shipping' || coupon.discountType === 'free-shipping') {
       discountAmount = shippingCost;
     }
 
@@ -79,6 +79,8 @@ export async function POST(request) {
 
     await Coupon.findByIdAndUpdate(coupon._id, { $inc: { usedCount: 1 } }).exec();
 
+    const isFreeShipping = coupon.discountType === 'shipping' || coupon.discountType === 'free-shipping';
+
     return NextResponse.json({
       success: true,
       coupon: {
@@ -88,9 +90,9 @@ export async function POST(request) {
         amount: coupon.amount,
         discountAmount,
         discountedTotal,
-        freeShipping: coupon.discountType === 'shipping',
+        freeShipping: isFreeShipping,
         message:
-          coupon.discountType === 'shipping'
+          isFreeShipping
             ? 'تم تطبيق شحن مجاني!'
             : `تم تطبيق خصم ${coupon.discountType === 'percent' ? coupon.amount + '%' : '$' + coupon.amount}!`
       }

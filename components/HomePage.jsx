@@ -2,6 +2,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import dynamic from "next/dynamic";
+import SpinWheelModal from "./SpinWheelModal";
 import { useEffect, useState, Suspense } from "react";
 import { useTranslation } from "react-i18next";
 import useSWR from "swr";
@@ -852,6 +853,7 @@ export default function HomePage() {
           font-family: "Cairo", "Geeza Pro", sans-serif;
         }
       `}</style>
+      <SpinWheelModal />
     </div>
   );
 }
