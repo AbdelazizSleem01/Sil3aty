@@ -7,9 +7,94 @@ import { toast } from "react-toastify";
 import { useTranslation } from "react-i18next";
 import { Truck, Copy } from "lucide-react";
 
+function OrderTrackingTimeline({ status, isRTL, t }) {
+  const steps = [
+    { key: "placed", label: t("orderPlaced") || (isRTL ? "تم الطلب" : "Order Placed"), icon: "🛒" },
+    { key: "processing", label: t("processing") || (isRTL ? "قيد التجهيز" : "Processing"), icon: "⚙️" },
+    { key: "shipped", label: t("shipped") || (isRTL ? "تم الشحن" : "Shipped"), icon: "🚚" },
+    { key: "delivered", label: t("delivered") || (isRTL ? "تم التسليم" : "Delivered"), icon: "🏠" }
+  ];
+
+  const isCancelled = status === "cancelled" || status === "canceled";
+
+  let activeIndex = 0;
+  if (status === "processing") activeIndex = 1;
+  else if (status === "shipped" || status === "in-transit") activeIndex = 2;
+  else if (status === "delivered") activeIndex = 3;
+
+  return (
+    <div className="w-full py-6 border-b border-gray-100 mb-6" dir={isRTL ? "rtl" : "ltr"}>
+      {isCancelled ? (
+        <div className="bg-red-50/80 border border-red-100 rounded-2xl p-4 flex items-center gap-3 text-red-700">
+          <span className="text-xl">🚫</span>
+          <div>
+            <h4 className="font-bold">{t("canceled") || (isRTL ? "تم إلغاء الطلب" : "Order Cancelled")}</h4>
+            <p className="text-xs opacity-90">{isRTL ? "تم إلغاء هذا الطلب ولا يمكن تتبعه." : "This order has been cancelled and cannot be tracked."}</p>
+          </div>
+        </div>
+      ) : (
+        <div className="relative flex flex-col md:flex-row items-center justify-between gap-6 md:gap-2">
+          {/* Connecting Line background */}
+          <div className="absolute top-[28px] left-[10%] right-[10%] h-1 bg-gray-200 hidden md:block z-0" />
+          
+          {/* Active Progress Line */}
+          <div 
+            className="absolute top-[28px] h-1 bg-gradient-to-r from-emerald-500 to-green-500 hidden md:block z-0 transition-all duration-1000"
+            style={{
+              left: isRTL ? "auto" : "10%",
+              right: isRTL ? "10%" : "auto",
+              width: `${(activeIndex / (steps.length - 1)) * 80}%`
+            }}
+          />
+
+          {steps.map((step, idx) => {
+            const isCompleted = idx <= activeIndex;
+            const isActive = idx === activeIndex;
+
+            return (
+              <div 
+                key={step.key} 
+                className="flex md:flex-col items-center gap-4 md:gap-2 flex-1 relative z-10 w-full md:w-auto"
+              >
+                {/* Step circle */}
+                <div 
+                  className={`w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-bold shadow-md transition-all duration-500 ${
+                    isCompleted 
+                      ? "bg-gradient-to-br from-green-500 to-emerald-600 text-white scale-110" 
+                      : "bg-white border-2 border-gray-200 text-gray-400"
+                  } ${isActive ? "ring-4 ring-emerald-100" : ""}`}
+                >
+                  <span>{step.icon}</span>
+                </div>
+
+                {/* Step label */}
+                <div className="text-start md:text-center">
+                  <p 
+                    className={`text-sm font-bold ${
+                      isCompleted ? "text-gray-900" : "text-gray-400"
+                    }`}
+                  >
+                    {step.label}
+                  </p>
+                  {isActive && (
+                    <span className="text-[10px] bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full font-extrabold uppercase animate-pulse">
+                      {isRTL ? "نشط" : "Active"}
+                    </span>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function OrdersPage() {
   const { data: session } = useSession();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isRTL = i18n.language === "ar";
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -134,6 +219,9 @@ export default function OrdersPage() {
                     {order.status}
                   </span>
                 </div>
+
+                {/* Interactive Order Tracking Progress Bar */}
+                <OrderTrackingTimeline status={order.status} isRTL={isRTL} t={t} />
 
                 {/* Tracking Information */}
                 {order.tracking && (

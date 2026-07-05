@@ -14,7 +14,6 @@ export default function CompareBar() {
   const isRTL = i18n.language === "ar";
   const [isMinimized, setIsMinimized] = useState(false);
 
-  // Do not render anything if there are no items, or if the user is on the compare page
   if (compareItems.length === 0 || pathname === "/compare") return null;
 
   if (isMinimized) {
