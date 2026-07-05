@@ -16,7 +16,7 @@ function ProductImageCarousel({ images, name }) {
 
   if (!images || images.length === 0) {
     return (
-      <div className="w-full h-48 bg-gray-50 border border-gray-100 rounded-2xl flex items-center justify-center text-gray-400">
+      <div className="w-full h-60 bg-gray-50 border border-gray-100 rounded-2xl flex items-center justify-center text-gray-400">
         📷
       </div>
     );
@@ -35,29 +35,38 @@ function ProductImageCarousel({ images, name }) {
   };
 
   return (
-    <div className="relative w-full h-48 bg-white border border-gray-100 rounded-2xl overflow-hidden group shadow-xs">
-      <img
-        src={images[currentIndex]}
-        alt={name}
-        className="w-full h-full object-contain p-4 transition-transform duration-500 group-hover:scale-105"
-      />
+    <div className="relative w-full h-60 bg-white border border-gray-100 rounded-2xl overflow-hidden group shadow-xs">
+      <div className="relative w-full h-full">
+        {images.map((imgUrl, idx) => (
+          <img
+            key={imgUrl}
+            src={imgUrl}
+            alt={name}
+            className={`absolute inset-0  w-full h-full object-contain p-4 transition-all duration-500 ease-in-out transform ${
+              idx === currentIndex 
+                ? "opacity-100 scale-100 z-10" 
+                : "opacity-0 scale-95 z-0 pointer-events-none"
+            }`}
+          />
+        ))}
+      </div>
       
       {images.length > 1 && (
         <>
           <button
             onClick={prevImage}
-            className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/90 hover:bg-white text-gray-700 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all shadow-md z-10 border border-gray-100"
+            className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/90 hover:bg-white text-gray-700 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all shadow-md z-20 border border-gray-100"
           >
             ‹
           </button>
           <button
             onClick={nextImage}
-            className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/90 hover:bg-white text-gray-700 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all shadow-md z-10 border border-gray-100"
+            className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/90 hover:bg-white text-gray-700 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all shadow-md z-20 border border-gray-100"
           >
             ›
           </button>
           
-          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1 z-10 bg-black/10 px-2 py-1 rounded-full backdrop-blur-xs">
+          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1 z-20 bg-black/10 px-2 py-1 rounded-full backdrop-blur-xs">
             {images.map((_, idx) => (
               <span
                 key={idx}
