@@ -18,7 +18,7 @@ export default function FeaturedProductsPage() {
   const { updateCartCount } = useCart();
   const { addToCompare, removeFromCompare, isInCompare } = useCompare();
   const { toggleWishlist, isInWishlist } = useWishlist();
-  const { formatPrice } = useCurrency();
+  const { formatPrice, getProductPrice } = useCurrency();
   const [animatingProductId, setAnimatingProductId] = useState(null);
 
   const { data: featuredProductsData, error: productsError } = useSWR("/api/products/featured");

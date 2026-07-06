@@ -27,7 +27,7 @@ export default function DiscountedProductsPage() {
   const { updateCartCount } = useCart();
   const { addToCompare, removeFromCompare, isInCompare } = useCompare();
   const { toggleWishlist, isInWishlist } = useWishlist();
-  const { formatPrice } = useCurrency();
+  const { formatPrice, getProductPrice } = useCurrency();
   const [animatingProductId, setAnimatingProductId] = useState(null);
   const [sortBy, setSortBy] = useState("discountPercentage");
   const [filterBy, setFilterBy] = useState("");
@@ -51,12 +51,8 @@ export default function DiscountedProductsPage() {
 
     if (sortBy === "discountPercentage") {
       products.sort((a, b) => {
-        const aPercent =
-          a.discountPercentage ||
-          calculateDiscountPercentage(a.price, a.discountPrice);
-        const bPercent =
-          b.discountPercentage ||
-          calculateDiscountPercentage(b.price, b.discountPrice);
+        const aPercent = getProductDiscountPercent(a);
+        const bPercent = getProductDiscountPercent(b);
         return bPercent - aPercent;
       });
     } else if (sortBy === "endDate") {
@@ -73,9 +69,7 @@ export default function DiscountedProductsPage() {
 
     if (filterBy) {
       products = products.filter((product) => {
-        const percentage =
-          product.discountPercentage ||
-          calculateDiscountPercentage(product.price, product.discountPrice);
+        const percentage = getProductDiscountPercent(product);
         if (filterBy === "high") return percentage >= 50;
         if (filterBy === "medium") return percentage >= 30 && percentage < 50;
         if (filterBy === "low") return percentage < 30;
@@ -110,8 +104,14 @@ export default function DiscountedProductsPage() {
     }
   };
 
-  const calculateDiscountPercentage = (price, discountPrice) => {
-    return Math.round(((price - discountPrice) / price) * 100);
+  const getProductDiscountPercent = (product) => {
+    if (!product) return 0;
+    const activePrice = getProductPrice(product, false);
+    const activeDiscountPrice = getProductPrice(product, true);
+    if (activePrice > 0 && activeDiscountPrice < activePrice) {
+      return Math.round(((activePrice - activeDiscountPrice) / activePrice) * 100);
+    }
+    return 0;
   };
 
   const getDiscountIntensity = (percentage) => {
@@ -228,12 +228,7 @@ export default function DiscountedProductsPage() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3  gap-6 ">
             {filteredProducts.map((product) => {
-              const discountPercent =
-                product.discountPercentage ||
-                calculateDiscountPercentage(
-                  product.price,
-                  product.discountPrice
-                );
+              const discountPercent = getProductDiscountPercent(product);
 
               const discountIntensity = getDiscountIntensity(discountPercent);
 

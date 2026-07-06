@@ -19,7 +19,7 @@ export default function WishlistPage() {
   const router = useRouter();
   const { updateCartCount } = useCart();
   const { wishlistItems, toggleWishlist, loading } = useWishlist();
-  const { formatPrice } = useCurrency();
+  const { formatPrice, getProductPrice } = useCurrency();
   const isRTL = i18n.language === "ar";
 
   useEffect(() => {

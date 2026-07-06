@@ -22,7 +22,7 @@ import {
 import { useCurrency } from "../../../components/CurrencyContext";
 
 export default function SearchResultsPage() {
-  const { formatPrice } = useCurrency();
+  const { formatPrice, getProductPrice } = useCurrency();
   const searchParams = useSearchParams();
   const query = searchParams.get("query");
   const [results, setResults] = useState([]);
@@ -172,14 +172,11 @@ export default function SearchResultsPage() {
 
   // Calculate discount percentage
   const calculateDiscount = (product) => {
-    if (
-      product.discountPrice &&
-      product.price &&
-      product.price > product.discountPrice
-    ) {
-      return Math.round(
-        ((product.price - product.discountPrice) / product.price) * 100
-      );
+    if (!product) return 0;
+    const activePrice = getProductPrice(product, false);
+    const activeDiscountPrice = getProductPrice(product, true);
+    if (activePrice > 0 && activeDiscountPrice < activePrice) {
+      return Math.round(((activePrice - activeDiscountPrice) / activePrice) * 100);
     }
     return 0;
   };

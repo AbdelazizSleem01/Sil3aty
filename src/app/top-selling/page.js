@@ -25,7 +25,7 @@ export default function TopSellingProductsPage() {
   const { updateCartCount } = useCart();
   const { addToCompare, removeFromCompare, isInCompare } = useCompare();
   const { toggleWishlist, isInWishlist } = useWishlist();
-  const { formatPrice } = useCurrency();
+  const { formatPrice, getProductPrice } = useCurrency();
   const [animatingProductId, setAnimatingProductId] = useState(null);
 
   const { data: topSellingProductsData, error: productsError } = useSWR("/api/products/top-selling");
