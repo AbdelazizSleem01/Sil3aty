@@ -8,6 +8,7 @@ import { useTranslation } from "react-i18next";
 import useSWR from "swr";
 import { useCompare } from "./CompareContext";
 import { useWishlist } from "./WishlistContext";
+import { useCurrency } from "./CurrencyContext";
 import { FiGrid } from "react-icons/fi";
 import {
   ArrowRight,
@@ -254,15 +255,15 @@ function LimitedTimeOffersSection() {
                 <div className="flex items-center justify-between mb-4">
                   <div>
                     <span className="text-2xl font-bold text-red-600">
-                      ${product.discountPrice}
+                      {formatPrice(product.discountPrice)}
                     </span>
                     <span className="text-sm text-gray-500 line-through ml-2">
-                      ${product.price}
+                      {formatPrice(product.price)}
                     </span>
                   </div>
                   <span className="text-sm font-bold text-green-600 bg-green-100 px-2 py-1 rounded">
-                    {t("save")}
-                    {(product.price - product.discountPrice).toFixed(2)}
+                    {t("save")}{" "}
+                    {formatPrice(product.price - product.discountPrice)}
                   </span>
                 </div>
 
@@ -305,6 +306,7 @@ function LimitedTimeOffersSection() {
 export default function HomePage() {
   const { t, i18n } = useTranslation();
   const isRTL = i18n.language === "ar";
+  const { formatPrice } = useCurrency();
   const [isVisible, setIsVisible] = useState(false);
   const [latestBlogs, setLatestBlogs] = useState([]);
   const [blogsLoading, setBlogsLoading] = useState(true);

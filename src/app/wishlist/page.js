@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { useTranslation } from "react-i18next";
 import { useCart } from "../../../components/CartContext";
 import { useWishlist } from "../../../components/WishlistContext";
+import { useCurrency } from "../../../components/CurrencyContext";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import { toast } from "react-toastify";
@@ -18,6 +19,7 @@ export default function WishlistPage() {
   const router = useRouter();
   const { updateCartCount } = useCart();
   const { wishlistItems, toggleWishlist, loading } = useWishlist();
+  const { formatPrice } = useCurrency();
   const isRTL = i18n.language === "ar";
 
   useEffect(() => {
@@ -203,11 +205,11 @@ export default function WishlistPage() {
                     {/* Price and discount */}
                     <div className="flex items-baseline gap-2 pt-1">
                       <span className="text-lg font-extrabold text-gray-900">
-                        ${hasDiscount ? product.discountPrice : product.price}
+                        {formatPrice(hasDiscount ? product.discountPrice : product.price)}
                       </span>
                       {hasDiscount && (
                         <span className="text-xs text-gray-400 line-through">
-                          ${product.price}
+                          {formatPrice(product.price)}
                         </span>
                       )}
                     </div>

@@ -16,9 +16,12 @@ import {
   CodeSquareIcon,
 } from "lucide-react";
 
+import { useCurrency } from "./CurrencyContext";
+
 export default function CheckoutForm({ cartItems, appliedCoupon, calculateFinalTotal }) {
   const router = useRouter();
   const { t } = useTranslation();
+  const { formatPrice } = useCurrency();
   const [loading, setLoading] = useState(false);
 
   const [shippingAddress, setShippingAddress] = useState({
@@ -233,7 +236,7 @@ export default function CheckoutForm({ cartItems, appliedCoupon, calculateFinalT
         ) : (
           <>
             <ShoppingCart className="w-5 h-5" />
-            {t("placeOrder")} - ${cartTotal}
+            {t("placeOrder")} - {formatPrice(parseFloat(cartTotal))}
           </>
         )}
       </button>

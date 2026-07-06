@@ -5,6 +5,7 @@ import axios from "axios";
 import Link from "next/link";
 import { toast } from "react-toastify";
 import { useTranslation } from "react-i18next";
+import { useCurrency } from "../../../components/CurrencyContext";
 import { Truck, Copy } from "lucide-react";
 
 function OrderTrackingTimeline({ status, isRTL, t }) {
@@ -94,6 +95,7 @@ function OrderTrackingTimeline({ status, isRTL, t }) {
 export default function OrdersPage() {
   const { data: session } = useSession();
   const { t, i18n } = useTranslation();
+  const { formatPrice } = useCurrency();
   const isRTL = i18n.language === "ar";
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -196,8 +198,7 @@ export default function OrdersPage() {
                     </div>
                     {order.discountAmount > 0 && (
                       <div className="text-success mt-1">
-                        {t("discountAmount")}: $
-                        {order.discountAmount.toFixed(2)}
+                        {t("discountAmount")}: {formatPrice(order.discountAmount)}
                       </div>
                     )}
                   </div>
@@ -296,16 +297,14 @@ export default function OrdersPage() {
                             {t("subtotal")}:
                           </span>
                           <span>
-                            $
-                            {order.subTotal?.toFixed(2) ||
-                              order.totalPrice.toFixed(2)}
+                            {formatPrice(order.subTotal || order.totalPrice)}
                           </span>
                         </div>
 
                         {order.discountAmount > 0 && (
                           <div className="flex justify-between items-center text-success">
                             <span>{t("discount")}:</span>
-                            <span>-${order.discountAmount.toFixed(2)}</span>
+                            <span>-{formatPrice(order.discountAmount)}</span>
                           </div>
                         )}
 
@@ -314,7 +313,7 @@ export default function OrdersPage() {
                             <span className="text-gray-600">
                               {t("shipping")}:
                             </span>
-                            <span>${order.shippingCost.toFixed(2)}</span>
+                            <span>{formatPrice(order.shippingCost)}</span>
                           </div>
                         )}
 
@@ -322,10 +321,7 @@ export default function OrdersPage() {
                           <div className="flex justify-between items-center font-bold text-primary">
                             <span>{t("finalTotal")}:</span>
                             <span>
-                              $
-                              {(order.finalTotal || order.totalPrice).toFixed(
-                                2
-                              )}
+                              {formatPrice(order.finalTotal || order.totalPrice)}
                             </span>
                           </div>
                         </div>
@@ -413,7 +409,7 @@ export default function OrdersPage() {
                             {item.size} / {item.color}
                           </p>
                           <p className="text-sm">
-                            {item.qty} × ${item.price.toFixed(2)}
+                            {item.qty} × {formatPrice(item.price)}
                           </p>
                         </div>
                       </div>
@@ -430,37 +426,35 @@ export default function OrdersPage() {
                     <div className="flex justify-between">
                       <span className="text-gray-600">{t("subtotal")}:</span>
                       <span>
-                        $
-                        {order.subTotal?.toFixed(2) ||
-                          order.totalPrice.toFixed(2)}
+                        {formatPrice(order.subTotal || order.totalPrice)}
                       </span>
                     </div>
 
                     {order.discountAmount > 0 && (
                       <div className="flex justify-between text-success">
                         <span>{t("discount")}:</span>
-                        <span>-${order.discountAmount.toFixed(2)}</span>
+                        <span>-{formatPrice(order.discountAmount)}</span>
                       </div>
                     )}
 
                     {order.shippingCost > 0 && (
                       <div className="flex justify-between">
                         <span className="text-gray-600">{t("shipping")}:</span>
-                        <span>${order.shippingCost.toFixed(2)}</span>
+                        <span>{formatPrice(order.shippingCost)}</span>
                       </div>
                     )}
 
                     <div className="flex justify-between font-bold pt-2 border-t mt-2">
                       <span>{t("total")}:</span>
                       <span className="text-primary">
-                        ${(order.finalTotal || order.totalPrice).toFixed(2)}
+                        {formatPrice(order.finalTotal || order.totalPrice)}
                       </span>
                     </div>
                   </div>
-                  <div className="flex justify-between items-center">
+                  <div className="flex justify-between items-center mt-4 pt-2 border-t">
                     <p className="text-lg font-semibold">{t("total")}</p>
                     <p className="text-lg font-semibold">
-                      ${order.totalPrice.toFixed(2)}
+                      {formatPrice(order.totalPrice)}
                     </p>
                   </div>
                 </div>

@@ -16,6 +16,7 @@ import {
 import { useCart } from "../../../components/CartContext";
 import { useCompare } from "../../../components/CompareContext";
 import { useWishlist } from "../../../components/WishlistContext";
+import { useCurrency } from "../../../components/CurrencyContext";
 import { FiGrid, FiHeart } from "react-icons/fi";
 import { useTranslation } from "react-i18next";
 import useSWR from "swr";
@@ -26,6 +27,7 @@ export default function DiscountedProductsPage() {
   const { updateCartCount } = useCart();
   const { addToCompare, removeFromCompare, isInCompare } = useCompare();
   const { toggleWishlist, isInWishlist } = useWishlist();
+  const { formatPrice } = useCurrency();
   const [animatingProductId, setAnimatingProductId] = useState(null);
   const [sortBy, setSortBy] = useState("discountPercentage");
   const [filterBy, setFilterBy] = useState("");
@@ -416,18 +418,18 @@ export default function DiscountedProductsPage() {
                         <div className="flex items-center gap-3">
                           <div className="text-left">
                             <p className="text-xl sm:text-2xl font-bold text-amber-600">
-                              ${product.discountPrice.toFixed(2)}
+                              {formatPrice(product.discountPrice)}
                             </p>
                             <p className="text-sm text-gray-500 line-through">
-                              ${product.price.toFixed(2)}
+                              {formatPrice(product.price)}
                             </p>
                           </div>
                         </div>
 
                         <div className="text-right">
                           <p className="text-sm font-semibold text-amber-600">
-                            {t("save")} $
-                            {(product.price - product.discountPrice).toFixed(2)}
+                            {t("save")}{" "}
+                            {formatPrice(product.price - product.discountPrice)}
                           </p>
                           <p className="text-xs text-gray-500">
                             {t("youSave")} {discountPercent}%

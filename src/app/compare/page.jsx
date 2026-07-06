@@ -3,6 +3,7 @@
 import { useCompare } from "../../../components/CompareContext";
 import { useCart } from "../../../components/CartContext";
 import { useTranslation } from "react-i18next";
+import { useCurrency } from "../../../components/CurrencyContext";
 import { useRouter } from "next/navigation";
 import { FiTrash2, FiShoppingCart, FiArrowLeft, FiStar, FiGrid } from "react-icons/fi";
 import axios from "axios";
@@ -86,6 +87,7 @@ export default function ComparePage() {
   const { compareItems, removeFromCompare, clearCompare } = useCompare();
   const { updateCartCount } = useCart();
   const { t, i18n } = useTranslation();
+  const { formatPrice } = useCurrency();
   const router = useRouter();
   const isRTL = i18n.language === "ar";
 
@@ -219,11 +221,11 @@ export default function ComparePage() {
                   <td key={product._id} className="p-6">
                     <div className="flex items-baseline gap-2">
                       <span className="text-xl font-extrabold text-gray-900">
-                        ${product.discountPrice || product.price}
+                        {formatPrice(product.discountPrice || product.price)}
                       </span>
                       {product.discountPrice && (
                         <span className="text-sm text-gray-400 line-through">
-                          ${product.price}
+                          {formatPrice(product.price)}
                         </span>
                       )}
                     </div>

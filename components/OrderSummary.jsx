@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { Truck, BadgeCheck, Loader2, ShoppingCart, XCircle, Tag, Check, X } from 'lucide-react';
 import { toast } from 'react-toastify';
+import { useCurrency } from './CurrencyContext';
 
 export default function OrderSummary({
   cart,
@@ -19,6 +20,7 @@ export default function OrderSummary({
   calculateFinalTotal
 }) {
   const { t } = useTranslation();
+  const { formatPrice } = useCurrency();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -96,7 +98,7 @@ export default function OrderSummary({
                       <div className="flex justify-between items-center mt-2">
                         <span className="text-gray-500">{t("qty")} {item.quantity}</span>
                         <span className="font-medium">
-                        EGP {(item.product?.price * item.quantity).toFixed(2)}
+                          {formatPrice(item.product?.price * item.quantity)}
                         </span>
                       </div>
                     </div>
@@ -165,7 +167,7 @@ export default function OrderSummary({
                     <p className="font-medium">{appliedCoupon.message}</p>
                     {appliedCoupon.discountAmount > 0 && (
                       <p className="text-xs mt-1">
-                        {t("discountAmount")}: EGP {appliedCoupon.discountAmount.toFixed(2)}
+                        {t("discountAmount")}: {formatPrice(appliedCoupon.discountAmount)}
                         {appliedCoupon.freeShipping && ` (${t("freeShippingApplied")})`}
                       </p>
                     )}
@@ -177,7 +179,7 @@ export default function OrderSummary({
                 <div className="flex justify-between items-center text-lg">
                   <span>{t("subtotal")}</span>
                   <span className="font-semibold">
-                  EGP {cart.total?.toFixed(2)}
+                    {formatPrice(cart.total || 0)}
                   </span>
                 </div>
 
@@ -185,7 +187,7 @@ export default function OrderSummary({
                   <div className="flex justify-between items-center text-green-600">
                     <span>{t("discount")}</span>
                     <span className="font-semibold">
-                      -EGP {appliedCoupon.discountAmount.toFixed(2)}
+                      -{formatPrice(appliedCoupon.discountAmount)}
                     </span>
                   </div>
                 )}
@@ -205,11 +207,11 @@ export default function OrderSummary({
                 <div className="flex justify-between items-center text-xl font-bold">
                   <span>{t("total")}</span>
                   <span className={`text-primary ${appliedCoupon ? 'line-through text-gray-500' : ''}`}>
-                    EGP {cart.total?.toFixed(2)}
+                    {formatPrice(cart.total || 0)}
                   </span>
                   {appliedCoupon && (
                     <span className="text-green-600 text-lg font-bold">
-                      EGP {calculateFinalTotal().toFixed(2)}
+                      {formatPrice(calculateFinalTotal())}
                     </span>
                   )}
                 </div>

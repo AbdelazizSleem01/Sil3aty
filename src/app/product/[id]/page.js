@@ -29,6 +29,7 @@ import {
 import { useCart } from "../../../../components/CartContext";
 import { useCompare } from "../../../../components/CompareContext";
 import { useWishlist } from "../../../../components/WishlistContext";
+import { useCurrency } from "../../../../components/CurrencyContext";
 import { FiGrid } from "react-icons/fi";
 
 import "swiper/css";
@@ -39,6 +40,7 @@ import Swal from "sweetalert2";
 export default function ProductPage() {
   const { t, i18n } = useTranslation();
   const isRTL = i18n.language === "ar";
+  const { formatPrice } = useCurrency();
   const { id } = useParams();
   const { data: session } = useSession();
   const { updateCartCount } = useCart();
@@ -467,19 +469,19 @@ export default function ProductPage() {
                 <div className="flex items-center gap-4">
                   <div className="flex items-baseline gap-3">
                     <span className="text-4xl font-bold text-gray-900">
-                      ${product.discountPrice.toFixed(2)}
+                      {formatPrice(product.discountPrice)}
                     </span>
                     <span className="text-2xl text-gray-500 line-through">
-                      ${product.price.toFixed(2)}
+                      {formatPrice(product.price)}
                     </span>
                   </div>
                   <div className="bg-gradient-to-r from-red-500 to-orange-500 text-white px-3 py-1 rounded-full text-sm font-bold shadow-sm">
-                    {t("save")} {(product.price - product.discountPrice).toFixed(2)}
+                    {t("save")} {formatPrice(product.price - product.discountPrice)}
                   </div>
                 </div>
               ) : (
                 <span className="text-4xl font-bold text-gray-900">
-                  ${product.price.toFixed(2)}
+                  {formatPrice(product.price)}
                 </span>
               )}
             </div>
@@ -703,15 +705,15 @@ export default function ProductPage() {
                             recommendedProduct.price ? (
                             <>
                               <span className="text-lg font-bold text-green-600">
-                                ${recommendedProduct.discountPrice.toFixed(2)}
+                                {formatPrice(recommendedProduct.discountPrice)}
                               </span>
                               <span className="text-sm text-gray-500 line-through">
-                                ${recommendedProduct.price.toFixed(2)}
+                                {formatPrice(recommendedProduct.price)}
                               </span>
                             </>
                           ) : (
                             <span className="text-lg font-bold text-gray-800">
-                              ${recommendedProduct.price?.toFixed(2) || "0.00"}
+                              {formatPrice(recommendedProduct.price || 0)}
                             </span>
                           )}
                         </div>
@@ -795,15 +797,15 @@ export default function ProductPage() {
                             relatedProduct.price ? (
                             <>
                               <span className="text-lg font-bold text-green-600">
-                                ${relatedProduct.discountPrice.toFixed(2)}
+                                {formatPrice(relatedProduct.discountPrice)}
                               </span>
                               <span className="text-sm text-gray-500 line-through">
-                                ${relatedProduct.price.toFixed(2)}
+                                {formatPrice(relatedProduct.price)}
                               </span>
                             </>
                           ) : (
                             <span className="text-lg font-bold text-gray-800">
-                              ${relatedProduct.price?.toFixed(2) || "0.00"}
+                              {formatPrice(relatedProduct.price || 0)}
                             </span>
                           )}
                         </div>

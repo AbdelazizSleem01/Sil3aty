@@ -14,6 +14,7 @@ import {
 import { useCart } from "../../../components/CartContext";
 import { useCompare } from "../../../components/CompareContext";
 import { useWishlist } from "../../../components/WishlistContext";
+import { useCurrency } from "../../../components/CurrencyContext";
 import { FiGrid, FiHeart } from "react-icons/fi";
 import { useTranslation } from "react-i18next";
 import useSWR from "swr";
@@ -24,6 +25,7 @@ export default function TopSellingProductsPage() {
   const { updateCartCount } = useCart();
   const { addToCompare, removeFromCompare, isInCompare } = useCompare();
   const { toggleWishlist, isInWishlist } = useWishlist();
+  const { formatPrice } = useCurrency();
   const [animatingProductId, setAnimatingProductId] = useState(null);
 
   const { data: topSellingProductsData, error: productsError } = useSWR("/api/products/top-selling");
@@ -394,15 +396,15 @@ export default function TopSellingProductsPage() {
                           {hasDiscount ? (
                             <>
                               <p className="text-2xl font-bold text-green-600">
-                                ${product.discountPrice.toFixed(2)}
+                                {formatPrice(product.discountPrice)}
                               </p>
                               <p className="text-sm text-gray-500 line-through">
-                                ${product.price.toFixed(2)}
+                                {formatPrice(product.price)}
                               </p>
                             </>
                           ) : (
                             <p className="text-2xl font-bold text-gray-800">
-                              ${product.price.toFixed(2)}
+                              {formatPrice(product.price)}
                             </p>
                           )}
                         </div>
@@ -411,8 +413,8 @@ export default function TopSellingProductsPage() {
                       {hasDiscount && (
                         <div className="text-right">
                           <p className="text-sm font-semibold text-red-600">
-                            {t("save")} $
-                            {(product.price - product.discountPrice).toFixed(2)}
+                            {t("save")}{" "}
+                            {formatPrice(product.price - product.discountPrice)}
                           </p>
                           <p className="text-xs text-gray-500">
                             {t("youSave")} {discountPercent}%

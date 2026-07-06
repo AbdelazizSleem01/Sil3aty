@@ -19,7 +19,10 @@ import {
   SlidersHorizontal,
 } from "lucide-react";
 
+import { useCurrency } from "../../../components/CurrencyContext";
+
 export default function SearchResultsPage() {
+  const { formatPrice } = useCurrency();
   const searchParams = useSearchParams();
   const query = searchParams.get("query");
   const [results, setResults] = useState([]);
@@ -551,15 +554,15 @@ export default function SearchResultsPage() {
                           {discount > 0 ? (
                             <>
                               <span className="text-xl font-bold text-green-600">
-                                ${product.discountPrice.toFixed(2)}
+                                {formatPrice(product.discountPrice)}
                               </span>
                               <span className="text-lg text-gray-500 line-through">
-                                ${product.price.toFixed(2)}
+                                {formatPrice(product.price)}
                               </span>
                             </>
                           ) : (
                             <span className="text-xl font-bold text-gray-800">
-                              ${product.price?.toFixed(2) || "0.00"}
+                              {formatPrice(product.price || 0)}
                             </span>
                           )}
                         </div>

@@ -21,6 +21,7 @@ import Image from "next/image";
 import { useCart } from "../../../components/CartContext";
 import { useCompare } from "../../../components/CompareContext";
 import { useWishlist } from "../../../components/WishlistContext";
+import { useCurrency } from "../../../components/CurrencyContext";
 import { FiGrid, FiHeart } from "react-icons/fi";
 import { useSession } from "next-auth/react";
 import axios from "axios";
@@ -28,6 +29,7 @@ import axios from "axios";
 function AllProductsPageContent() {
   const { t, i18n } = useTranslation();
   const isRTL = i18n.language === "ar";
+  const { formatPrice } = useCurrency();
   const { data: session } = useSession();
   const { updateCartCount } = useCart();
   const { addToCompare, removeFromCompare, isInCompare } = useCompare();
@@ -717,15 +719,15 @@ function AllProductsPageContent() {
                       {hasDiscount ? (
                         <>
                           <p className="text-xl font-bold text-green-600">
-                            ${product.discountPrice.toFixed(2)}
+                            {formatPrice(product.discountPrice)}
                           </p>
                           <p className="text-sm text-gray-500 line-through">
-                            ${product.price.toFixed(2)}
+                            {formatPrice(product.price)}
                           </p>
                         </>
                       ) : (
                         <p className="text-xl font-bold text-gray-800">
-                          ${product.price.toFixed(2)}
+                          {formatPrice(product.price)}
                         </p>
                       )}
                     </div>
@@ -733,8 +735,8 @@ function AllProductsPageContent() {
                     {hasDiscount && (
                       <div className="text-right">
                         <p className="text-xs font-semibold text-red-600">
-                          Save $
-                          {(product.price - product.discountPrice).toFixed(2)}
+                          {t("save") || "Save"}{" "}
+                          {formatPrice(product.price - product.discountPrice)}
                         </p>
                       </div>
                     )}
