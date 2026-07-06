@@ -32,6 +32,16 @@ export default function DiscountedProductsPage() {
   const [sortBy, setSortBy] = useState("discountPercentage");
   const [filterBy, setFilterBy] = useState("");
 
+  const getProductDiscountPercent = (product) => {
+    if (!product) return 0;
+    const activePrice = getProductPrice(product, false);
+    const activeDiscountPrice = getProductPrice(product, true);
+    if (activePrice > 0 && activeDiscountPrice < activePrice) {
+      return Math.round(((activePrice - activeDiscountPrice) / activePrice) * 100);
+    }
+    return 0;
+  };
+
   const { data: allProducts, error: productsError } = useSWR("/api/products");
 
   const discountedProducts = useMemo(() => {
@@ -104,15 +114,7 @@ export default function DiscountedProductsPage() {
     }
   };
 
-  const getProductDiscountPercent = (product) => {
-    if (!product) return 0;
-    const activePrice = getProductPrice(product, false);
-    const activeDiscountPrice = getProductPrice(product, true);
-    if (activePrice > 0 && activeDiscountPrice < activePrice) {
-      return Math.round(((activePrice - activeDiscountPrice) / activePrice) * 100);
-    }
-    return 0;
-  };
+
 
   const getDiscountIntensity = (percentage) => {
     if (percentage >= 50) return "high";
