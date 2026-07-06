@@ -20,9 +20,20 @@ export default function OrderSummary({
   calculateFinalTotal
 }) {
   const { t } = useTranslation();
-  const { formatPrice } = useCurrency();
+  const { formatPrice, getProductPrice } = useCurrency();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  const activeSubtotal = (cart?.items || []).reduce(
+    (sum, item) => sum + getProductPrice(item.product, true) * item.quantity,
+    0
+  );
+
+  const activeDiscount = appliedCoupon ? (
+    (appliedCoupon.discountAmount / (cart?.total || 1)) * activeSubtotal
+  ) : 0;
+
+  const activeFinalTotal = Math.max(0, activeSubtotal - activeDiscount);
 
   const LoadingSkeleton = () => (
     <div className="space-y-4">
@@ -98,7 +109,7 @@ export default function OrderSummary({
                       <div className="flex justify-between items-center mt-2">
                         <span className="text-gray-500">{t("qty")} {item.quantity}</span>
                         <span className="font-medium">
-                          {formatPrice(item.product?.price * item.quantity)}
+                          {formatPrice(getProductPrice(item.product, true) * item.quantity, null, "price", true)}
                         </span>
                       </div>
                     </div>
@@ -167,7 +178,7 @@ export default function OrderSummary({
                     <p className="font-medium">{appliedCoupon.message}</p>
                     {appliedCoupon.discountAmount > 0 && (
                       <p className="text-xs mt-1">
-                        {t("discountAmount")}: {formatPrice(appliedCoupon.discountAmount)}
+                        {t("discountAmount")}: {formatPrice(activeDiscount, null, "price", true)}
                         {appliedCoupon.freeShipping && ` (${t("freeShippingApplied")})`}
                       </p>
                     )}
@@ -179,7 +190,7 @@ export default function OrderSummary({
                 <div className="flex justify-between items-center text-lg">
                   <span>{t("subtotal")}</span>
                   <span className="font-semibold">
-                    {formatPrice(cart.total || 0)}
+                    {formatPrice(activeSubtotal, null, "price", true)}
                   </span>
                 </div>
 
@@ -187,7 +198,7 @@ export default function OrderSummary({
                   <div className="flex justify-between items-center text-green-600">
                     <span>{t("discount")}</span>
                     <span className="font-semibold">
-                      -{formatPrice(appliedCoupon.discountAmount)}
+                      -{formatPrice(activeDiscount, null, "price", true)}
                     </span>
                   </div>
                 )}
@@ -207,11 +218,11 @@ export default function OrderSummary({
                 <div className="flex justify-between items-center text-xl font-bold">
                   <span>{t("total")}</span>
                   <span className={`text-primary ${appliedCoupon ? 'line-through text-gray-500' : ''}`}>
-                    {formatPrice(cart.total || 0)}
+                    {formatPrice(activeSubtotal, null, "price", true)}
                   </span>
                   {appliedCoupon && (
                     <span className="text-green-600 text-lg font-bold">
-                      {formatPrice(calculateFinalTotal())}
+                      {formatPrice(activeFinalTotal, null, "price", true)}
                     </span>
                   )}
                 </div>

@@ -205,11 +205,11 @@ export default function WishlistPage() {
                     {/* Price and discount */}
                     <div className="flex items-baseline gap-2 pt-1">
                       <span className="text-lg font-extrabold text-gray-900">
-                        {formatPrice(hasDiscount ? product.discountPrice : product.price)}
+                        {formatPrice(hasDiscount ? product.discountPrice : product.price, product, hasDiscount ? "discount" : "price")}
                       </span>
                       {hasDiscount && (
                         <span className="text-xs text-gray-400 line-through">
-                          {formatPrice(product.price)}
+                          {formatPrice(product.price, product, "price")}
                         </span>
                       )}
                     </div>

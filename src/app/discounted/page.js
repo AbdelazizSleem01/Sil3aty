@@ -418,10 +418,10 @@ export default function DiscountedProductsPage() {
                         <div className="flex items-center gap-3">
                           <div className="text-left">
                             <p className="text-xl sm:text-2xl font-bold text-amber-600">
-                              {formatPrice(product.discountPrice)}
+                              {formatPrice(product.discountPrice, product, "discount")}
                             </p>
                             <p className="text-sm text-gray-500 line-through">
-                              {formatPrice(product.price)}
+                              {formatPrice(product.price, product, "price")}
                             </p>
                           </div>
                         </div>
@@ -429,7 +429,7 @@ export default function DiscountedProductsPage() {
                         <div className="text-right">
                           <p className="text-sm font-semibold text-amber-600">
                             {t("save")}{" "}
-                            {formatPrice(product.price - product.discountPrice)}
+                            {formatPrice(product.price - product.discountPrice, product, "diff")}
                           </p>
                           <p className="text-xs text-gray-500">
                             {t("youSave")} {discountPercent}%

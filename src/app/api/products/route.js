@@ -79,12 +79,31 @@ export async function POST(req) {
           .map((color) => color.trim())
           .filter(Boolean);
 
-    const newProduct = new Product({
+    const productData = {
       ...body,
       images: imageUrls,
       sizes,
       colors,
+    };
+
+    const overrideFields = [
+      "priceEGP", "priceSAR", "priceAED",
+      "discountPriceEGP", "discountPriceSAR", "discountPriceAED"
+    ];
+    overrideFields.forEach(field => {
+      if (productData[field] === "" || productData[field] === undefined || productData[field] === null) {
+        delete productData[field];
+      } else {
+        const val = parseFloat(productData[field]);
+        if (!isNaN(val)) {
+          productData[field] = val;
+        } else {
+          delete productData[field];
+        }
+      }
     });
+
+    const newProduct = new Product(productData);
 
     await newProduct.save();
 

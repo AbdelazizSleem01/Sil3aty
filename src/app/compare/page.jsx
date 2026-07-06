@@ -221,11 +221,11 @@ export default function ComparePage() {
                   <td key={product._id} className="p-6">
                     <div className="flex items-baseline gap-2">
                       <span className="text-xl font-extrabold text-gray-900">
-                        {formatPrice(product.discountPrice || product.price)}
+                        {formatPrice(product.discountPrice || product.price, product, product.discountPrice ? "discount" : "price")}
                       </span>
                       {product.discountPrice && (
                         <span className="text-sm text-gray-400 line-through">
-                          {formatPrice(product.price)}
+                          {formatPrice(product.price, product, "price")}
                         </span>
                       )}
                     </div>

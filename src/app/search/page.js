@@ -554,15 +554,15 @@ export default function SearchResultsPage() {
                           {discount > 0 ? (
                             <>
                               <span className="text-xl font-bold text-green-600">
-                                {formatPrice(product.discountPrice)}
+                                {formatPrice(product.discountPrice, product, "discount")}
                               </span>
                               <span className="text-lg text-gray-500 line-through">
-                                {formatPrice(product.price)}
+                                {formatPrice(product.price, product, "price")}
                               </span>
                             </>
                           ) : (
                             <span className="text-xl font-bold text-gray-800">
-                              {formatPrice(product.price || 0)}
+                              {formatPrice(product.price || 0, product, "price")}
                             </span>
                           )}
                         </div>

@@ -90,6 +90,24 @@ export async function PUT(req, { params }) {
           .filter(Boolean) || [],
     };
 
+    const overrideFields = [
+      "priceEGP", "priceSAR", "priceAED",
+      "discountPriceEGP", "discountPriceSAR", "discountPriceAED"
+    ];
+    overrideFields.forEach(field => {
+      if (updatedData[field] === "" || updatedData[field] === undefined || updatedData[field] === null) {
+        // Set to null so mongoose clears it in the database
+        updatedData[field] = null;
+      } else {
+        const val = parseFloat(updatedData[field]);
+        if (!isNaN(val)) {
+          updatedData[field] = val;
+        } else {
+          updatedData[field] = null;
+        }
+      }
+    });
+
     const updatedProduct = await Product.findByIdAndUpdate(id, updatedData, {
       new: true,
       runValidators: true,

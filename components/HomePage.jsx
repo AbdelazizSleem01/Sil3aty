@@ -255,15 +255,15 @@ function LimitedTimeOffersSection() {
                 <div className="flex items-center justify-between mb-4">
                   <div>
                     <span className="text-2xl font-bold text-red-600">
-                      {formatPrice(product.discountPrice)}
+                      {formatPrice(product.discountPrice, product, "discount")}
                     </span>
                     <span className="text-sm text-gray-500 line-through ml-2">
-                      {formatPrice(product.price)}
+                      {formatPrice(product.price, product, "price")}
                     </span>
                   </div>
                   <span className="text-sm font-bold text-green-600 bg-green-100 px-2 py-1 rounded">
                     {t("save")}{" "}
-                    {formatPrice(product.price - product.discountPrice)}
+                    {formatPrice(product.price - product.discountPrice, product, "diff")}
                   </span>
                 </div>
 

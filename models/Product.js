@@ -18,6 +18,12 @@ const productSchema = new mongoose.Schema({
     set: val => Math.round(val * 100) / 100
   },
   discountPrice: { type: Number, min: 0 },
+  priceEGP: { type: Number, min: 0 },
+  priceSAR: { type: Number, min: 0 },
+  priceAED: { type: Number, min: 0 },
+  discountPriceEGP: { type: Number, min: 0 },
+  discountPriceSAR: { type: Number, min: 0 },
+  discountPriceAED: { type: Number, min: 0 },
   discountPercentage: { type: Number, min: 0, max: 100 },
   discountStartDate: { type: Date },
   discountEndDate: { type: Date },

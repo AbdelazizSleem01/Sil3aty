@@ -719,15 +719,15 @@ function AllProductsPageContent() {
                       {hasDiscount ? (
                         <>
                           <p className="text-xl font-bold text-green-600">
-                            {formatPrice(product.discountPrice)}
+                            {formatPrice(product.discountPrice, product, "discount")}
                           </p>
                           <p className="text-sm text-gray-500 line-through">
-                            {formatPrice(product.price)}
+                            {formatPrice(product.price, product, "price")}
                           </p>
                         </>
                       ) : (
                         <p className="text-xl font-bold text-gray-800">
-                          {formatPrice(product.price)}
+                          {formatPrice(product.price, product, "price")}
                         </p>
                       )}
                     </div>
@@ -736,7 +736,7 @@ function AllProductsPageContent() {
                       <div className="text-right">
                         <p className="text-xs font-semibold text-red-600">
                           {t("save") || "Save"}{" "}
-                          {formatPrice(product.price - product.discountPrice)}
+                          {formatPrice(product.price - product.discountPrice, product, "diff")}
                         </p>
                       </div>
                     )}

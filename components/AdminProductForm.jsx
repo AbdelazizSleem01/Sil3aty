@@ -58,7 +58,13 @@ export default function AdminProductForm({ product, onSuccess, onCancel }) {
       category: "",
       images: [],
       price: 0,
+      priceEGP: "",
+      priceSAR: "",
+      priceAED: "",
       discountPrice: "",
+      discountPriceEGP: "",
+      discountPriceSAR: "",
+      discountPriceAED: "",
       discountPercentage: "",
       discountStartDate: "",
       discountEndDate: "",
@@ -162,6 +168,12 @@ export default function AdminProductForm({ product, onSuccess, onCancel }) {
       formData.append("category", data.category);
       formData.append("brand", data.brand);
       formData.append("price", data.price.toString());
+      formData.append("priceEGP", data.priceEGP ? data.priceEGP.toString() : "");
+      formData.append("priceSAR", data.priceSAR ? data.priceSAR.toString() : "");
+      formData.append("priceAED", data.priceAED ? data.priceAED.toString() : "");
+      formData.append("discountPriceEGP", data.discountPriceEGP ? data.discountPriceEGP.toString() : "");
+      formData.append("discountPriceSAR", data.discountPriceSAR ? data.discountPriceSAR.toString() : "");
+      formData.append("discountPriceAED", data.discountPriceAED ? data.discountPriceAED.toString() : "");
       formData.append("description", data.description);
       formData.append("countInStock", data.countInStock.toString());
       formData.append("isFeatured", data.isFeatured.toString());
@@ -557,6 +569,112 @@ export default function AdminProductForm({ product, onSuccess, onCancel }) {
                     {errors.discountPrice && (
                       <span className="text-error text-xs mt-1 font-medium">{errors.discountPrice.message}</span>
                     )}
+                  </div>
+                </div>
+
+                {/* Currency Pricing Overrides */}
+                <div className="col-span-1 md:col-span-2 border-t border-gray-100 pt-6 mt-4">
+                  <h3 className="text-md font-extrabold text-gray-800 mb-2 flex items-center gap-2">
+                    💸 {isRTL ? "أسعار العملات المخصصة (اختياري)" : "Custom Currency Prices (Optional)"}
+                  </h3>
+                  <p className="text-xs text-gray-400 mb-4 leading-relaxed">
+                    {isRTL 
+                      ? "* اترك الحقل فارغاً ليقوم النظام بحساب السعر تلقائياً بناءً على سعر الصرف الافتراضي للعملة."
+                      : "* Leave blank to let the system automatically calculate the price based on default conversion rates."}
+                  </p>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {/* EGP (Egypt) */}
+                    <div className="space-y-4 p-4 bg-gray-50/50 rounded-2xl border border-gray-100">
+                      <span className="text-xs font-black text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full uppercase">
+                        🇪🇬 EGP (ج.م)
+                      </span>
+                      <div className="form-control">
+                        <label className="label text-xs font-semibold text-gray-600">
+                          <span>{isRTL ? "السعر الأصلي" : "Original Price"}</span>
+                        </label>
+                        <input
+                          type="number"
+                          step="any"
+                          {...register("priceEGP")}
+                          className="input input-bordered w-full rounded-xl text-xs"
+                          placeholder="0.00"
+                        />
+                      </div>
+                      <div className="form-control">
+                        <label className="label text-xs font-semibold text-gray-600">
+                          <span>{isRTL ? "سعر الخصم" : "Discount Price"}</span>
+                        </label>
+                        <input
+                          type="number"
+                          step="any"
+                          {...register("discountPriceEGP")}
+                          className="input input-bordered w-full rounded-xl text-xs"
+                          placeholder="0.00"
+                        />
+                      </div>
+                    </div>
+
+                    {/* SAR (Saudi Arabia) */}
+                    <div className="space-y-4 p-4 bg-gray-50/50 rounded-2xl border border-gray-100">
+                      <span className="text-xs font-black text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full uppercase">
+                        🇸🇦 SAR (ر.س)
+                      </span>
+                      <div className="form-control">
+                        <label className="label text-xs font-semibold text-gray-600">
+                          <span>{isRTL ? "السعر الأصلي" : "Original Price"}</span>
+                        </label>
+                        <input
+                          type="number"
+                          step="any"
+                          {...register("priceSAR")}
+                          className="input input-bordered w-full rounded-xl text-xs"
+                          placeholder="0.00"
+                        />
+                      </div>
+                      <div className="form-control">
+                        <label className="label text-xs font-semibold text-gray-600">
+                          <span>{isRTL ? "سعر الخصم" : "Discount Price"}</span>
+                        </label>
+                        <input
+                          type="number"
+                          step="any"
+                          {...register("discountPriceSAR")}
+                          className="input input-bordered w-full rounded-xl text-xs"
+                          placeholder="0.00"
+                        />
+                      </div>
+                    </div>
+
+                    {/* AED (UAE) */}
+                    <div className="space-y-4 p-4 bg-gray-50/50 rounded-2xl border border-gray-100">
+                      <span className="text-xs font-black text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full uppercase">
+                        🇦🇪 AED (د.إ)
+                      </span>
+                      <div className="form-control">
+                        <label className="label text-xs font-semibold text-gray-600">
+                          <span>{isRTL ? "السعر الأصلي" : "Original Price"}</span>
+                        </label>
+                        <input
+                          type="number"
+                          step="any"
+                          {...register("priceAED")}
+                          className="input input-bordered w-full rounded-xl text-xs"
+                          placeholder="0.00"
+                        />
+                      </div>
+                      <div className="form-control">
+                        <label className="label text-xs font-semibold text-gray-600">
+                          <span>{isRTL ? "سعر الخصم" : "Discount Price"}</span>
+                        </label>
+                        <input
+                          type="number"
+                          step="any"
+                          {...register("discountPriceAED")}
+                          className="input input-bordered w-full rounded-xl text-xs"
+                          placeholder="0.00"
+                        />
+                      </div>
+                    </div>
                   </div>
                 </div>
 

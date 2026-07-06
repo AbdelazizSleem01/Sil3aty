@@ -71,6 +71,19 @@ export default function CheckoutForm({ cartItems, appliedCoupon, calculateFinalT
   const cartTotal = (calculateFinalTotal() || (cartItems || [])
     .reduce((total, item) => total + item.product.price * item.quantity, 0)).toFixed(2);
 
+  const activeSubtotal = (cartItems || []).reduce(
+    (sum, item) => sum + getProductPrice(item.product, true) * item.quantity,
+    0
+  );
+  const usdSubtotal = (cartItems || []).reduce(
+    (sum, item) => sum + (item.product.discountPrice || item.product.price) * item.quantity,
+    0
+  );
+  const activeDiscount = appliedCoupon ? (
+    (appliedCoupon.discountAmount / (usdSubtotal || 1)) * activeSubtotal
+  ) : 0;
+  const activeFinalTotal = Math.max(0, activeSubtotal - activeDiscount);
+
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
       {/* Shipping Address */}
@@ -236,7 +249,7 @@ export default function CheckoutForm({ cartItems, appliedCoupon, calculateFinalT
         ) : (
           <>
             <ShoppingCart className="w-5 h-5" />
-            {t("placeOrder")} - {formatPrice(parseFloat(cartTotal))}
+            {t("placeOrder")} - {formatPrice(activeFinalTotal, null, "price", true)}
           </>
         )}
       </button>

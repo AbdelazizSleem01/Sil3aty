@@ -31,22 +31,53 @@ export function CurrencyProvider({ children }) {
     }
   };
 
-  const convertPrice = (usdAmount) => {
-    const amount = Number(usdAmount) || 0;
+  const getProductPrice = (product, isDiscount = false) => {
+    if (!product) return 0;
+    if (currency === "USD") {
+      const discountVal = typeof product.discountPrice === "number" ? product.discountPrice : product.price;
+      return isDiscount ? discountVal : product.price;
+    }
+    const field = isDiscount ? `discountPrice${currency}` : `price${currency}`;
+    if (typeof product[field] === "number" && product[field] > 0) {
+      return product[field];
+    }
+    // Fallback to rate conversion
+    const discountVal = typeof product.discountPrice === "number" ? product.discountPrice : product.price;
+    const baseVal = isDiscount ? discountVal : product.price;
     const current = CURRENCIES[currency];
-    return amount * current.rate;
+    return baseVal * current.rate;
   };
 
-  const formatPrice = (usdAmount) => {
-    const amount = Number(usdAmount) || 0;
+  const formatPrice = (usdAmount, product = null, type = "price", isPreConverted = false) => {
     const current = CURRENCIES[currency];
-    const converted = amount * current.rate;
     const symbol = isRTL ? current.symbolAr : current.symbolEn;
     
-    if (currency === "USD") {
-      return `${symbol}${converted.toFixed(2)}`;
+    let finalAmount = Number(usdAmount) || 0;
+
+    if (!isPreConverted) {
+      if (product && currency !== "USD") {
+        if (type === "price") {
+          finalAmount = getProductPrice(product, false);
+        } else if (type === "discount") {
+          finalAmount = getProductPrice(product, true);
+        } else if (type === "diff") {
+          const pr = getProductPrice(product, false);
+          const dp = getProductPrice(product, true);
+          finalAmount = Math.max(0, pr - dp);
+        } else {
+          finalAmount = finalAmount * current.rate;
+        }
+      } else {
+        if (currency !== "USD") {
+          finalAmount = finalAmount * current.rate;
+        }
+      }
     }
-    return isRTL ? `${converted.toFixed(2)} ${symbol}` : `${symbol} ${converted.toFixed(2)}`;
+
+    if (currency === "USD") {
+      return `${symbol}${finalAmount.toFixed(2)}`;
+    }
+    return isRTL ? `${finalAmount.toFixed(2)} ${symbol}` : `${symbol} ${finalAmount.toFixed(2)}`;
   };
 
   return (
@@ -55,7 +86,7 @@ export function CurrencyProvider({ children }) {
         currency,
         currencies: Object.values(CURRENCIES),
         changeCurrency,
-        convertPrice,
+        getProductPrice,
         formatPrice,
       }}
     >

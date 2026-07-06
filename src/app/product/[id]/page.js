@@ -469,19 +469,19 @@ export default function ProductPage() {
                 <div className="flex items-center gap-4">
                   <div className="flex items-baseline gap-3">
                     <span className="text-4xl font-bold text-gray-900">
-                      {formatPrice(product.discountPrice)}
+                      {formatPrice(product.discountPrice, product, "discount")}
                     </span>
                     <span className="text-2xl text-gray-500 line-through">
-                      {formatPrice(product.price)}
+                      {formatPrice(product.price, product, "price")}
                     </span>
                   </div>
                   <div className="bg-gradient-to-r from-red-500 to-orange-500 text-white px-3 py-1 rounded-full text-sm font-bold shadow-sm">
-                    {t("save")} {formatPrice(product.price - product.discountPrice)}
+                    {t("save")} {formatPrice(product.price - product.discountPrice, product, "diff")}
                   </div>
                 </div>
               ) : (
                 <span className="text-4xl font-bold text-gray-900">
-                  {formatPrice(product.price)}
+                  {formatPrice(product.price, product, "price")}
                 </span>
               )}
             </div>
@@ -705,15 +705,15 @@ export default function ProductPage() {
                             recommendedProduct.price ? (
                             <>
                               <span className="text-lg font-bold text-green-600">
-                                {formatPrice(recommendedProduct.discountPrice)}
+                                {formatPrice(recommendedProduct.discountPrice, recommendedProduct, "discount")}
                               </span>
                               <span className="text-sm text-gray-500 line-through">
-                                {formatPrice(recommendedProduct.price)}
+                                {formatPrice(recommendedProduct.price, recommendedProduct, "price")}
                               </span>
                             </>
                           ) : (
                             <span className="text-lg font-bold text-gray-800">
-                              {formatPrice(recommendedProduct.price || 0)}
+                              {formatPrice(recommendedProduct.price || 0, recommendedProduct, "price")}
                             </span>
                           )}
                         </div>
@@ -797,15 +797,15 @@ export default function ProductPage() {
                             relatedProduct.price ? (
                             <>
                               <span className="text-lg font-bold text-green-600">
-                                {formatPrice(relatedProduct.discountPrice)}
+                                {formatPrice(relatedProduct.discountPrice, relatedProduct, "discount")}
                               </span>
                               <span className="text-sm text-gray-500 line-through">
-                                {formatPrice(relatedProduct.price)}
+                                {formatPrice(relatedProduct.price, relatedProduct, "price")}
                               </span>
                             </>
                           ) : (
                             <span className="text-lg font-bold text-gray-800">
-                              {formatPrice(relatedProduct.price || 0)}
+                              {formatPrice(relatedProduct.price || 0, relatedProduct, "price")}
                             </span>
                           )}
                         </div>

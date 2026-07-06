@@ -15,7 +15,7 @@ export default function CartPage() {
   const { data: session } = useSession();
   const router = useRouter();
   const { t, i18n } = useTranslation();
-  const { formatPrice } = useCurrency();
+  const { formatPrice, getProductPrice } = useCurrency();
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -110,8 +110,8 @@ export default function CartPage() {
   };
 
   const total = cartItems.reduce((acc, item) => {
-    if (item.product && item.product.price) {
-      return acc + item.product.price * item.quantity;
+    if (item.product) {
+      return acc + getProductPrice(item.product, true) * item.quantity;
     }
     return acc;
   }, 0);
@@ -206,7 +206,7 @@ export default function CartPage() {
                   {item.size} / {item.color}
                 </p>
                 <p className="text-lg font-semibold">
-                  {formatPrice(item.product?.price || 0)}
+                  {formatPrice(item.product?.price || 0, item.product, "discount")}
                 </p>
 
                 <div className="space-y-2">
@@ -305,7 +305,7 @@ export default function CartPage() {
           <div className="space-y-4">
             <div className="flex justify-between">
               <span>{t("subtotal")}</span>
-              <span>{formatPrice(total)}</span>
+              <span>{formatPrice(total, null, "price", true)}</span>
             </div>
             <div className="flex justify-between">
               <span>{t("shipping")}</span>
@@ -314,7 +314,7 @@ export default function CartPage() {
             <div className="border-t pt-4">
               <div className="flex justify-between font-semibold">
                 <span>{t("total")}</span>
-                <span>{formatPrice(total)}</span>
+                <span>{formatPrice(total, null, "price", true)}</span>
               </div>
             </div>
           </div>

@@ -9,12 +9,14 @@ import CheckoutForm from "../../../components/CheckoutForm";
 import OrderSummary from "../../../components/OrderSummary";
 import { toast } from "react-toastify";
 import { Loader2 } from "lucide-react";
+import { useCurrency } from "../../../components/CurrencyContext";
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY);
 
 export default function CheckoutPage() {
   const { data: session } = useSession();
   const { t } = useTranslation();
+  const { getProductPrice } = useCurrency();
   const [clientSecret, setClientSecret] = useState("");
   const [cartItems, setCartItems] = useState([]);
   const [cart, setCart] = useState({ items: [], total: 0 });

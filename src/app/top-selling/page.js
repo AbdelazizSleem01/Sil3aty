@@ -396,15 +396,15 @@ export default function TopSellingProductsPage() {
                           {hasDiscount ? (
                             <>
                               <p className="text-2xl font-bold text-green-600">
-                                {formatPrice(product.discountPrice)}
+                                {formatPrice(product.discountPrice, product, "discount")}
                               </p>
                               <p className="text-sm text-gray-500 line-through">
-                                {formatPrice(product.price)}
+                                {formatPrice(product.price, product, "price")}
                               </p>
                             </>
                           ) : (
                             <p className="text-2xl font-bold text-gray-800">
-                              {formatPrice(product.price)}
+                              {formatPrice(product.price, product, "price")}
                             </p>
                           )}
                         </div>
@@ -414,7 +414,7 @@ export default function TopSellingProductsPage() {
                         <div className="text-right">
                           <p className="text-sm font-semibold text-red-600">
                             {t("save")}{" "}
-                            {formatPrice(product.price - product.discountPrice)}
+                            {formatPrice(product.price - product.discountPrice, product, "diff")}
                           </p>
                           <p className="text-xs text-gray-500">
                             {t("youSave")} {discountPercent}%
