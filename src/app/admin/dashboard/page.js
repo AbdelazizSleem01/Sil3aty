@@ -28,6 +28,18 @@ import {
 } from "lucide-react";
 import { IoInformation } from "react-icons/io5";
 import { useTranslation } from "react-i18next";
+import {
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  Cell,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
 
 export default function AdminDashboard() {
   const { t, i18n } = useTranslation();
@@ -35,6 +47,8 @@ export default function AdminDashboard() {
 
   const { data: session, status } = useSession();
   const router = useRouter();
+
+  const [compStats, setCompStats] = useState(null);
 
   const [stats, setStats] = useState({
     users: 0,
@@ -70,9 +84,10 @@ export default function AdminDashboard() {
     const fetchDashboardData = async () => {
       try {
         setLoading(true);
-        const [statsRes, activityRes] = await Promise.all([
+        const [statsRes, activityRes, compRes] = await Promise.all([
           fetch("/api/admin/stats"),
           fetch("/api/admin/activity"),
+          fetch("/api/admin/comprehensive-stats"),
         ]);
 
         if (statsRes.ok) setStats(await statsRes.json());
@@ -80,6 +95,8 @@ export default function AdminDashboard() {
 
         if (activityRes.ok) setActivity(await activityRes.json());
         else toast.error(t("failedToFetchActivity"));
+
+        if (compRes.ok) setCompStats(await compRes.json());
       } catch {
         toast.error(t("errorLoadingDashboard"));
       } finally {
@@ -174,6 +191,59 @@ export default function AdminDashboard() {
             />
           </div>
         </div>
+
+        {compStats && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            {/* Chart 1: Order Status Distribution */}
+            <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 flex flex-col h-[380px]">
+              <h2 className="text-xl font-semibold text-gray-700 mb-4">
+                {t("orderStatusDistribution") || "Order Status Distribution"}
+              </h2>
+              <div className="flex-1 w-full min-h-0">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={compStats.salesRevenue?.orderStatusChartData || []}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={60}
+                      outerRadius={90}
+                      paddingAngle={4}
+                      dataKey="value"
+                    >
+                      {(compStats.salesRevenue?.orderStatusChartData || []).map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip formatter={(value) => [value, t("orders")]} />
+                    <Legend verticalAlign="bottom" height={36} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            {/* Chart 2: Top Selling Products */}
+            <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 flex flex-col h-[380px]">
+              <h2 className="text-xl font-semibold text-gray-700 mb-4">
+                {t("topSellingProducts") || "Top Selling Products"}
+              </h2>
+              <div className="flex-1 w-full min-h-0">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={(compStats.topProducts || []).slice(0, 5)}
+                    margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                  >
+                    <XAxis dataKey="name" tick={{ fontSize: 10 }} stroke="#9CA3AF" />
+                    <YAxis tick={{ fontSize: 10 }} stroke="#9CA3AF" />
+                    <Tooltip formatter={(value) => [`$${value.toFixed(2)}`, t("revenue")]} />
+                    <Legend />
+                    <Bar dataKey="revenue" name={t("revenue")} fill="#10B981" radius={[6, 6, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
           <h2 className="text-xl font-semibold text-gray-700 mb-6">
