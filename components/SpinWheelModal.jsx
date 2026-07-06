@@ -18,12 +18,12 @@ export default function SpinWheelModal() {
   const canvasRef = useRef(null);
 
   const segments = [
-    { code: "SPIN10", label: isRTL ? "خصم 10%" : "10% OFF", color: "#10B981" },
-    { code: "FREESHIP", label: isRTL ? "شحن مجاني" : "Free Ship", color: "#8B5CF6" },
-    { code: "SPIN15", label: isRTL ? "خصم 15%" : "15% OFF", color: "#F59E0B" },
-    { code: "TRYAGAIN", label: isRTL ? "حظ أوفر" : "Try Again", color: "#64748B" },
-    { code: "SPIN20", label: isRTL ? "خصم 20%" : "20% OFF", color: "#EC4899" },
-    { code: "SPIN25", label: isRTL ? "خصم 25%" : "25% OFF", color: "#3B82F6" },
+    { code: "SPIN10", label: isRTL ? "خصم 10%" : "10% OFF", color: "#10B981", textColor: "#FFFFFF" },
+    { code: "FREESHIP", label: isRTL ? "شحن مجاني" : "Free Ship", color: "#047857", textColor: "#FFFFFF" },
+    { code: "SPIN15", label: isRTL ? "خصم 15%" : "15% OFF", color: "#34D399", textColor: "#064E3B" },
+    { code: "TRYAGAIN", label: isRTL ? "حظ أوفر" : "Try Again", color: "#1E293B", textColor: "#FFFFFF" },
+    { code: "SPIN20", label: isRTL ? "خصم 20%" : "20% OFF", color: "#059669", textColor: "#FFFFFF" },
+    { code: "SPIN25", label: isRTL ? "خصم 25%" : "25% OFF", color: "#A7F3D0", textColor: "#064E3B" },
   ];
 
   // Draw the wheel on canvas
@@ -43,7 +43,7 @@ export default function SpinWheelModal() {
       ctx.beginPath();
       ctx.fillStyle = seg.color;
       ctx.moveTo(radius, radius);
-      ctx.arc(radius, radius, radius - 10, angle, angle + arc, false);
+      ctx.arc(radius, radius, radius - 8, angle, angle + arc, false);
       ctx.lineTo(radius, radius);
       ctx.fill();
 
@@ -54,8 +54,8 @@ export default function SpinWheelModal() {
 
       // Draw text
       ctx.save();
-      ctx.fillStyle = "#FFFFFF";
-      ctx.font = "bold 14px Outfit, Inter, sans-serif";
+      ctx.fillStyle = seg.textColor || "#FFFFFF";
+      ctx.font = "bold 12px Outfit, Inter, sans-serif";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.translate(radius, radius);
@@ -66,16 +66,16 @@ export default function SpinWheelModal() {
 
     // Draw central peg circle
     ctx.beginPath();
-    ctx.arc(radius, radius, 25, 0, 2 * Math.PI, false);
+    ctx.arc(radius, radius, 20, 0, 2 * Math.PI, false);
     ctx.fillStyle = "#1E293B";
     ctx.fill();
     ctx.strokeStyle = "#FFFFFF";
-    ctx.lineWidth = 4;
+    ctx.lineWidth = 3;
     ctx.stroke();
 
     // Draw inner peg circle dot
     ctx.beginPath();
-    ctx.arc(radius, radius, 10, 0, 2 * Math.PI, false);
+    ctx.arc(radius, radius, 8, 0, 2 * Math.PI, false);
     ctx.fillStyle = "#10B981";
     ctx.fill();
   }, [isOpen]);
@@ -149,39 +149,39 @@ export default function SpinWheelModal() {
         }}
         className={`fixed bottom-6 ${
           isRTL ? "right-24" : "left-24"
-        } z-40 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold py-3.5 px-5 rounded-full shadow-2xl flex items-center gap-2.5 transition-all duration-300 hover:scale-110 active:scale-95 animate-pulse`}
+        } z-40 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-bold py-3 px-4.5 rounded-full shadow-2xl flex items-center gap-2 transition-all duration-300 hover:scale-110 active:scale-95 animate-pulse`}
       >
-        <FiGift size={18} className="animate-bounce" />
-        <span className="text-xs uppercase tracking-wider font-extrabold">
+        <FiGift size={16} className="animate-bounce" />
+        <span className="text-[10px] uppercase tracking-wider font-extrabold">
           {isRTL ? "عجلة الهدايا" : "Gift Wheel"}
         </span>
       </button>
 
       {/* Modal overlay */}
       {isOpen && (
-        <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div 
-            className="bg-white rounded-[2.5rem] border border-gray-100 shadow-2xl max-w-lg w-full p-6 md:p-8 relative overflow-hidden flex flex-col items-center animate-scaleUp"
+            className="bg-white rounded-[2rem] border border-gray-100 shadow-2xl max-w-[390px] w-full p-5 relative overflow-hidden flex flex-col items-center animate-scaleUp"
             dir={isRTL ? "rtl" : "ltr"}
           >
             {/* Close button */}
             <button
               onClick={() => setIsOpen(false)}
-              className={`absolute top-5 ${isRTL ? "left-5" : "right-5"} p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors`}
+              className={`absolute top-4 ${isRTL ? "left-4" : "right-4"} p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors`}
               disabled={isSpinning}
             >
-              <FiX size={20} />
+              <FiX size={18} />
             </button>
 
             {/* Modal Header */}
-            <div className="text-center space-y-2 mb-6">
-              <span className="text-xs bg-purple-50 text-purple-700 font-extrabold uppercase px-3 py-1 rounded-full tracking-wide">
+            <div className="text-center space-y-1.5 mb-4">
+              <span className="text-[10px] bg-emerald-50 text-emerald-700 font-extrabold uppercase px-2.5 py-0.5 rounded-full tracking-wide">
                 {isRTL ? "🎰 جرب حظك!" : "🎰 SPIN TO WIN!"}
               </span>
-              <h2 className="text-3xl font-black text-gray-900 leading-tight">
+              <h2 className="text-2xl font-black text-gray-900 leading-tight">
                 {isRTL ? "عجلة الخصومات والمفاجآت" : "Lucky Discount Wheel"}
               </h2>
-              <p className="text-gray-500 text-sm max-w-sm">
+              <p className="text-gray-500 text-xs max-w-[280px] mx-auto">
                 {isRTL 
                   ? "أدخل بريدك الإلكتروني وقم بتدوير العجلة للفوز بخصومات كوبونات حقيقية فورية!" 
                   : "Enter your email and spin the lucky wheel to claim your real discount coupon!"}
@@ -190,16 +190,16 @@ export default function SpinWheelModal() {
 
             {/* Wheel section */}
             {!wonCoupon ? (
-              <div className="relative flex flex-col items-center gap-6 my-4 w-full">
+              <div className="relative flex flex-col items-center gap-5 my-2 w-full">
                 {/* Pointer indicator */}
-                <div className="absolute top-[-10px] left-1/2 -translate-x-1/2 z-20 w-0 h-0 border-l-[15px] border-l-transparent border-r-[15px] border-r-transparent border-t-[25px] border-t-red-600 filter drop-shadow-md" />
+                <div className="absolute top-[-8px] left-1/2 -translate-x-1/2 z-20 w-0 h-0 border-l-[12px] border-l-transparent border-r-[12px] border-r-transparent border-t-[20px] border-t-red-600 filter drop-shadow-md" />
 
                 {/* Canvas container with shadows */}
-                <div className="bg-white p-4 rounded-full border border-gray-100 shadow-inner">
+                <div className="bg-white p-3 rounded-full border border-gray-100 shadow-inner">
                   <canvas
                     ref={canvasRef}
-                    width={280}
-                    height={280}
+                    width={220}
+                    height={220}
                     style={{
                       transform: `rotate(${rotation}deg)`,
                       transition: isSpinning ? "transform 5s cubic-bezier(0.1, 0.8, 0.1, 1)" : "none",
@@ -209,7 +209,7 @@ export default function SpinWheelModal() {
                 </div>
 
                 {/* Spin action form */}
-                <form onSubmit={handleSpin} className="w-full max-w-sm space-y-3 mt-2">
+                <form onSubmit={handleSpin} className="w-full max-w-[300px] space-y-2 mt-1">
                   <input
                     type="email"
                     required
@@ -217,12 +217,12 @@ export default function SpinWheelModal() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     disabled={isSpinning}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-2xl text-center focus:ring-2 focus:ring-purple-500 outline-none text-gray-900 transition-all shadow-inner"
+                    className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-center focus:ring-2 focus:ring-emerald-500 outline-none text-xs text-gray-900 transition-all shadow-inner"
                   />
                   <button
                     type="submit"
                     disabled={isSpinning}
-                    className="btn btn-primary w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold py-3.5 rounded-2xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-indigo-600/20"
+                    className="btn btn-primary w-full bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-bold py-3 rounded-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-emerald-600/10 text-xs"
                   >
                     {isSpinning ? (isRTL ? "جاري التدوير..." : "Spinning...") : (isRTL ? "در العجلة الآن!" : "SPIN THE WHEEL!")}
                   </button>
@@ -230,36 +230,36 @@ export default function SpinWheelModal() {
               </div>
             ) : (
               /* Winner reveal card */
-              <div className="w-full max-w-sm p-6 bg-gradient-to-br from-purple-50 to-indigo-50/50 border border-purple-100 rounded-3xl text-center space-y-6 animate-scaleUp">
-                <div className="w-16 h-16 bg-gradient-to-br from-yellow-400 to-amber-500 text-white rounded-full flex items-center justify-center mx-auto shadow-lg animate-bounce">
+              <div className="w-full max-w-[300px] p-5 bg-gradient-to-br from-emerald-50 to-green-50/50 border border-emerald-100 rounded-2xl text-center space-y-5 animate-scaleUp">
+                <div className="w-12 h-12 bg-gradient-to-br from-yellow-400 to-amber-500 text-white rounded-full flex items-center justify-center mx-auto shadow-lg animate-bounce text-lg">
                   🎉
                 </div>
-                <div className="space-y-2">
-                  <h3 className="text-2xl font-black text-gray-900">
+                <div className="space-y-1">
+                  <h3 className="text-xl font-black text-gray-900">
                     {isRTL ? "مبروك! لقد فزت" : "Congratulations! You Won"}
                   </h3>
-                  <p className="text-xl font-extrabold text-purple-700">
+                  <p className="text-lg font-extrabold text-emerald-700">
                     {wonCoupon.label}
                   </p>
                 </div>
 
                 {/* Coupon display card */}
-                <div className="bg-white border-2 border-dashed border-purple-300 rounded-2xl p-4 flex items-center justify-between gap-4">
-                  <code className="text-lg font-black text-slate-800 tracking-wider">
+                <div className="bg-white border-2 border-dashed border-emerald-300 rounded-xl p-3 flex items-center justify-between gap-3">
+                  <code className="text-base font-black text-slate-800 tracking-wider">
                     {wonCoupon.code}
                   </code>
                   <button
                     onClick={handleCopy}
                     className={`btn btn-sm ${
-                      copied ? "btn-success" : "btn-primary bg-purple-600"
-                    } rounded-xl px-4 flex items-center gap-1.5`}
+                      copied ? "btn-success" : "btn-primary bg-emerald-600 hover:bg-emerald-700"
+                    } rounded-lg px-3 flex items-center gap-1 text-xs`}
                   >
                     {copied ? <FiCheck /> : <FiCopy />}
                     {copied ? (isRTL ? "تم النسخ" : "Copied") : (isRTL ? "نسخ" : "Copy")}
                   </button>
                 </div>
 
-                <p className="text-xs text-gray-400">
+                <p className="text-[10px] text-gray-400 leading-relaxed">
                   {isRTL 
                     ? "* يتم تطبيق هذا الكوبون عند إدخاله بصفحة الدفع." 
                     : "* Enter this coupon code at checkout to claim your reward."}
@@ -267,7 +267,7 @@ export default function SpinWheelModal() {
 
                 <button
                   onClick={() => setIsOpen(false)}
-                  className="btn btn-outline border-purple-300 text-purple-700 hover:bg-purple-50 rounded-2xl w-full"
+                  className="btn btn-outline border-emerald-300 text-emerald-700 hover:bg-emerald-50 rounded-xl w-full py-2.5 text-xs font-bold"
                 >
                   {isRTL ? "تسوق الآن" : "Start Shopping"}
                 </button>
