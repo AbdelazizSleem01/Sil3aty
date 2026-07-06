@@ -57,7 +57,6 @@ export default function SpinWheelModal() {
           };
         });
 
-        // Add a "Try Again" slice if we have room, or ensure we have exactly 6 segments
         if (loadedSegments.length < 6) {
           loadedSegments.push({
             code: "TRYAGAIN",
@@ -67,7 +66,6 @@ export default function SpinWheelModal() {
           });
         }
 
-        // Fill up to exactly 6 segments with defaults if needed
         const defaultFillers = [
           { code: "SPIN10", label: isRTL ? "خصم 10%" : "10% OFF" },
           { code: "SPIN15", label: isRTL ? "خصم 15%" : "15% OFF" },
@@ -219,9 +217,7 @@ export default function SpinWheelModal() {
           setWonCoupon(null);
           setIsOpen(true);
         }}
-        className={`fixed bottom-6 ${
-          isRTL ? "right-24" : "left-24"
-        } z-40 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-bold py-3 px-4.5 rounded-full shadow-2xl flex items-center gap-2 transition-all duration-300 hover:scale-110 active:scale-95 animate-pulse`}
+        className="fixed bottom-6 right-24 z-40 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-bold py-3 px-4.5 rounded-full shadow-2xl flex items-center gap-2 transition-all duration-300 hover:scale-110 active:scale-95 animate-pulse"
       >
         <FiGift size={16} className="animate-bounce" />
         <span className="text-[10px] uppercase tracking-wider font-extrabold">
