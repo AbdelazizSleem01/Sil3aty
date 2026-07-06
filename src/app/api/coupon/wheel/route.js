@@ -2,6 +2,26 @@ import { NextResponse } from "next/server";
 import dbConnect from "../../../../../lib/dbConnect";
 import Coupon from "../../../../../models/Coupon";
 
+export async function GET() {
+  try {
+    await dbConnect();
+
+    // Fetch active coupons whose code starts with SPIN
+    const coupons = await Coupon.find({
+      active: true,
+      expiryDate: { $gte: new Date() },
+      code: /^SPIN/i,
+    }).limit(6);
+
+    return NextResponse.json({ success: true, coupons });
+  } catch (error) {
+    return NextResponse.json(
+      { error: "Internal server error", message: error.message },
+      { status: 500 }
+    );
+  }
+}
+
 export async function POST() {
   try {
     await dbConnect();
@@ -41,7 +61,7 @@ export async function POST() {
         minOrderValue: 25,
       },
       {
-        code: "FREESHIP",
+        code: "SPIN_SHIP",
         discountType: "free-shipping",
         amount: 0,
         expiryDate: new Date("2030-12-31T23:59:59Z"),

@@ -15,20 +15,92 @@ export default function SpinWheelModal() {
   const [rotation, setRotation] = useState(0);
   const [wonCoupon, setWonCoupon] = useState(null);
   const [copied, setCopied] = useState(false);
+  const [segments, setSegments] = useState([]);
   const canvasRef = useRef(null);
 
-  const segments = [
-    { code: "SPIN10", label: isRTL ? "خصم 10%" : "10% OFF", color: "#10B981", textColor: "#FFFFFF" },
-    { code: "FREESHIP", label: isRTL ? "شحن مجاني" : "Free Ship", color: "#047857", textColor: "#FFFFFF" },
-    { code: "SPIN15", label: isRTL ? "خصم 15%" : "15% OFF", color: "#34D399", textColor: "#064E3B" },
-    { code: "TRYAGAIN", label: isRTL ? "حظ أوفر" : "Try Again", color: "#1E293B", textColor: "#FFFFFF" },
-    { code: "SPIN20", label: isRTL ? "خصم 20%" : "20% OFF", color: "#059669", textColor: "#FFFFFF" },
-    { code: "SPIN25", label: isRTL ? "خصم 25%" : "25% OFF", color: "#A7F3D0", textColor: "#064E3B" },
-  ];
+  // Fetch coupons from backend and construct segments dynamically
+  useEffect(() => {
+    const fetchWheelCoupons = async () => {
+      try {
+        // Ensure default spin coupons are seeded first
+        await axios.post("/api/coupon/wheel");
+        
+        const { data } = await axios.get("/api/coupon/wheel");
+        const dbCoupons = data.coupons || [];
+
+        // Build list of segments using brand colors
+        const brandColors = [
+          { bg: "#10B981", text: "#FFFFFF" }, // Emerald
+          { bg: "#047857", text: "#FFFFFF" }, // Dark Emerald
+          { bg: "#34D399", text: "#064E3B" }, // Mint
+          { bg: "#059669", text: "#FFFFFF" }, // Medium Emerald
+          { bg: "#A7F3D0", text: "#064E3B" }, // Light Mint
+        ];
+
+        let loadedSegments = dbCoupons.map((c, index) => {
+          let label = "";
+          if (c.discountType === "percent") {
+            label = isRTL ? `خصم ${c.amount}%` : `${c.amount}% OFF`;
+          } else if (c.discountType === "free-shipping" || c.discountType === "shipping") {
+            label = isRTL ? "شحن مجاني" : "Free Ship";
+          } else {
+            label = isRTL ? `خصم $${c.amount}` : `$${c.amount} OFF`;
+          }
+
+          const colorScheme = brandColors[index % brandColors.length];
+
+          return {
+            code: c.code,
+            label,
+            color: colorScheme.bg,
+            textColor: colorScheme.text,
+          };
+        });
+
+        // Add a "Try Again" slice if we have room, or ensure we have exactly 6 segments
+        if (loadedSegments.length < 6) {
+          loadedSegments.push({
+            code: "TRYAGAIN",
+            label: isRTL ? "حظ أوفر" : "Try Again",
+            color: "#1E293B",
+            textColor: "#FFFFFF",
+          });
+        }
+
+        // Fill up to exactly 6 segments with defaults if needed
+        const defaultFillers = [
+          { code: "SPIN10", label: isRTL ? "خصم 10%" : "10% OFF" },
+          { code: "SPIN15", label: isRTL ? "خصم 15%" : "15% OFF" },
+          { code: "SPIN20", label: isRTL ? "خصم 20%" : "20% OFF" },
+        ];
+
+        let fillerIndex = 0;
+        while (loadedSegments.length < 6) {
+          const filler = defaultFillers[fillerIndex % defaultFillers.length];
+          const colorScheme = brandColors[loadedSegments.length % brandColors.length];
+          loadedSegments.push({
+            code: filler.code,
+            label: filler.label,
+            color: colorScheme.bg,
+            textColor: colorScheme.text,
+          });
+          fillerIndex++;
+        }
+
+        setSegments(loadedSegments.slice(0, 6));
+      } catch (error) {
+        console.error("Error loading wheel coupons:", error);
+      }
+    };
+
+    if (isOpen) {
+      fetchWheelCoupons();
+    }
+  }, [isOpen, isRTL]);
 
   // Draw the wheel on canvas
   useEffect(() => {
-    if (!isOpen || !canvasRef.current) return;
+    if (!isOpen || segments.length === 0 || !canvasRef.current) return;
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
     const width = canvas.width;
@@ -78,7 +150,7 @@ export default function SpinWheelModal() {
     ctx.arc(radius, radius, 8, 0, 2 * Math.PI, false);
     ctx.fillStyle = "#10B981";
     ctx.fill();
-  }, [isOpen]);
+  }, [isOpen, segments]);
 
   // Show automatically after 3 seconds if never spun
   useEffect(() => {
@@ -93,7 +165,7 @@ export default function SpinWheelModal() {
 
   const handleSpin = async (e) => {
     e.preventDefault();
-    if (isSpinning) return;
+    if (isSpinning || segments.length === 0) return;
     if (!email || !email.includes("@")) {
       alert(isRTL ? "يرجى إدخال بريد إلكتروني صحيح" : "Please enter a valid email");
       return;
@@ -102,20 +174,20 @@ export default function SpinWheelModal() {
     setIsSpinning(true);
 
     try {
-      // Seed coupons in DB dynamically in parallel
-      axios.post("/api/coupon/seed-wheel").catch((err) => console.error(err));
+      // Filter out TRYAGAIN indexes so user almost always wins
+      const winningIndexes = segments
+        .map((seg, idx) => (seg.code !== "TRYAGAIN" ? idx : null))
+        .filter((idx) => idx !== null);
 
-      // Choose a winning segment (avoid TRYAGAIN, select SPIN10-25 or FREESHIP with high chance)
-      const winningIndexes = [0, 1, 2, 4, 5]; // Indexes excluding TRYAGAIN (3)
+      if (winningIndexes.length === 0) winningIndexes.push(0);
+
       const randomIndex = winningIndexes[Math.floor(Math.random() * winningIndexes.length)];
       const targetSegment = segments[randomIndex];
 
       // Rotation math
       const segmentArcDegrees = 360 / segments.length;
-      // Target angle to land the segment under the center pointer (at 0 rad / right side, we adjust offset)
-      // Standard pointer is at the top (270 degrees). Let's calculate accordingly.
       const targetAngle = 270 - (randomIndex * segmentArcDegrees + segmentArcDegrees / 2);
-      const extraRotations = 360 * 6; // 6 full spins
+      const extraRotations = 360 * 6; // 6 spins
       const finalRotation = extraRotations + targetAngle;
 
       setRotation(finalRotation);
