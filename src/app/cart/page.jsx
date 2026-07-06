@@ -9,7 +9,7 @@ import { toast } from "react-toastify";
 import Swal from "sweetalert2";
 import { useRouter } from "next/navigation";
 import { Trash2 } from "lucide-react";
-import { useCurrency } from "../../components/CurrencyContext";
+import { useCurrency } from "../../../components/CurrencyContext";
 
 export default function CartPage() {
   const { data: session } = useSession();
