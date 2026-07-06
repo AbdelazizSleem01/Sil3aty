@@ -29,7 +29,7 @@ import axios from "axios";
 function AllProductsPageContent() {
   const { t, i18n } = useTranslation();
   const isRTL = i18n.language === "ar";
-  const { formatPrice } = useCurrency();
+  const { formatPrice, getProductPrice } = useCurrency();
   const { data: session } = useSession();
   const { updateCartCount } = useCart();
   const { addToCompare, removeFromCompare, isInCompare } = useCompare();
@@ -574,16 +574,12 @@ function AllProductsPageContent() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {paginatedProducts.map((product) => {
-            const hasDiscount =
-              product.isOnSale &&
-              product.discountPrice &&
-              product.discountPrice < product.price;
+            const activePrice = getProductPrice(product, false);
+            const activeDiscountPrice = getProductPrice(product, true);
+            const hasDiscount = activeDiscountPrice < activePrice;
 
             const discountPercent = hasDiscount
-              ? calculateDiscountPercentage(
-                  product.price,
-                  product.discountPrice
-                )
+              ? Math.round(((activePrice - activeDiscountPrice) / activePrice) * 100)
               : 0;
 
             const discountIntensity = getDiscountIntensity(discountPercent);

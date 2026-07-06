@@ -152,10 +152,9 @@ export default function WishlistPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {wishlistItems.map((product) => {
             if (!product) return null;
-            const hasDiscount =
-              product.isOnSale &&
-              product.discountPrice &&
-              product.discountPrice < product.price;
+            const activePrice = getProductPrice(product, false);
+            const activeDiscountPrice = getProductPrice(product, true);
+            const hasDiscount = activeDiscountPrice < activePrice;
 
             return (
               <div 

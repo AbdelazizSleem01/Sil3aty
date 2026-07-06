@@ -146,13 +146,12 @@ export default function FeaturedProductsPage() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {featuredProducts.map((product) => {
-              const hasDiscount =
-                product.isOnSale &&
-                product.discountPrice &&
-                product.discountPrice < product.price;
+              const activePrice = getProductPrice(product, false);
+              const activeDiscountPrice = getProductPrice(product, true);
+              const hasDiscount = activeDiscountPrice < activePrice;
 
               const discountPercent = hasDiscount
-                ? calculateDiscountPercentage(product.price, product.discountPrice)
+                ? Math.round(((activePrice - activeDiscountPrice) / activePrice) * 100)
                 : 0;
 
               const discountIntensity = getDiscountIntensity(discountPercent);

@@ -21,7 +21,52 @@ export function CurrencyProvider({ children }) {
     const savedCurrency = localStorage.getItem("selectedCurrency");
     if (savedCurrency && CURRENCIES[savedCurrency]) {
       setCurrency(savedCurrency);
+      return;
     }
+
+    // Auto-detect country and currency on first load
+    const autoDetectCurrency = async () => {
+      let detectedCode = "USD";
+
+      // Step 1: Detect via Timezone (Instant fallback)
+      try {
+        const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        if (tz) {
+          if (tz.includes("Cairo")) {
+            detectedCode = "EGP";
+          } else if (tz.includes("Riyadh") || tz.includes("Asia/Kuwait") || tz.includes("Asia/Qatar")) {
+            detectedCode = "SAR";
+          } else if (tz.includes("Dubai") || tz.includes("Abu_Dhabi")) {
+            detectedCode = "AED";
+          }
+        }
+      } catch (err) {}
+
+      // Apply timezone detection first so it renders instantly
+      setCurrency(detectedCode);
+
+      // Step 2: Detect via GeoIP (Highly precise, asynchronous)
+      try {
+        const res = await fetch("https://ipapi.co/json/");
+        if (res.ok) {
+          const data = await res.json();
+          const country = data.country_code; // e.g. "EG", "SA", "AE"
+          if (country === "EG") {
+            setCurrency("EGP");
+          } else if (country === "SA") {
+            setCurrency("SAR");
+          } else if (country === "AE") {
+            setCurrency("AED");
+          } else {
+            setCurrency("USD");
+          }
+        }
+      } catch (err) {
+        // Fallback to whatever timezone detected or USD
+      }
+    };
+
+    autoDetectCurrency();
   }, []);
 
   const changeCurrency = (code) => {

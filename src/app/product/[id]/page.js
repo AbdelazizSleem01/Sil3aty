@@ -40,7 +40,7 @@ import Swal from "sweetalert2";
 export default function ProductPage() {
   const { t, i18n } = useTranslation();
   const isRTL = i18n.language === "ar";
-  const { formatPrice } = useCurrency();
+  const { formatPrice, getProductPrice } = useCurrency();
   const { id } = useParams();
   const { data: session } = useSession();
   const { updateCartCount } = useCart();
@@ -317,14 +317,10 @@ export default function ProductPage() {
 
   const calculateDiscountPercentage = () => {
     if (!product) return 0;
-    if (
-      product.discountPrice &&
-      product.price &&
-      product.price > product.discountPrice
-    ) {
-      return Math.round(
-        ((product.price - product.discountPrice) / product.price) * 100
-      );
+    const activePrice = getProductPrice(product, false);
+    const activeDiscountPrice = getProductPrice(product, true);
+    if (activePrice > 0 && activeDiscountPrice < activePrice) {
+      return Math.round(((activePrice - activeDiscountPrice) / activePrice) * 100);
     }
     return 0;
   };

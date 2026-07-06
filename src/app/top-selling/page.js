@@ -167,17 +167,12 @@ export default function TopSellingProductsPage() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 ">
             {topSellingProducts.map((product, index) => {
-              const hasDiscount =
-                product.isOnSale &&
-                product.discountPrice &&
-                product.price &&
-                product.discountPrice < product.price;
+              const activePrice = getProductPrice(product, false);
+              const activeDiscountPrice = getProductPrice(product, true);
+              const hasDiscount = activeDiscountPrice < activePrice;
 
               const discountPercent = hasDiscount
-                ? calculateDiscountPercentage(
-                    product.price,
-                    product.discountPrice
-                  )
+                ? Math.round(((activePrice - activeDiscountPrice) / activePrice) * 100)
                 : 0;
 
               const discountIntensity = getDiscountIntensity(discountPercent);
