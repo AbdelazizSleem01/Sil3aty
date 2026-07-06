@@ -18,34 +18,45 @@ export function CurrencyProvider({ children }) {
   const isRTL = i18n.language === "ar";
 
   useEffect(() => {
-    const savedCurrency = localStorage.getItem("selectedCurrency");
-    if (savedCurrency && CURRENCIES[savedCurrency]) {
-      setCurrency(savedCurrency);
-      return;
-    }
-
-    // Auto-detect country and currency on first load
+    // Always auto-detect country and currency on first load to bypass any cached stale values
     const autoDetectCurrency = async () => {
       let detectedCode = "USD";
 
-      // Step 1: Detect via Timezone (Instant fallback)
+      // Step 1: Detect via Browser Locale (Instant)
       try {
-        const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        if (tz) {
-          if (tz.includes("Cairo")) {
+        const locale = navigator.language || (navigator.languages && navigator.languages[0]) || "";
+        if (locale) {
+          const upperLocale = locale.toUpperCase();
+          if (upperLocale.includes("-EG") || upperLocale.includes("_EG") || upperLocale === "EG") {
             detectedCode = "EGP";
-          } else if (tz.includes("Riyadh") || tz.includes("Asia/Kuwait") || tz.includes("Asia/Qatar")) {
+          } else if (upperLocale.includes("-SA") || upperLocale.includes("_SA") || upperLocale === "SA") {
             detectedCode = "SAR";
-          } else if (tz.includes("Dubai") || tz.includes("Abu_Dhabi")) {
+          } else if (upperLocale.includes("-AE") || upperLocale.includes("_AE") || upperLocale === "AE") {
             detectedCode = "AED";
           }
         }
       } catch (err) {}
 
-      // Apply timezone detection first so it renders instantly
+      // Step 2: Detect via Timezone (Instant fallback)
+      if (detectedCode === "USD") {
+        try {
+          const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+          if (tz) {
+            if (tz.includes("Cairo")) {
+              detectedCode = "EGP";
+            } else if (tz.includes("Riyadh") || tz.includes("Asia/Kuwait") || tz.includes("Asia/Qatar")) {
+              detectedCode = "SAR";
+            } else if (tz.includes("Dubai") || tz.includes("Abu_Dhabi")) {
+              detectedCode = "AED";
+            }
+          }
+        } catch (err) {}
+      }
+
+      // Set currency instantly
       setCurrency(detectedCode);
 
-      // Step 2: Detect via GeoIP (Highly precise, asynchronous)
+      // Step 3: Detect via GeoIP (Highly precise, asynchronous)
       try {
         const res = await fetch("https://ipapi.co/json/");
         if (res.ok) {
@@ -62,7 +73,7 @@ export function CurrencyProvider({ children }) {
           }
         }
       } catch (err) {
-        // Fallback to whatever timezone detected or USD
+        // Keep whatever locale/timezone detected
       }
     };
 
