@@ -13,7 +13,7 @@ import NotificationBell from "./NotificationBell";
 import useSWR from "swr";
 import { useCart } from "./CartContext";
 import { useWishlist } from "./WishlistContext";
-import { useCurrency } from "./CurrencyContext";
+
 import {
   FiHome,
   FiInfo,
@@ -38,7 +38,7 @@ export default function Navbar() {
   const { data: session, status } = useSession();
   const { cartItemsCount } = useCart();
   const { wishlistCount } = useWishlist();
-  const { currency, currencies, changeCurrency } = useCurrency();
+
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -226,24 +226,6 @@ export default function Navbar() {
                   العربية
                 </button>
               </div>
-              <div className="h-6 w-px bg-gray-300 mx-1"></div>
-
-              <div className="flex items-center gap-0.5 bg-gray-50 p-0.5 rounded-lg border border-gray-100">
-                {currencies.map((curr) => (
-                  <button
-                    key={curr.code}
-                    onClick={() => changeCurrency(curr.code)}
-                    className={`px-2 py-1 rounded-md text-[10px] font-black transition-all ${
-                      currency === curr.code
-                        ? "bg-emerald-500 text-white shadow-sm"
-                        : "text-gray-500 hover:bg-gray-100"
-                    }`}
-                    title={isRTL ? curr.symbolAr : curr.symbolEn}
-                  >
-                    {curr.code}
-                  </button>
-                ))}
-              </div>
 
               <div className="h-6 w-px bg-gray-300 mx-1"></div>
 
@@ -321,9 +303,6 @@ export default function Navbar() {
         t={t}
         i18n={i18n}
         changeLanguage={changeLanguage}
-        currency={currency}
-        currencies={currencies}
-        changeCurrency={changeCurrency}
       />
 
       {isMenuOpen && (
@@ -390,9 +369,6 @@ function MobileMenu({
   t,
   i18n,
   changeLanguage,
-  currency,
-  currencies,
-  changeCurrency,
 }) {
   const { wishlistCount } = useWishlist();
   return (
@@ -553,25 +529,7 @@ function MobileMenu({
             </button>
           </div>
 
-          <div className="h-6 w-px bg-gray-300 mx-1"></div>
 
-          <div className="flex items-center gap-0.5 bg-gray-50 p-0.5 rounded-lg border border-gray-100">
-            {currencies.map((curr) => (
-              <button
-                key={curr.code}
-                onClick={() => changeCurrency(curr.code)}
-                className={`px-2 py-1 rounded-md text-[10px] font-black transition-all ${
-                  currency === curr.code
-                    ? "bg-emerald-500 text-white shadow-sm"
-                    : "text-gray-500 hover:bg-gray-100"
-                }`}
-              >
-                {curr.code}
-              </button>
-            ))}
-          </div>
-
-          <div className="h-6 w-px bg-gray-300 mx-1"></div>
           {session && (
             <div>
               <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
