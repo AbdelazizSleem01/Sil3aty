@@ -1,3 +1,5 @@
+<img width="1358" height="648" alt="image" src="https://github.com/user-attachments/assets/5bcd7318-e9eb-44d1-b1e2-8dd9ebe1234e"/>
+
 🛍️ E-Commerce Platform Overview
 A comprehensive and modern e-commerce platform built using the latest web technologies, offering a seamless experience for both customers and administrators. The application features a dynamic storefront for users to browse, search, and shop for products, as well as a powerful admin dashboard for managing all aspects of the business.
 
